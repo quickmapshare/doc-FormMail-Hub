@@ -1,16 +1,18 @@
-// @ts-check
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import tailwindcss from '@tailwindcss/vite';
 
-// https://astro.build/config
 export default defineConfig({
     integrations: [
         starlight({
             title: 'Doc FormMail Hub',
-            social: {
-                google: 'https://workspace.google.com/marketplace/app/formmail_hub/409227874327',
-            },
+            social: [
+                { 
+                    icon: 'google', 
+                    label: 'Google', 
+                    href: 'https://workspace.google.com/marketplace/app/formmail_hub/409227874327' 
+                },
+            ],
             sidebar: [
                 {
                     label: 'Guides',
