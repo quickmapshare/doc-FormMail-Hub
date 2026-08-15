@@ -3,6 +3,9 @@ import starlight from '@astrojs/starlight';
 import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
+    image: {
+        service: passthroughImageService(), // Bắt Astro xuất ảnh tĩnh trực tiếp
+    },
     integrations: [
         starlight({
             title: 'Doc FormMail Hub',
