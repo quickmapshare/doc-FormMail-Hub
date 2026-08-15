@@ -8,7 +8,7 @@ export default defineConfig({
             title: 'Doc FormMail Hub',
             social: [
                 { 
-                    icon: 'external', 
+                    icon: 'google', 
                     label: 'Google Workspace', 
                     href: 'https://workspace.google.com/marketplace/app/formmail_hub/409227874327' 
                 },
