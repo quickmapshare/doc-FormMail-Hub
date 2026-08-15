@@ -8,7 +8,7 @@ export default defineConfig({
 	integrations: [
 		starlight({
 			title: 'Doc FormMail Hub',
-			social: [{ icon: 'google', label: 'Google', href: 'https://workspace.google.com/marketplace/app/formmail_hub/409227874327' }],
+			social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/withastro/starlight' }],
 			sidebar: [
 				{
 					label: 'Guides',
