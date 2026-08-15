@@ -10,7 +10,7 @@ export default defineConfig({
                 { 
                     icon: 'google', 
                     label: 'Google', 
-                    href: 'https://workspace.google.com/marketplace/app/formmail_hub/409227874327' 
+                    link: 'https://workspace.google.com/marketplace/app/formmail_hub/409227874327' 
                 },
             ],
             sidebar: [
