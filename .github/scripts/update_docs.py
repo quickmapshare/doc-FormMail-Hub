@@ -1,13 +1,11 @@
 import os
 import sys
 import json
-import re
 from google import genai
 
 print("========================================")
 print("🚀 AI MULTI-PAGE DOCS BUILDER & EXPANDER")
 
-# Không thay gemini-3.6-flash vì đây là bản duy nhất khả thi hiện tại
 MODEL_NAME = "gemini-3.6-flash" 
 print(f"🤖 Gemini model: {MODEL_NAME}")
 
@@ -29,7 +27,6 @@ if os.path.exists(docs_dir):
                 with open(file_path, "r", encoding="utf-8") as f:
                     existing_docs[file_path] = f.read()
 
-# Xác định xem AI đang chạy do có code mới hay chạy định kỳ
 diff_context = code_diff if code_diff else "NO RECENT CODE CHANGES. Perform a routine documentation audit and expansion based on the current files."
 
 prompt = f"""
@@ -56,7 +53,11 @@ STRICT REQUIREMENTS:
 4. ONE TOPIC PER UPDATE: Identify ONE missing topic. Write a highly detailed, comprehensive markdown page for it. Route it to the correct directory (guides/ or reference/) based on the categorization above. You may UPDATE an existing file or CREATE a new one.
 5. FRONTMATTER: Every file MUST have valid Frontmatter YAML at the top (title, description).
 6. JSON OUTPUT ONLY: You must return a valid JSON array. DO NOT wrap it in ```json.
-7. ESCAPING RULES (CRITICAL): Because your output is inside a JSON string, you MUST escape backslashes. If you write a Markdown table pipe escape like `\\|`, it MUST be written as `\\\\|` in the JSON string. Escape double quotes as `\\"` and newlines as `\\n`. DO NOT output actual raw line breaks.
+7. ESCAPING RULES (CRITICAL): 
+   - You MUST return perfectly valid JSON.
+   - Escape newlines as \\n and double quotes as \\" inside strings. 
+   - DO NOT use invalid JSON escapes like `\\|`. 
+   - If you write a Markdown table, simply use the standard pipe character `|`. DO NOT escape pipes.
 
 JSON STRUCTURE FORMAT:
 [
@@ -81,10 +82,6 @@ try:
         cleaned_text = cleaned_text.rsplit("\n", 1)[0]
     if cleaned_text.startswith("json\n"):
         cleaned_text = cleaned_text[5:]
-    
-    # BẢO HIỂM: Dọn dẹp lỗi escape backslash phổ biến của LLM trước khi parse
-    # Thay thế các trường hợp AI gõ \| thành \\| để JSON không bị lỗi
-    cleaned_text = re.sub(r'(?<!\\)\\|', r'\\\\|', cleaned_text)
     
     try:
         docs_to_update = json.loads(cleaned_text, strict=False)
