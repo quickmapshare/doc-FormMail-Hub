@@ -16,8 +16,8 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v4
         with:
-          # 2. Đảm bảo checkout bằng GITHUB_TOKEN
-          token: ${{ secrets.GITHUB_TOKEN }}
+          # THAY DÒNG NÀY: Dùng Token cá nhân thay vì Token của Bot
+          token: ${{ secrets.DOCS_PAT }}
 
       - name: Setup Python
         uses: actions/setup-python@v5
