@@ -38,11 +38,14 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           
-          # Đã đổi: Add toàn bộ thư mục docs/ để bắt được các file mới AI tạo ra
+          # Add toàn bộ thư mục docs/ để bắt được các file mới AI tạo ra
           git add src/content/docs/
           
           # Kiểm tra nếu có thay đổi thì mới commit
           git diff --quiet && git diff --staged --quiet || git commit -m "docs: AI auto-generated new pages & updates [English]"
+          
+          # CẬP NHẬT QUAN TRỌNG: Kéo bản mới nhất trên GitHub về và gộp lại trước khi đẩy lên
+          git pull --rebase origin main
           
           # 3. Ép push bằng token có quyền write
           git push origin HEAD:main
