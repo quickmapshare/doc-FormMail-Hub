@@ -5,25 +5,32 @@ on:
     types: [source_updated]
   workflow_dispatch:
 
+# 1. ÉP QUYỀN GHI TRỰC TIẾP Ở ĐÂY (Vượt qua mọi cài đặt Settings)
+permissions:
+  contents: write
+
 jobs:
   update-docs:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code
+      - name: Checkout Repo
         uses: actions/checkout@v4
+        with:
+          # 2. Đảm bảo checkout bằng GITHUB_TOKEN
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
-      - name: Install Google GenAI SDK
+      - name: Install Dependencies
         run: pip install google-genai
 
       - name: Run AI Update Script
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          CODE_DIFF: ${{ github.event.client_payload.code_diff }} # Nhận code diff ở đây
+          CODE_DIFF: ${{ github.event.client_payload.code_diff }}
         run: python .github/scripts/update_docs.py
 
       - name: Commit and Push Changes
@@ -31,4 +38,9 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add src/content/docs/index.mdx
-          git diff --quiet && git diff --staged --quiet || (git commit -m "docs: auto-update documentation via Gemini AI [English]" && git push)
+          
+          # Kiểm tra nếu có thay đổi thì mới commit
+          git diff --quiet && git diff --staged --quiet || git commit -m "docs: auto-update documentation via Gemini AI [English]"
+          
+          # 3. Ép push bằng token có quyền write
+          git push origin HEAD:main
