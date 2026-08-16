@@ -6,7 +6,8 @@ from google import genai
 print("========================================")
 print("🚀 AI MULTI-PAGE DOCS BUILDER & EXPANDER")
 
-MODEL_NAME = "gemini-3.6-flash" # Đảm bảo bạn dùng 1.5-flash cho tác vụ xử lý context dài
+# Nên dùng gemini-1.5-flash vì đây là bản ổn định nhất hiện tại hỗ trợ context dài
+MODEL_NAME = "gemini-1.5-flash" 
 print(f"🤖 Gemini model: {MODEL_NAME}")
 
 api_key = os.environ.get("GEMINI_API_KEY")
@@ -39,6 +40,11 @@ RAW CODE DIFF FROM SOURCE REPOSITORY:
 
 CURRENT DOCUMENTATION FILES:
 {json.dumps(existing_docs, indent=2)}
+
+CRITICAL PRODUCT ARCHITECTURE (ALWAYS KEEP IN MIND):
+1. Integration Ecosystem: FormMail Hub can connect from 3 different Google Forms add-ons: "Form Confirmation Emails", "Form to Email", and "Form Notifications SMTP".
+2. The Core App: The Google Sheets add-on named "FormMail Hub" is the main character (core application) of the ecosystem.
+3. Campaign Feature Logic: The "Campaign" (bulk sending) feature is ONLY enabled and accessible when the dashboard is launched from the Google Sheets add-on. It is NOT available when launched from the Forms add-ons. Reason: Bulk sending requires the responses list data which is stored in the Google Sheet. Always clarify this limitation when documenting the dashboard or campaign features.
 
 STRICT REQUIREMENTS:
 1. ALL OUTPUT MUST BE STRICTLY IN ENGLISH.
