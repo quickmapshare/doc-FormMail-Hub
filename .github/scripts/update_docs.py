@@ -6,7 +6,7 @@ from google import genai
 print("========================================")
 print("🚀 AI MULTI-PAGE DOCS BUILDER & EXPANDER")
 
-MODEL_NAME = "gemini-1.5-flash"
+MODEL_NAME = "gemini-3.6-flash"
 print(f"🤖 Gemini model: {MODEL_NAME}")
 
 api_key = os.environ.get("GEMINI_API_KEY")
