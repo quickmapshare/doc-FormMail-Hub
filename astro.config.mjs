@@ -6,7 +6,7 @@ export default defineConfig({
     integrations: [
         starlight({
             title: 'Doc FormMail Hub',
-            favicon: '/favicon.ico', // ← Thêm dòng này vào đây
+            favicon: '/favicon.ico',
             social: [
                 { 
                     icon: 'external', 
@@ -17,13 +17,12 @@ export default defineConfig({
             sidebar: [
                 {
                     label: 'Guides',
-                    items: [
-                        { label: 'FormMail Hub Guide', slug: 'guides/formmailhub' },
-                    ],
+                    // SỬA DÒNG NÀY: Tự động quét toàn bộ file trong thư mục guides
+                    autogenerate: { directory: 'guides' },
                 },
                 {
                     label: 'Reference',
-                    items: [{ autogenerate: { directory: 'reference' } }],
+                    autogenerate: { directory: 'reference' },
                 },
             ],
             customCss: ['./src/styles/global.css'],
