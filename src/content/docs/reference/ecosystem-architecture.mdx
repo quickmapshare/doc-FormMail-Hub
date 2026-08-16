@@ -1,0 +1,130 @@
+---
+title: Ecosystem Architecture & Integration Matrix
+description: Technical reference detailing the FormMail Hub multi-addon ecosystem, Google Forms entry points, Google Sheets core application, and feature availability matrix.
+---
+
+This technical reference details the underlying system architecture of **FormMail Hub**, explaining how the Google Sheets core application interacts with its Google Forms entry points, detailing data persistence models, and defining the precise feature availability matrix across the product ecosystem.
+
+---
+
+## 1. System Ecosystem Overview
+
+FormMail Hub operates as an integrated multi-addon suite across Google Workspace. Rather than relying on a single entry point, the ecosystem allows users to initiate form automation directly from Google Forms™ or manage advanced email campaigns and subscriber databases from Google Sheets™.
+
+```
++-----------------------------------------------------------------------------------+
+|                             GOOGLE FORMS ENTRY POINTS                             |
+|  +---------------------------+  +-------------------+  +-----------------------+  |
+|  | Form Confirmation Emails  |  |   Form to Email   |  | Form Notifications    |  |
+|  |        (Add-on)           |  |     (Add-on)      |  |     SMTP (Add-on)     |  |
+|  +---------------------------+  +-------------------+  +-----------------------+  |
++------------------------------------------+----------------------------------------+
+                                           |
+                                           v
++-----------------------------------------------------------------------------------+
+|                             CORE APPLICATION HUB                                  |
+|                     FormMail Hub for Google Sheets™ Add-on                       |
+|                  (Central Dashboard, Engine & Storage Layer)                      |
++-----------------------------------------------------------------------------------+
+            |                                                           |
+            v                                                           v
++-----------------------+                                   +-----------------------+
+| Transactional Engine  |                                   | Bulk Campaign Engine  |
+| (Forms & Sheets Trigger|                                  |  (Sheets-ONLY Access) |
++-----------------------+                                   +-----------------------+
+```
+
+### The Central Character: Google Sheets Core Add-on
+The **FormMail Hub Google Sheets Add-on** serves as the central command center for the entire ecosystem. While individual Google Forms add-ons provide streamlined, single-purpose setup flows inside the form builder, the Google Sheets add-on holds the full database, recipient indices, audit logs, and campaign dispatch engine.
+
+---
+
+## 2. Component Taxonomy & Entry Points
+
+### Core Application
+- **FormMail Hub (Google Sheets Add-on):** The main application. It processes form submit events recorded in the connected spreadsheet, manages dynamic variables, hosts the template engine, connects custom SMTP servers, and executes bulk email broadcast campaigns.
+
+### Entry-Point Google Forms Add-ons
+To simplify workflow configuration directly inside Google Forms™, three targeted entry add-ons connect directly to the FormMail Hub core engine:
+
+1. **Form Confirmation Emails:** Designed specifically for configuring immediate auto-responders sent to form submitters upon submission.
+2. **Form to Email:** Focused on administrative and team notifications, routing form responses instantly to designated internal email addresses or Slack/webhook endpoints.
+3. **Form Notifications SMTP:** Specialized for connecting high-volume custom SMTP providers (Amazon SES, SendGrid, Gmail App Passwords) directly within the Google Forms interface.
+
+--- 
+
+## 3. Feature Availability Matrix
+
+While real-time notification rules and transactional auto-responders can be configured from both Google Forms entry points and the Google Sheets core app, advanced capabilities like bulk marketing campaigns are restricted to specific entry points.
+
+| Capability / Feature | Form Entry Add-ons<br/>*(Confirmation, Form to Email, SMTP)* | Core Google Sheets Add-on<br/>*(FormMail Hub)* | Architectural Reason |
+| :--- | :---: | :---: | :--- |
+| **Real-time Trigger Auto-responders** | ✅ Supported | ✅ Supported | Trigger fires on individual submit event. |
+| **Admin & Team Submission Alerts** | ✅ Supported | ✅ Supported | Synchronous or async execution on submit. |
+| **Custom SMTP Integration** | ✅ Supported | ✅ Supported | Credentials bound to user project settings. |
+| **Dynamic Tag Personalization** | ✅ Supported | ✅ Supported | Parsed from submit event metadata. |
+| **Conditional Logic Routing** | ✅ Supported | ✅ Supported | Evaluated at form response submission. |
+| **Audit Log Viewing** | ⚠️ Partial (Recent) | ✅ Full Diagnostic History | Full logs reside in backing sheet storage. |
+| **Lead Indexing & Respondent Database** | ❌ Read-Only | ✅ Full Access | Requires Google Sheets row storage. |
+| **Broadcast Campaign Engine (Bulk Sending)** | 🚫 **NOT AVAILABLE** | ✅ **FULLY ENABLED** | **Requires tabular spreadsheet dataset (See Sec. 4).** |
+
+---
+
+## 4. Campaign Feature Logic & Constraints
+
+### Why Campaigns are Strictly Google Sheets-Bound
+The **Campaign (Bulk Sending) feature** is **ONLY** enabled and accessible when the dashboard is launched from the **FormMail Hub Google Sheets add-on**. It is intentionally disabled when accessing the dashboard via any of the Google Forms entry add-ons.
+
+### Technical Architectural Reasons:
+1. **Data Source Requirement:** A bulk broadcast email dispatch requires structured contact records, field parameters, and historical response rows to construct the target audience. Google Forms API events only pass isolated runtime objects for *current single submissions*; they do not host persistent tabular contact databases.
+2. **Spreadsheet Row Indexing:** FormMail Hub leverages the backing Google Sheet as its contact list and opt-out state storage. List segmentation, date filtering, dynamic custom column tags, and contact suppression verification rely on reading spreadsheet cell vectors.
+3. **Execution Context & Quotas:** Google Apps Script limits for Google Forms execution threads are stricter (30-second context limits for triggers). Google Sheets-bound script executions can leverage longer batch background processing windows essential for iterating over contact lists.
+
+```
+[ User opens Dashboard in Google Forms Add-on ]
+                       |
+                       v
+         Check Application Context
+                       |
+                       +---> Context: Google Forms ---> Campaign Menu HIDDEN / DISABLED
+                       |
+                       +---> Context: Google Sheets --> Campaign Menu ENABLED (Full Access)
+```
+
+---
+
+## 5. Technical Data Flow & Execution Pipelines
+
+### Real-time Form Submission Pipeline
+When a user fills out a connected Google Form, execution flows as follows:
+
+1. **Event Capture:** Google Form fires `onFormSubmit` event trigger.
+2. **Payload Extraction:** FormMail Hub extracts submission fields, system timestamp, and submitter email.
+3. **Sheet Synchronization:** Response payload is written to the connected Google Sheet.
+4. **Rule Evaluation:** FormMail Hub evaluates active conditional logic rules.
+5. **Template Rendering:** Dynamic tags (`{First Name}`, `{Form Summary}`, etc.) are replaced with parsed response values.
+6. **SMTP Routing:** Email is dispatched via the configured route:
+   - **Internal Alerts:** Dedicated system relay (0% personal quota used).
+   - **Respondent Auto-responder:** Configured Custom SMTP (Amazon SES, SendGrid, Gmail App Password).
+7. **Audit Logging:** Status (`DELIVERED`, `BOUNCED_HARD`, `FAILED_SMTP_AUTH`) is written to the audit log.
+
+### Bulk Campaign Pipeline (Google Sheets Core Only)
+1. **Audience Filtering:** User defines segment filters (e.g., `Column C = 'Premium'` AND `Opt-In Status != Suppressed`).
+2. **Subscriber Verification:** The Campaign Engine queries spreadsheet rows and cross-references the suppression registry.
+3. **Batch Queueing:** Dispatch jobs are batched into chunks to comply with provider rate limits.
+4. **Asynchronous Send:** Messages are handed off to the user's Custom SMTP server.
+5. **State Update:** Spreadsheet metadata and campaign analytics are updated in real time.
+
+---
+
+## 6. Migration & Interoperability
+
+Users who install any of the entry-point Google Forms add-ons (`Form Confirmation Emails`, `Form to Email`, or `Form Notifications SMTP`) can transition to the core Google Sheets experience at any time without losing settings:
+
+1. Ensure the Google Form is linked to a target Google Sheet (**Google Forms > Responses > Link to Sheets**).
+2. Install and launch **FormMail Hub** from the target Google Sheet.
+3. The core add-on automatically detects existing form rules, templates, and SMTP credentials associated with the form ID, granting full access to list indexing and the **Broadcast Campaign Engine**.
+
+---
+
+*Google Forms™ and Google Sheets™ are trademarks of Google LLC.*
