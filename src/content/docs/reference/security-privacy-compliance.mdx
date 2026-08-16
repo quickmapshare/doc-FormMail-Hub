@@ -1,0 +1,135 @@
+---
+title: Security, Privacy & OAuth Authorization Reference
+description: Complete technical reference covering Google Workspace OAuth scopes, data storage architecture, GDPR/CAN-SPAM compliance, transport encryption, and enterprise security policies in FormMail Hub.
+---
+
+This technical reference provides an exhaustive breakdown of the security model, privacy architecture, required OAuth authorization scopes, data retention policies, and regulatory compliance standards across the **FormMail Hub** ecosystem.
+
+---
+
+## 1. Google Workspace OAuth Scopes & Authorization Matrix
+
+FormMail Hub operates within the secure Google Workspace runtime environment using the principle of least privilege. Depending on whether the application is initialized from an entry-point Google Forms™ add-on or the core Google Sheets™ application, specific OAuth 2.0 scopes are requested during installation.
+
+### Required OAuth Scopes Catalog
+
+| Scope URI | Permission Level | Technical Justification | System Access Boundaries |
+| :--- | :--- | :--- | :--- |
+| `https://www.googleapis.com/auth/forms.currentonly` | Read/Write (Container) | Reads form questions, titles, and configures `onFormSubmit` triggers for the current active form. | Restricted strictly to the specific Google Form where the add-on is executed. Cannot access other forms in Drive. |
+| `https://www.googleapis.com/auth/spreadsheets` | Read/Write | Manages response rows, updates suppression tables, reads subscriber databases, and writes audit logs in backing sheets. | Operates on the connected Google Sheet associated with form responses. Required for Core Campaign Engine operations. |
+| `https://www.googleapis.com/auth/script.external_request` | Network Egress | Dispatches HTTP POST webhooks (Slack, MS Teams, custom APIs) and executes TLS socket connections to custom SMTP servers. | Outbound HTTPS/TLS traffic only. Incoming requests blocked except for verified webhook receipt handlers. |
+| `https://www.googleapis.com/auth/script.send_mail` | Email Send | Enables native fallback email dispatch using Google Workspace relay quotas when custom SMTP is not enabled. | Used strictly for user-configured email rules and triggers. No silent background emailing. |
+| `https://www.googleapis.com/auth/userinfo.email` | Identity Read | Identifies the active administrative account for subscription license validation and workspace domain binding. | Reads primary email address of the active user session only. No profile modification access. |
+
+### Entry Point vs. Core App Scope Scope Profile
+
+```
++-----------------------------------------------------------------------------------+
+|                        ENTRY-POINT FORMS ADD-ONS                                  |
+|        ("Form Confirmation Emails", "Form to Email", "Form Notifications SMTP")   |
++-----------------------------------------------------------------------------------+
+| Scopes Required: forms.currentonly, script.external_request, script.send_mail     |
+| Access Boundary: Form response event metadata, single-submission triggers         |
++-----------------------------------------------------------------------------------+
+                                          |
+                                          v (Upgrading / Accessing Dashboard)
++-----------------------------------------------------------------------------------+
+|                           CORE GOOGLE SHEETS ADD-ON                               |
+|                                ("FormMail Hub")                                   |
++-----------------------------------------------------------------------------------+
+| Scopes Required: spreadsheets, forms.currentonly, script.external_request, etc.   |
+| Access Boundary: Tabular response dataset, subscriber index, Campaign Engine       |
++-----------------------------------------------------------------------------------+
+```
+
+---
+
+## 2. Data Storage, Locality & Persistence Model
+
+FormMail Hub employs a decentralized, zero-third-party database architecture for form response storage. Personal Identifiable Information (PII) submitted by form respondents remains within your organization's Google Workspace security boundary.
+
+### Data Residency Breakdown
+
+- **Form Response Data:** Stored exclusively inside your Google Account's backing Google Sheet™ or Google Form™. FormMail Hub does **not** copy, mirror, or store form submission text on external proprietary servers.
+- **SMTP & Configuration Metadata:** Encrypted and stored in Google Workspace `PropertiesService` (UserProperties and ScriptProperties) associated with your Google account. Credentials are accessible only by authorized runtime execution scripts.
+- **Audit Logs:** Written directly to a dedicated sheet tab (`FormMailHub_AuditLog`) within your backing Google Sheet, granting your organization complete ownership and control over diagnostic historical data.
+- **Transient Memory Context:** During runtime execution (`onFormSubmit` trigger or scheduled batch campaign run), submission payloads pass through volatile serverless execution threads in Google Cloud Apps Script infrastructure, exiting memory immediately after dispatch.
+
+---
+
+## 3. Regulatory Compliance Frameworks
+
+FormMail Hub provides built-in tools to help organizations comply with global privacy laws and email delivery standards.
+
+### GDPR (General Data Protection Regulation) Compliance
+- **Right to Access & Rectification:** Form responses reside entirely in user-owned Google Sheets. Administrators can edit, export, or delete respondent records at any time without third-party intervention.
+- **Right to be Forgotten (Data Erasure):** When a user requests removal, deleting their row from the Google Sheet or adding their address to the **Suppression Registry** (`Settings > Suppression List`) permanently halts all transactional and broadcast communications.
+- **Data Minimization:** Dynamic tags evaluate only the fields explicitly requested in email templates, ignoring non-pertinent submission data.
+
+### CAN-SPAM Act Compliance
+Every marketing broadcast campaign dispatched via the Core Google Sheets Add-on enforces mandatory CAN-SPAM requirements:
+1. **Mandatory Unsubscribe Tag:** Broadcast dispatches require the presence of the `{Unsubscribe link}` tag in the email body or footer.
+2. **Automated Opt-Out Processing:** Clicking `{Unsubscribe link}` routes the recipient to an instant confirmation endpoint, marking their record as `SUPPRESSED`.
+3. **Suppression Enforcement:** Future campaign jobs query the suppression registry prior to dispatch, returning an `OPT_OUT_SKIPPED` log status for unsubscribed recipients.
+
+### HIPAA & Data Handling Considerations
+Because form responses remain inside your Google Workspace environment, organizations with a Google Workspace Business Associate Agreement (BAA) retain HIPAA compliance for stored submission data. When sending Protected Health Information (PHI) via email:
+- Ensure custom SMTP connections utilize enforced **TLS 1.2+ encryption** (Port 587 or 465).
+- Restrict sensitive medical data fields from being exposed in subject lines or unencrypted webhook payloads.
+
+---
+
+## 4. Network Security & Encryption Protocols
+
+All communication channels utilized by FormMail Hub implement industry-standard encryption standards:
+
+```
+[ Form Response Event ]
+          |
+          +---> Webhook Egress --------> HTTPS / TLS 1.2+ (AES-256)
+          |
+          +---> Custom SMTP Routing ---> Port 587 (STARTTLS) / Port 465 (Implicit SSL)
+          |
+          +---> Internal System Relay -> Dedicated Secure Relay Infrastructure
+```
+
+- **Transport Layer Security:** All HTTP interactions (API requests, dashboard rendering, webhook postbacks) require **TLS 1.2 or TLS 1.3**.
+- **HMAC Webhook Signatures:** Outbound webhooks can be signed with an HMAC-SHA256 secret key (`X-FormMail-Signature`), allowing receiving API servers to verify request authenticity and prevent spoofing.
+- **SMTP Authentication Security:** Custom SMTP passwords and API Keys (such as AWS SES IAM credentials or SendGrid API Keys) are encrypted at rest using Google Workspace secure property storage.
+
+---
+
+## 5. Ecosystem Feature Availability & Security Boundaries
+
+As detailed across the product architecture, capabilities are partitioned based on entry points to preserve application security and resource isolation:
+
+| Security & Operational Capability | Entry-Point Forms Add-ons<br/>*(Confirmation, Form to Email, SMTP)* | Core Google Sheets Add-on<br/>*(FormMail Hub)* |
+| :--- | :---: | :---: |
+| **Trigger Auto-responder Execution** | Enabled | Enabled |
+| **Custom SMTP Authentication** | Enabled | Enabled |
+| **Audit Log Storage** | Recent Memory Buffer | Full Persistent Spreadsheet Logs |
+| **Subscriber Database Storage Access** | Isolated Trigger Context | Full Spreadsheet Cell Access |
+| **Broadcast Campaign Engine (Bulk Sending)** | 🚫 **DISABLED** | ✅ **FULLY ENABLED** |
+
+### Architectural Security Reason for Campaign Restriction:
+Bulk broadcast dispatches require reading and processing broad tabular datasets across thousands of spreadsheet rows. Google Forms entry points operate under tight execution limits (30-second trigger timeouts) and lack direct cell-vector read authorization. Enforcing bulk campaigns exclusively inside the **FormMail Hub Google Sheets Core Add-on** ensures appropriate dataset authorization, longer background processing windows, and complete audit logging.
+
+---
+
+## 6. Enterprise Admin Controls & Domain Deployment
+
+Google Workspace Super Administrators can manage FormMail Hub deployment centrally across their entire enterprise domain:
+
+### Domain-Wide Installation Instructions
+1. Log into the **Google Workspace Admin Console** (`admin.google.com`).
+2. Navigate to **Apps** > **Google Workspace Marketplace apps** > **Apps list**.
+3. Search for **FormMail Hub** and select **Domain Install**.
+4. Review and grant requested OAuth scopes for all organizational units (OUs) or selected groups.
+5. Once installed, the add-on becomes available in Google Forms and Google Sheets for all authorized domain users without requiring individual OAuth consent prompts.
+
+### Restricting External SMTP Access
+Enterprise security administrators can enforce corporate routing policies by mandating that users connect only verified corporate relays (`smtp.yourdomain.com` or Google Workspace App Passwords) rather than external third-party SMTP servers, maintaining unified DMARC alignment.
+
+---
+
+*Google Forms™, Google Sheets™, Google Cloud™, and Gmail™ are trademarks of Google LLC.*
