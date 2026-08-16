@@ -1,0 +1,202 @@
+---
+title: Webhooks & External Integrations Guide
+description: Step-by-step instructions for connecting Google Forms responses to Slack, Microsoft Teams, Discord, and custom HTTP REST webhook endpoints using FormMail Hub.
+---
+
+While automated emails deliver essential respondent communications, many organizations rely on instant chat alerts and workflow automation platforms to process incoming form responses. **FormMail Hub** provides built-in webhook and third-party integration routing, allowing form submissions to trigger real-time notifications in **Slack**, **Microsoft Teams**, **Discord**, or custom API endpoints.
+
+This guide provides step-by-step configuration instructions for popular collaboration tools and details how to craft custom JSON payloads using dynamic response tags.
+
+---
+
+## 1. Webhook Architecture & Integration Overview
+
+When a user submits a connected Google Form™, FormMail Hub extracts submission responses and evaluates routing rules. If a webhook destination is configured, the system serializes submission variables into a structured JSON payload and dispatches an HTTP POST request to the specified endpoint.
+
+```
++-----------------------------------------------------------------------------------+
+|                            Google Form™ Submission                                |
++-----------------------------------------------------------------------------------+
+                                          |
+                                          v
++-----------------------------------------------------------------------------------+
+|                           FormMail Hub Engine                                     |
++-----------------------------------------------------------------------------------+
+                  /                                       \
+                 v                                         v
++----------------------------------+     +------------------------------------------+
+| Email Dispatch Pipeline          |     | Webhook Integration Pipeline             |
+| (Custom SMTP / System Relay)     |     | (Slack, Teams, Discord, Custom HTTP POST)|
++----------------------------------+     +------------------------------------------+
+```
+
+### Supported Integration Types
+- **Slack Incoming Webhooks:** Send rich formatted messages, alert blocks, and summary attachments directly into targeted Slack channels.
+- **Discord Webhooks:** Broadcast form submissions as rich embed cards to designated Discord channels.
+- **Microsoft Teams Workflow Webhooks:** Route notifications to Teams channels via Workflows or WorkSpace connectors.
+- **Custom HTTP REST Webhooks:** Dispatch standard or custom JSON payloads to custom server endpoints, Zapier, Make.com, or AWS API Gateways with custom header authentication.
+
+---
+
+## 2. Integration Setup Walkthroughs
+
+### Provider A: Slack Incoming Webhooks
+
+1. **Create an App or Webhook in Slack:**
+   - Navigate to [Slack API: Applications](https://api.slack.com/apps) and log into your workspace.
+   - Click **Create New App** > **From scratch**, name your app (e.g., `FormMail Hub Alerts`), and select your Slack workspace.
+   - Under **Features**, select **Incoming Webhooks**.
+   - Toggle **Activate Incoming Webhooks** to **On**.
+   - Click **Add New Webhook to Workspace**, select the target channel (e.g., `#leads` or `#support-tickets`), and click **Allow**.
+   - Copy the generated Webhook URL (format: `https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX`).
+
+2. **Configure Webhook in FormMail Hub:**
+   - Launch FormMail Hub from your Google Form™ or Google Sheet™.
+   - Go to **Settings > Webhooks & Integrations > + Add Webhook Target**.
+   - Select **Target Type: Slack**.
+   - Paste the copied **Slack Webhook URL**.
+   - Select or craft your message template using dynamic response tags (e.g., `New Lead: {First Name} from {Company}`).
+   - Click **Send Test Payload** and verify receipt in your Slack channel.
+
+---
+
+### Provider B: Discord Webhooks
+
+1. **Obtain Webhook URL from Discord:**
+   - Open Discord, navigate to your server, and click the gear icon next to the desired text channel (**Edit Channel**).
+   - Go to **Integrations > Webhooks** and click **New Webhook**.
+   - Customize the bot name (e.g., `FormMail Bot`) and copy the **Webhook URL**.
+
+2. **Configure Webhook in FormMail Hub:**
+   - In FormMail Hub, select **Settings > Webhooks & Integrations > + Add Webhook Target**.
+   - Select **Target Type: Discord**.
+   - Paste the **Discord Webhook URL**.
+   - Enable **Rich Embed Card Format** to display submitted fields in styled key-value pairs.
+   - Save and test the configuration.
+
+---
+
+### Provider C: Microsoft Teams (Power Automate / Workflow)
+
+1. **Generate Webhook URL in MS Teams:**
+   - Open Microsoft Teams, navigate to the target channel, click `...` (More Options), and select **Workflows**.
+   - Search for **"Post to a channel when a webhook request is received"**.
+   - Complete the prompt and copy the generated HTTP POST URL.
+
+2. **Configure Webhook in FormMail Hub:**
+   - In FormMail Hub, select **Settings > Webhooks & Integrations > + Add Webhook Target**.
+   - Select **Target Type: Microsoft Teams**.
+   - Paste the Workflow URL into the URL field.
+   - Click **Save Webhook Rule**.
+
+---
+
+## 3. Custom REST Webhook JSON Payload Schema
+
+For advanced workflow automation (e.g., sending responses directly to your internal database, CRM, or AWS Lambda function), select **Custom HTTP POST**.
+
+### Default JSON Output Schema
+
+When **Default Form Payload** is selected, FormMail Hub posts the following JSON payload structure to your endpoint:
+
+```json
+{
+  "eventId": "evt_8f7d6e5c4b",
+  "timestamp": "2026-03-31T15:10:00.000Z",
+  "formId": "1FAIpQLSc...",
+  "formTitle": "Customer Support Ticket Intake",
+  "responseId": "sub_9876543210",
+  "submitterEmail": "client@example.com",
+  "responses": {
+    "Full Name": "Jane Doe",
+    "Company": "Acme Corp",
+    "Support Tier": "Enterprise",
+    "Issue Summary": "API authentication timing out on endpoint /v1/auth"
+  },
+  "metadata": {
+    "source": "FormMail Hub Engine",
+    "version": "2.4.0"
+  }
+}
+```
+
+### Custom JSON Payload Builder
+
+You can construct custom JSON structures using dynamic tag parameters. 
+
+#### Example Custom Payload Configuration:
+
+```json
+{
+  "lead_source": "Google Forms",
+  "customer": {
+    "name": "{Full Name}",
+    "email": "{Submitter Email}",
+    "organization": "{Company}"
+  },
+  "ticket_details": {
+    "priority": "{Support Tier}",
+    "description": "{Issue Summary}",
+    "submitted_at": "{Submission Date}"
+  }
+}
+```
+
+During execution, FormMail Hub evaluates all `{Tag Name}` variables and replaces them with sanitized values from the form submission.
+
+---
+
+## 4. Webhook Security & Custom Authentication Headers
+
+To secure your receiving endpoint against unauthorized dispatches, FormMail Hub supports custom HTTP headers and HMAC signatures.
+
+### Custom Headers
+You can attach custom headers to outgoing webhook HTTP POST requests:
+
+- **Bearer Token Authentication:**
+  - Header Key: `Authorization`
+  - Header Value: `Bearer your_secret_api_token_here`
+- **API Key Headers:**
+  - Header Key: `X-API-Key`
+  - Header Value: `your-custom-api-key`
+
+### HMAC SHA-256 Payload Verification
+When a **Webhook Secret Key** is provided in FormMail Hub settings, the engine includes a signature header in every HTTP request:
+
+```txt
+X-FormMail-Signature: t=1774969800,v1=a8f9c1d2e...
+```
+
+Receiving servers can verify this signature by computing an HMAC-SHA256 signature using the raw request body and secret key, ensuring request authenticity and payload integrity.
+
+---
+
+## 5. Webhooks vs. Campaign Engine (Ecosystem Context)
+
+When configuring webhooks and third-party integrations, it is important to keep the FormMail Hub architecture in mind:
+
+| Integration / Pipeline | Real-Time Trigger (Forms & Sheets) | Campaign Engine (Sheets Core Only) |
+| :--- | :---: | :---: |
+| **Transactional Webhooks (Slack/Teams/REST)** | ✅ **Supported** | ❌ N/A |
+| **Email Auto-Responders & Alerts** | ✅ **Supported** | ✅ **Supported** |
+| **Bulk Email Marketing Campaigns** | 🚫 **Disabled in Forms Add-ons** | ✅ **Fully Enabled** |
+
+*Note: Real-time webhooks fire synchronously or asynchronously upon individual submission events across both Google Forms™ entry add-ons and the Google Sheets™ core application. Bulk marketing dispatches operate strictly within the Google Sheets core add-on.*
+
+---
+
+## 6. Diagnostic Logging & Troubleshooting
+
+All outgoing webhook HTTP POST attempts are recorded in the **FormMail Hub Audit Log** (`Settings > Audit Log`).
+
+| Audit Status Code | Meaning | Remediation Step |
+| :--- | :--- | :--- |
+| `WEBHOOK_DELIVERED` | HTTP `200 OK` or `204 No Content` returned by remote server. | Execution successful. No action required. |
+| `ERR_WEBHOOK_TIMEOUT` | Remote server failed to respond within 10 seconds. | Check target API health or increase endpoint processing speed. |
+| `ERR_WEBHOOK_401` | HTTP `401 Unauthorized` or `403 Forbidden`. | Verify Authorization Bearer tokens or API keys in header settings. |
+| `ERR_WEBHOOK_404` | Destination URL returned `404 Not Found`. | Re-check webhook URL string for missing paths or typos. |
+| `ERR_WEBHOOK_429` | Remote API rate-limited the incoming request. | Enable automatic exponential backoff retries in Webhook settings. |
+
+---
+
+*Google Forms™ and Google Sheets™ are trademarks of Google LLC. Slack, Microsoft Teams, and Discord are trademarks of their respective owners.*
