@@ -1,0 +1,141 @@
+---
+title: Email Provider Quotas, Rate Limits & Protocol Specifications
+description: Technical reference detailing daily sending quotas, hourly rate throttling, network port protocols, authentication requirements, and delivery optimization across all supported email channels in FormMail Hub.
+---
+
+This technical reference provides an exhaustive specification of daily sending volumes, rate-limiting behavior, network transport protocols, and authentication mechanics supported by **FormMail Hub**. It covers both default Google Workspace transport limits and external transactional SMTP providers.
+
+---
+
+## 1. Transport Engine Architecture & Quota Allocation
+
+FormMail Hub employs an intelligent dual-routing dispatch architecture designed to optimize sending limits and eliminate unnecessary quota consumption.
+
+```
++-----------------------------------------------------------------------------------+
+|                             FORM MAIL HUB DISPATCH ENGINE                         |
++-----------------------------------------------------------------------------------+
+                                  |                      |
+          +-----------------------+                      +-----------------------+
+          |                                                              |
+          v                                                              v
++-----------------------------------+                          +-----------------------------------+
+|      INTERNAL TEAM NOTIFICATIONS  |                          |     RESPONDENT AUTO-RESPONDERS    |
+|       & ADMINISTRATIVE ALERTS     |                          |      & BROADCAST CAMPAIGN ENGINE   |
++-----------------------------------+                          +-----------------------------------+
+| Routing: System Relay Infrastructure|                          | Routing: User Custom SMTP         |
+| Impact: 0% Personal Quota Used    |                          | (Amazon SES, SendGrid, Mailgun,   |
+| Target: Admins, Reviewers, Teams  |                          |  Google Workspace App Password)   |
++-----------------------------------+                          +-----------------------------------+
+```
+
+### Dual-Routing System Breakdown
+- **Internal System Relay:** FormMail Hub routes administrative alerts, team notifications, and system warnings through dedicated infrastructure. This guarantees **0% consumption** of your personal or organization's daily SMTP quota.
+- **Custom SMTP Transport:** Client-facing emails (auto-responders, multi-step triggers, and bulk marketing campaigns) run strictly through your configured SMTP server, granting full ownership over domain reputation, DKIM signing, and daily sending volume.
+
+---
+
+## 2. Provider Capability & Protocol Matrix
+
+The following matrix outlines standard capabilities, connection ports, default limits, and feature support across all supported email dispatch channels:
+
+| Email Provider / Route | Standard Daily Quota | Max Burst Rate | Supported Ports | Security Protocol | Broadcast Campaigns Supported? |
+| :--- | :--- | :--- | :--- | :--- | :---: |
+| **Amazon SES** | 10,000 to 1,000,000+ | Up to 500 msgs/sec | 587, 465, 2525 | STARTTLS / TLS | ✅ **Yes** (Sheets Core Only) |
+| **SendGrid (Twilio)** | 100/day (Free) to Unlimited | Provider Tiered | 587, 465, 2525 | STARTTLS / TLS | ✅ **Yes** (Sheets Core Only) |
+| **Mailgun** | Account Tiered | 100 msgs/sec | 587, 465, 2525 | STARTTLS / TLS | ✅ **Yes** (Sheets Core Only) |
+| **Postmark** | Account Tiered | 300 msgs/sec | 587, 25, 2525 | STARTTLS / TLS | ✅ **Yes** (Sheets Core Only) |
+| **Google Workspace SMTP** | 1,500 / day / user | ~1 msg/sec | 587, 465 | STARTTLS / TLS | ✅ **Yes** (Sheets Core Only) |
+| **Free Gmail™ SMTP** | 500 / day / user | ~1 msg/sec | 587, 465 | STARTTLS / TLS | ⚠️ **Limited** (Max 500/day) |
+| **Custom Corporate SMTP** | Server-Defined | Server-Defined | 587, 465, 25 | STARTTLS / SSL | ✅ **Yes** (Sheets Core Only) |
+
+*Note on Campaign Support: As detailed in the [Ecosystem Architecture](/reference/ecosystem-architecture/), bulk email broadcast campaigns require contact list indexing stored in Google Sheets cell vectors. Consequently, campaign dispatch is **ONLY** enabled when launching FormMail Hub from the Google Sheets core add-on.* 
+
+---
+
+## 3. Detailed Provider Technical Specifications
+
+### A. Amazon SES (Simple Email Service)
+- **Authentication Mechanism:** IAM User Credentials (Access Key ID & Secret Key generated under SMTP Settings).
+- **Hostname Convention:** `email-smtp.{region}.amazonaws.com` (e.g., `email-smtp.us-east-1.amazonaws.com`).
+- **Sandbox Restrictions:** New SES accounts are placed in the AWS Sandbox environment. Outbound emails are restricted to verified recipient addresses until a **Production Access Request** is approved in the AWS Console.
+- **Rate Limiting:** Default production quota begins at 14 emails/second and scales automatically up to several hundred messages per second based on bounce/complaint metrics.
+
+### B. SendGrid
+- **Authentication Mechanism:** API Key authentication using the fixed username `apikey` and the generated API Key string as the password.
+- **Hostname:** `smtp.sendgrid.net`
+- **Port Configuration:** Recommended Port `587` with TLS encryption.
+- **Sender Verification:** Requires Single Sender Verification or full Domain Authentication (CNAME DNS records for SPF/DKIM alignment).
+
+### C. Google Workspace & Gmail™ App Passwords
+- **Authentication Mechanism:** 16-character Google App Password (requires 2-Step Verification enabled on the Google Account).
+- **Hostname:** `smtp.gmail.com`
+- **Port Configuration:** Port `587` (TLS) or Port `465` (SSL).
+- **Quota Escalation Rules:**
+  - **Trial Workspace Accounts:** Restricted to 500 emails/day.
+  - **Paid Workspace Accounts:** Up to 1,500 emails/day.
+  - **Recipient Limits:** A single email sent to 50 CC/BCC recipients counts as 50 separate units against the daily quota.
+
+### D. Custom On-Premise & Corporate SMTP Relays
+- **Supported Encryption:** STARTTLS, explicit TLS, and SSL.
+- **IP Whitelisting Requirements:** If your corporate firewall restricts outbound relays, ensure standard Google Cloud Apps Script egress IP ranges are permitted.
+
+---
+
+## 4. Rate Limiting, Queueing & Batch Execution Engine
+
+To prevent provider connection timeouts and adhere to remote rate limits, FormMail Hub executes outgoing email requests through an automated queuing engine:
+
+```
+[ Submit Event / Campaign Schedule ]
+                 |
+                 v
+     [ Queue Buffering Stage ]
+                 |
+                 +---> Check Batch Chunk Size (e.g., 50 recipients)
+                 |
+                 v
+    [ Execute Remote SMTP Handshake ]
+                 |
+        +--------+--------+
+        |                 |
+        v                 v
+   (Success 250)    (Rate Limited 421/451)
+        |                 |
+        v                 v
+[ Log Delivered ]   [ Exponential Backoff Delay ]
+                          |
+                          v
+                   [ Re-queue Job ]
+```
+
+### Queue Execution Mechanics
+1. **Batch Chunking:** Outbound bulk broadcasts are segmented into discrete execution chunks to stay within Google Apps Script runtime constraints (6 minutes max execution duration per thread).
+2. **Exponential Backoff:** If a remote SMTP server returns temporary soft error codes (`421 Try again later`, `451 Transient Local Error`, or `452 Too many recipients`), FormMail Hub automatically buffers the unsent messages and reschedules execution across exponential backoff intervals.
+3. **Hard Failure Circuit Breaker:** If a connection encounters standard authentication failures (`535 Authentication Credentials Invalid`) or hard bounces (`550 Recipient Unknown`), dispatch to that target is halted immediately and logged in the Audit Log.
+
+---
+
+## 5. Network Security, Ports & TLS Encryption Standards
+
+FormMail Hub supports secure socket connections across all industry-standard ports:
+
+- **Port 587 (Recommended):** Uses `STARTTLS`. The connection begins as unencrypted text and upgrades to secure TLS/SSL before credentials or payload data are transmitted.
+- **Port 465:** Uses `Implicit SSL/TLS`. The connection is encrypted from the initial TCP handshake.
+- **Port 2525:** Alternative TLS port commonly used when cloud hosting providers or local ISPs block standard outbound Port 25.
+- **Port 25 (Legacy):** Supported but not recommended due to widespread ISP egress filtering.
+
+---
+
+## 6. Diagnostic Quota Escalation & Remediation Matrix
+
+| Symptom / Error Code | Root Cause | Technical Remediation Strategy |
+| :--- | :--- | :--- |
+| `ERR_QUOTA_EXCEEDED` | Google Workspace daily email limit hit via native relay. | Switch delivery route to Custom SMTP (Amazon SES or SendGrid) in **Settings > SMTP Configuration**. |
+| `452 4.5.3 Too many recipients` | Provider single-transaction recipient limit exceeded. | Enable batch mode in FormMail Hub settings to deliver messages as individual transactions. |
+| `535 5.7.8 Auth Failed` | Google Account password used instead of App Password. | Enable 2FA on Google Account and generate a dedicated 16-character **App Password**. |
+| `SES Sandbox Limit Reached` | AWS SES account restricted to sandbox recipient list. | Submit an AWS SES Production Access request in the AWS SES Console. |
+
+---
+
+*Google Forms™, Google Sheets™, and Gmail™ are trademarks of Google LLC.*
