@@ -29,6 +29,7 @@ if os.path.exists(docs_dir):
 
 diff_context = code_diff if code_diff else "NO RECENT CODE CHANGES. Perform a routine documentation audit and expansion based on the current files."
 
+# CẬP NHẬT PROMPT: Đổi từ JSON sang cấu trúc thẻ đánh dấu (Custom Delimiters)
 prompt = f"""
 You are an expert technical writer and documentation architect for 'FormMail Hub'.
 Your task is to analyze the source code changes and dramatically expand the documentation.
@@ -52,20 +53,18 @@ STRICT REQUIREMENTS:
    - REFERENCE (Path: src/content/docs/reference/): Technical specifications, API details, configuration options, lists of dynamic variable tags, error codes, limits/quotas, or troubleshooting glossaries.
 4. ONE TOPIC PER UPDATE: Identify ONE missing topic. Write a highly detailed, comprehensive markdown page for it. Route it to the correct directory (guides/ or reference/) based on the categorization above. You may UPDATE an existing file or CREATE a new one.
 5. FRONTMATTER: Every file MUST have valid Frontmatter YAML at the top (title, description).
-6. JSON OUTPUT ONLY: You must return a valid JSON array. DO NOT wrap it in ```json.
-7. ESCAPING RULES (CRITICAL): 
-   - You MUST return perfectly valid JSON.
-   - Escape newlines as \\n and double quotes as \\" inside strings. 
-   - DO NOT use invalid JSON escapes like `\\|`. 
-   - If you write a Markdown table, simply use the standard pipe character `|`. DO NOT escape pipes.
+6. OUTPUT FORMAT (CRITICAL): DO NOT USE JSON! JSON parsing causes escaping issues with markdown tables and ASCII diagrams. You MUST use the exact custom text blocks format shown below.
 
-JSON STRUCTURE FORMAT:
-[
-  {{
-    "file_path": "src/content/docs/reference/dynamic-tags.mdx",
-    "content": "---\\ntitle: Dynamic Tags Reference\\ndescription: Comprehensive list of all supported dynamic variables and syntax.\\n---\\n\\nFull Markdown content goes here..."
-  }}
-]
+FORMAT TEMPLATE TO STRICTLY FOLLOW:
+@@@FILE_PATH: src/content/docs/reference/dynamic-tags.mdx
+@@@CONTENT:
+---
+title: Dynamic Tags Reference
+description: Comprehensive list of all supported dynamic variables and syntax.
+---
+
+Your markdown text, tables, and diagrams go here exactly as they should appear...
+@@@END_FILE
 """
 
 try:
@@ -76,31 +75,52 @@ try:
     )
 
     cleaned_text = response.text.strip()
-    if cleaned_text.startswith("```"):
-        cleaned_text = cleaned_text.split("\n", 1)[1]
-    if cleaned_text.endswith("```"):
-        cleaned_text = cleaned_text.rsplit("\n", 1)[0]
-    if cleaned_text.startswith("json\n"):
-        cleaned_text = cleaned_text[5:]
     
-    try:
-        docs_to_update = json.loads(cleaned_text, strict=False)
-    except json.JSONDecodeError as e:
-        print(f"❌ LỖI: AI không trả về đúng chuẩn JSON. Chi tiết lỗi: {e}")
-        print("Dữ liệu thô:")
+    # ---------------------------------------------------------
+    # HỆ THỐNG PARSER MỚI: Bất tử trước mọi lỗi Markdown/Escape
+    # ---------------------------------------------------------
+    docs_to_update = []
+    
+    # Tách các block file dựa trên thẻ @@@FILE_PATH:
+    blocks = cleaned_text.split("@@@FILE_PATH:")
+    
+    for block in blocks:
+        if not block.strip():
+            continue
+            
+        if "@@@CONTENT:" in block and "@@@END_FILE" in block:
+            try:
+                # Tách lấy đường dẫn
+                path_part, rest = block.split("@@@CONTENT:", 1)
+                file_path = path_part.strip()
+                
+                # Tách lấy nội dung
+                content = rest.split("@@@END_FILE")[0].strip()
+                
+                docs_to_update.append({
+                    "file_path": file_path,
+                    "content": content
+                })
+            except Exception as ex:
+                print(f"⚠️ Bỏ qua một block do lỗi phân tách: {ex}")
+                continue
+
+    if not docs_to_update:
+        print("❌ LỖI: Không tìm thấy block dữ liệu hợp lệ nào từ AI.")
+        print("Dữ liệu thô AI trả về:")
         print(cleaned_text)
         sys.exit(1)
 
+    # ---------------------------------------------------------
+    # GHI FILE
+    # ---------------------------------------------------------
     for item in docs_to_update:
         file_path = item.get("file_path")
         content = item.get("content")
         
-        if not file_path or not content:
-            continue
-            
-        # SỬA LỖI ĐƯỜNG DẪN: Giữ nguyên cấu trúc thư mục con (guides/ hoặc reference/) nếu AI trả thiếu src/content/docs
+        # Đảm bảo đường dẫn chính xác
         if not file_path.startswith("src/content/docs"):
-            file_path = file_path.lstrip("/") # Xóa dấu / ở đầu nếu có
+            file_path = file_path.lstrip("/") 
             file_path = os.path.join("src/content/docs", file_path)
 
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
