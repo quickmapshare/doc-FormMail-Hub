@@ -1,0 +1,142 @@
+---
+title: Dynamic Tags & HTML Email Template Customization Guide
+description: Master FormMail Hub's template engine, dynamic placeholders, response summaries, responsive HTML email design, and variable tags.
+---
+
+Standard transactional email triggers often feel generic or rigid. **FormMail Hub's Template & Dynamic Variable Engine** empowers you to create beautifully styled, highly personalized, and mobile-responsive email notifications and auto-responders that reflect your brand identity.
+
+By utilizing dynamic placeholders, custom HTML/CSS, dynamic summary tables, and automated compliance footer tags, you can construct targeted communications tailored to each form submission.
+
+---
+
+## 1. Dynamic Tag System Overview
+
+FormMail Hub extracts form responses and system metadata immediately upon submission, mapping them to dynamic tags wrapped in curly brackets: `{Tag Name}`. When an email trigger or broadcast campaign is initiated, these tags are instantly replaced with actual user input or metadata.
+
+### How Field Mapping Works
+- **Form Question Field Tags:** Any question defined in your Google Forms™ automatically becomes a dynamic tag matching the exact question text (e.g., a question titled `"What is your company name?"` becomes `{What is your company name?}`).
+- **Case Sensitivity:** Tags are case-insensitive, but maintaining exact matching with your form question labels ensures maximum readability and consistency.
+- **Dynamic Resiliency:** If you rename a form question in Google Forms™, FormMail Hub automatically updates internal mappings, keeping active templates functional.
+
+---
+
+## 2. Complete Dynamic Tag Reference Matrix
+
+Below is the comprehensive catalog of dynamic tags supported in FormMail Hub templates:
+
+### Standard Response Tags
+
+| Dynamic Tag | Source Data / Description | Example Output Value |
+| :--- | :--- | :--- |
+| `{Question Title}` | Dynamically retrieves the answer for the specified form field. | `Jane Doe` |
+| `{Form Summary}` | Formats all submitted questions and answers into a responsive HTML table. | *Full HTML table of all answers* |
+| `{Form Title}` | The official title of the Google Form. | `Customer Onboarding Intake` |
+| `{Response ID}` | Unique system identifier assigned to the submission. | `r_9f8a3b21` |
+| `{Submission Date}` | Localized timestamp of when the form was completed. | `March 31, 2026, 14:30 EST` |
+| `{Submitter Email}` | Collects the email address entered in the form's primary email input. | `alex@example.com` |
+
+### System & Compliance Metadata Tags
+
+| Dynamic Tag | Source Data / Description | Example Output Value |
+| :--- | :--- | :--- |
+| `{Unsubscribe link}` | Renders a unique, CAN-SPAM/GDPR compliant opt-out URL. | `https://hub.formmailhub.com/optout?id=...` |
+| `{Form Response URL}` | Generates an edit link allowing respondents to view/update their submission. | `https://docs.google.com/forms/d/e/.../viewform?edit2=...` |
+| `{App Portal URL}` | Direct link to the FormMail Hub administration documentation and settings. | `https://doc.formmailhub.com/` |
+
+---
+
+## 3. Visual & HTML Code Editors
+
+FormMail Hub provides two flexible authoring modes for designing email templates:
+
+### Mode A: Rich Text / WYSIWYG Editor
+Ideal for non-technical users who want to craft clean, professional emails quickly without touching raw code.
+- **Formatting Options:** Bold, italic, underline, list bullets, text alignment, and font coloring.
+- **Tag Inserter:** A dropdown menu allowing instant insertion of dynamic tags into the subject line or message body.
+- **Link Builder:** Tool for attaching dynamic URLs or formatting CTA buttons.
+
+### Mode B: Advanced HTML / Code Editor
+Built for developers and marketers who require full custom branding, complex nested tables, dark-mode styling, and embedded CSS.
+- **Full Control:** Supports standard HTML5 elements (`<div>`, `<table>`, `<img>`, `<a>`, `<span>`).
+- **Inline CSS Injection:** Mail client engines (e.g., Outlook, Gmail, Apple Mail) render HTML best when CSS styles are applied inline (e.g., `<td style="color: #1e293b; padding: 12px;">`).
+- **Responsive Media Queries:** Support for embedded `<style>` blocks in the `<head>` for responsive email layouts across desktop and mobile devices.
+
+---
+
+## 4. Customizing `{Form Summary}` Tables
+
+The `{Form Summary}` tag automatically renders a structured summary table containing every form question answered by the respondent. FormMail Hub allows you to customize the styling and display rules of this table:
+
+### Table Customization Settings
+- **Hide Empty Fields:** Toggling this setting ensures questions left blank by the user are hidden, keeping emails clean and concise.
+- **Theme Palette:** Select pre-designed visual themes (e.g., *Modern Slate*, *Corporate Blue*, *Minimal Light*, *Dark Mode*).
+- **Custom CSS Table Classes:** Inject custom CSS parameters to match your corporate typography, border radius, and padding preferences.
+
+---
+
+## 5. Step-by-Step Guide: Designing an Onboarding Auto-Responder
+
+Follow these steps to construct a personalized auto-responder email template:
+
+1. Launch **FormMail Hub** in Google Forms™.
+2. Go to **Email Templates** > **+ Create New Template**.
+3. Set the **Template Name** (e.g., `Client Onboarding Welcome`).
+4. Set the **Email Subject**:
+   ```text
+   Welcome to the Program, {First Name}! [Ref #{Response ID}]
+   ```
+5. Switch to the **HTML Code Editor** and paste the optimized responsive HTML layout:
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f8fafc; color: #334155; margin: 0; padding: 20px; }
+    .card { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 8px; border: 1px solid #e2e8f0; overflow: hidden; }
+    .header { background-color: #2563eb; color: #ffffff; padding: 24px; text-align: center; }
+    .content { padding: 32px; }
+    .button { display: inline-block; background-color: #2563eb; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: bold; margin-top: 16px; }
+    .footer { background-color: #f1f5f9; padding: 16px; text-align: center; font-size: 12px; color: #64748b; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="header">
+      <h1 style="margin:0; font-size:22px;">Welcome Aboard, {First Name}!</h1>
+    </div>
+    <div class="content">
+      <p>Hello <strong>{First Name} {Last Name}</strong>,</p>
+      <p>Thank you for submitting your onboarding intake for <strong>{Company Name}</strong>. We have received your details on {Submission Date}.</p>
+      
+      <h3 style="border-bottom: 2px solid #e2e8f0; padding-bottom: 8px;">Your Submission Details</h3>
+      {Form Summary}
+
+      <p>Our team is currently reviewing your information. You can edit your submission anytime using the button below:</p>
+      <a href="{Form Response URL}" class="button">Review or Update Submission</a>
+    </div>
+    <div class="footer">
+      <p>Sent via FormMail Hub Engine. If you wish to opt out, <a href="{Unsubscribe link}">click here to unsubscribe</a>.</p>
+    </div>
+  </div>
+</body>
+</html>
+```
+
+6. Click **Save Template**.
+7. Navigate to **Email Rules**, attach this template to your trigger, and select your configured **Custom SMTP** server.
+
+---
+
+## 6. Testing & Live Preview Workflows
+
+Before deploying a template to live users, verify variable substitution and layout rendering across different email clients:
+
+- **Send Test Submission Email:** Click **Send Test Email** in the template editor to dispatch a sample email populated with test or mock data.
+- **Mobile Responsiveness Verification:** Open test emails on both mobile devices and desktop clients (Outlook, Gmail, Apple Mail) to check for proper padding, table layout, and button scaling.
+- **Link & Dynamic Tag Audit:** Click all links in the test email to confirm that `{Form Response URL}` and `{Unsubscribe link}` tags resolve properly.
+
+---
+
+*Google Forms™ and Gmail™ are trademarks of Google LLC.*
