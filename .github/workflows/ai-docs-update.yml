@@ -23,6 +23,7 @@ jobs:
       - name: Run AI Update Script
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          CODE_DIFF: ${{ github.event.client_payload.code_diff }} # Nhận code diff ở đây
         run: python .github/scripts/update_docs.py
 
       - name: Commit and Push Changes
