@@ -37,10 +37,12 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add src/content/docs/index.mdx
+          
+          # Đã đổi: Add toàn bộ thư mục docs/ để bắt được các file mới AI tạo ra
+          git add src/content/docs/
           
           # Kiểm tra nếu có thay đổi thì mới commit
-          git diff --quiet && git diff --staged --quiet || git commit -m "docs: auto-update documentation via Gemini AI [English]"
+          git diff --quiet && git diff --staged --quiet || git commit -m "docs: AI auto-generated new pages & updates [English]"
           
           # 3. Ép push bằng token có quyền write
           git push origin HEAD:main
