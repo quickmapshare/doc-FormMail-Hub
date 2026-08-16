@@ -6,7 +6,7 @@ print("========================================")
 print("🚀 UPDATE DOCS SCRIPT")
 
 # Khai báo model ở đây để dùng chung
-MODEL_NAME = "gemini-2.5-flash"
+MODEL_NAME = "gemini-2.5-flash-lite"
 print(f"🤖 Gemini model: {MODEL_NAME}")
 
 api_key = os.environ.get("GEMINI_API_KEY")
