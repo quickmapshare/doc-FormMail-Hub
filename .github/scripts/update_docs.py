@@ -2,7 +2,6 @@ import os
 import sys
 from google import genai
 
-# 1. Kiểm tra API Key
 api_key = os.environ.get("GEMINI_API_KEY")
 if not api_key:
     print("❌ LỖI: Chưa tìm thấy GEMINI_API_KEY trong Repo Secrets!")
@@ -38,6 +37,7 @@ STRICT REQUIREMENTS:
 """
 
 try:
+    # Đã đổi model thành gemini-2.5-flash
     response = client.models.generate_content(
         model="gemini-2.5-flash",
         contents=prompt
