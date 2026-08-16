@@ -39,7 +39,7 @@ STRICT REQUIREMENTS:
 try:
     # Đã cập nhật đúng tên model: gemini-2.5-flash
     response = client.models.generate_content(
-        model="gemini-2.0-flash",
+        model="gemini-flash",
         contents=prompt
     )
 
