@@ -17,12 +17,13 @@ export default defineConfig({
             sidebar: [
                 {
                     label: 'Guides',
-                    // SỬA DÒNG NÀY: Tự động quét toàn bộ file trong thư mục guides
-                    autogenerate: { directory: 'guides' },
+                    // Đã đưa autogenerate vào trong items
+                    items: [{ autogenerate: { directory: 'guides' } }],
                 },
                 {
                     label: 'Reference',
-                    autogenerate: { directory: 'reference' },
+                    // Đã đưa autogenerate vào trong items
+                    items: [{ autogenerate: { directory: 'reference' } }],
                 },
             ],
             customCss: ['./src/styles/global.css'],
