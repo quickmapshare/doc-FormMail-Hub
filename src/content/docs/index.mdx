@@ -83,6 +83,27 @@ import { Card, CardGrid } from '@astrojs/starlight/components';
 	</Card>
 </CardGrid>
 
+## Custom SMTP Setup & Quota Optimization
+
+Standard Google Forms™ email triggers rely on your default Google Workspace daily sending quotas, which can severely limit outreach for high-volume forms. FormMail Hub resolves this constraint by enabling custom **SMTP integration**, providing complete control over email delivery, sender identity, and daily volume capacity.
+
+### High-Volume Email Delivery Solutions
+
+Connecting your own SMTP server allows you to send thousands of automated auto-responders daily without encountering standard Google Workspace limits:
+
+- **Free Gmail™ SMTP Integration:** Increase standard sending capacity up to **500 custom emails per day** using your own Gmail™ credentials.
+- **Transactional Email Providers (Amazon SES, SendGrid, Mailgun):** Scale seamless transactional email delivery up to **10,000+ emails per day** with enterprise-grade deliverability and domain verification.
+- **Custom Domain Branding:** Send emails directly from your corporate email domain (e.g., `support@yourcompany.com`) rather than default Google Apps scripts addresses.
+
+### Intelligent Dual-Routing Architecture
+
+To maximize your sending quota efficiency, FormMail Hub separates internal operations from external client communication:
+
+1. **Internal Notification Routing:** Form Mail Hub handles team and administrator submission alerts through a dedicated delivery infrastructure. This ensures zero consumption of your personal or business SMTP daily quota.
+2. **Client Auto-Responder Routing:** Customer-facing confirmation emails and auto-responder sequences run strictly through your configured SMTP server, guaranteeing 100% of your allocated quota goes directly to client engagement.
+
+---
+
 ## Built for Every Use Case
 
 Whether you are a **Business Owner**, **Educator**, **Marketer**, or **Event Organizer**, FormMail Hub streamlines lead management, optimizes customer care, and renders form automation effortless.
