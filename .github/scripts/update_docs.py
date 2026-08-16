@@ -36,6 +36,12 @@ STRICT REQUIREMENTS:
 5. Return ONLY the raw MDX content without any wrapper like ```mdx.
 """
 
+print("========================================")
+print("🚀 UPDATE DOCS SCRIPT")
+print(f"📄 Script: {os.path.abspath(__file__)}")
+print(f"🤖 Gemini model: {MODEL_NAME}")
+print("========================================")
+
 try:
     # Đã cập nhật đúng tên model: gemini-3.6-flash
     response = client.models.generate_content(
