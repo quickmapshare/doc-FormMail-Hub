@@ -1,0 +1,111 @@
+---
+title: Broadcast Campaigns & Lead List Management Guide
+description: Master setting up bulk email broadcast campaigns, managing collected form respondents, contact segmentation, and unsubscribe compliance in FormMail Hub.
+---
+
+While real-time transactional auto-responders send single emails immediately upon form completion, **FormMail Hub's Broadcast Campaign Engine** enables you to engage your collected lead database with targeted newsletters, product updates, event announcements, and follow-up email series.
+
+This guide covers lead indexing, audience segmentation, campaign creation workflows, CAN-SPAM/GDPR compliance management, and deliverability optimization.
+
+---
+
+## 1. Automated Lead Indexing & Contact Management
+
+Every time a respondent fills out a Google Form™ connected to FormMail Hub, the system automatically indexes their response into a central subscriber list associated with that form.
+
+### Key Capabilities of Contact Indexing
+- **Zero Manual Exporting:** Eliminates the need to download CSV files from Google Sheets™ or copy-paste email addresses into external CRM platforms.
+- **Metadata Mapping:** Captures submission timestamps, individual field responses (e.g., job title, location, interest tier), and consent status.
+- **Deduplication:** Automatically handles duplicate form submissions from the same respondent, maintaining a clean unique contact registry.
+
+---
+
+## 2. Audience Segmentation & Dynamic Filters
+
+Sending generic mass emails to your entire contact list can lower engagement and increase spam complaints. FormMail Hub allows you to filter and segment collected leads using submission data.
+
+### Common Segmentation Rules
+- **Date-Based Filtering:** Target respondents who submitted forms within a specific date range (e.g., leads collected in Q1 or within the last 30 days).
+- **Response Value Matching:** Filter contacts based on specific form choices (e.g., target only users who selected `"Interested in Enterprise Plan"` or `"Location = New York"`).
+- **Opt-In Status Filter:** Automatically exclude addresses that have unsubscribed or bounced during previous campaigns.
+
+---
+
+## 3. Step-by-Step Walkthrough: Launching a Broadcast Campaign
+
+Follow these steps to build and dispatch a targeted email broadcast:
+
+### Step 1: Open the Campaign Studio
+1. Launch **FormMail Hub** from your Google Form™ or access the dashboard via the documentation portal at [https://doc.formmailhub.com/](https://doc.formmailhub.com/).
+2. In the navigation sidebar, select **Campaigns** > **+ Create Broadcast**.
+
+### Step 2: Select Target Audience & Source Form
+1. Choose the source **Google Form** from which contacts were collected.
+2. Apply any required **Segment Filters** (e.g., `Submission Date >= 2026-01-01` AND `Plan = Premium`).
+3. View the live estimated recipient count to verify list accuracy.
+
+### Step 3: Design Email Content & Dynamic Personalization
+1. Choose your authoring mode (**Rich Text** or **Advanced HTML Editor**).
+2. Specify the **Subject Line**, incorporating dynamic personalization tags:
+   ```text
+   Exclusive Update for {Company Name} - Spring 2026 Preview
+   ```
+3. Craft the email body, utilizing personal tags such as `{First Name}`, `{Submission Date}`, or custom field values.
+
+### Step 4: Add Required Compliance Elements
+To maintain CAN-SPAM and GDPR compliance, every marketing email must contain an active opt-out link. Insert the mandatory tag:
+```html
+<p style="font-size: 12px; color: #64748b;">
+  You are receiving this email because you registered on our site. 
+  <a href="{Unsubscribe link}">Click here to unsubscribe</a> at any time.
+</p>
+```
+
+### Step 5: Select Email Delivery Route & Schedule
+1. **Select Sender Identity / SMTP Profile:** Choose between your verified **Custom SMTP** (Amazon SES, SendGrid, Mailgun) or Google Workspace account.
+2. **Dispatch Mode:** Select **Send Immediately** or set a scheduled date and time for automated future delivery.
+3. Click **Dispatch Campaign**.
+
+---
+
+## 4. Compliance, Opt-Out Handling & Suppression Lists
+
+FormMail Hub handles compliance automatically to protect your domain's reputation and adhere to global email privacy standards.
+
+### How `{Unsubscribe link}` Works
+1. When a recipient clicks `{Unsubscribe link}`, they are directed to a hosted secure confirmation page.
+2. Upon confirmation, their email address is flagged as `SUPPRESSED` in your FormMail Hub database.
+3. **Automated Blocking:** Future broadcast campaigns and transactional auto-responders automatically skip suppressed email addresses, returning an internal log status of `OPT_OUT_SKIPPED`.
+
+### Managing Your Suppression List
+- View, search, or manually add unsubscribed contacts under **Campaigns** > **Suppression List**.
+- Export suppression records for internal compliance audits.
+
+---
+
+## 5. High-Volume Dispatch & Rate Limiting
+
+When sending broadcasts to thousands of contacts, provider daily limits must be managed:
+
+| Sending Route | Max Daily Broadcast Quota | Best Strategy |
+| :--- | :--- | :--- |
+| **Free Gmail™ SMTP** | 500 emails / day | Suitable for small lists and community notifications. |
+| **Google Workspace SMTP** | Up to 1,500 emails / day | Good for medium business outreach. |
+| **Amazon SES / SendGrid** | 10,000+ emails / day | Essential for high-volume marketing broadcasts and transactional series. |
+
+*Tip: Connect Amazon SES or SendGrid under **Settings > Custom SMTP** before scheduling dispatches exceeding 500 recipients to avoid standard Google rate limit errors (`ERR_QUOTA_EXCEEDED`).*
+
+---
+
+## 6. Campaign Analytics & Performance Diagnostics
+
+After dispatching a broadcast, track real-time delivery status in the **Campaign Analytics Dashboard**:
+
+- **Delivered Rate:** Percentage of messages successfully accepted by recipient mail servers.
+- **Hard / Soft Bounces:** Invalid email addresses are categorized and added to the diagnostic log.
+- **Unsubscribe Rate:** Track opt-out counts per campaign to measure content relevance.
+- **Retry Queue Status:** If a remote SMTP connection experiences temporary throttles, FormMail Hub buffers remaining messages and retries automatically.
+
+---
+
+*Google Forms™ and Gmail™ are trademarks of Google LLC.*
