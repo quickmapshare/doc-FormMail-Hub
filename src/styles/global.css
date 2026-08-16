@@ -9,53 +9,7 @@
     Configure your Tailwind theme that will be used by Starlight.
     https://starlight.astro.build/guides/css-and-tailwind/#styling-starlight-with-tailwind
     */
-    --color-brand: #7c3aed; /* Cấu hình thêm cho Tailwind nếu bạn muốn dùng class text-brand hoặc bg-brand */
 }
-
-/* ==========================================================
-   STARLIGHT THEME CONFIGURATION (FormMail Hub Brand Colors)
-   Mã màu chủ đạo: #7c3aed
-   ========================================================== */
-:root {
-  /* LIGHT MODE ACCENT COLORS (Màu Tím của FormMail Hub) */
-  --sl-color-accent-low: #f3e8ff;  /* Tương đương bg nhạt trong template email của bạn */
-  --sl-color-accent: #7c3aed;      /* Màu thương hiệu chính gốc */
-  --sl-color-accent-high: #4c1d95; /* Tím rất đậm để hiển thị text trên nền sáng */
-  
-  /* Các biến màu xám mặc định cho Light mode (để giao diện sạch sẽ) */
-  --sl-color-white: #ffffff;
-  --sl-color-gray-1: #0f172a;
-  --sl-color-gray-2: #334155;
-  --sl-color-gray-3: #64748b;
-  --sl-color-gray-4: #94a3b8;
-  --sl-color-gray-5: #cbd5e1;
-  --sl-color-gray-6: #f8fafc;
-  --sl-color-black: #000000;
-}
-
-/* DARK MODE ACCENT COLORS */
-:root[data-theme='dark'] {
-  --sl-color-accent-low: #2e1065;  /* Tím nền tối */
-  --sl-color-accent: #a78bfa;      /* Tím sáng để nổi bật trên nền đen */
-  --sl-color-accent-high: #ddd6fe; /* Tím siêu nhạt */
-  
-  /* Cấu hình màu nền (Background) cho Dark Mode (Xám xanh navy) */
-  --sl-color-bg: #0f172a;
-  --sl-color-bg-nav: #1e293b;
-  
-  /* Các màu xám cho chữ và viền trong Dark mode */
-  --sl-color-gray-1: #f8fafc;
-  --sl-color-gray-2: #cbd5e1;
-  --sl-color-gray-3: #94a3b8;
-  --sl-color-gray-4: #64748b;
-  --sl-color-gray-5: #334155;
-  --sl-color-gray-6: #1e293b;
-}
-
-
-/* ==========================================================
-   CUSTOM CSS OVERRIDES
-   ========================================================== */
 
 /* Ghi đè biểu tượng Google 4 màu chuẩn cho liên kết Workspace - CHỈ cho background fallback */
 a[href*="workspace.google.com/marketplace"] {
@@ -71,12 +25,6 @@ a[href*="workspace.google.com/marketplace"] {
     transition: all 0.2s ease;
     width: auto;
     height: auto;
-}
-
-/* Hover effect cho nút Google Workspace */
-a[href*="workspace.google.com/marketplace"]:hover {
-    background-color: var(--sl-color-gray-5);
-    border-color: var(--sl-color-gray-4);
 }
 
 /* Cho phép SVG hiển thị trong link */
