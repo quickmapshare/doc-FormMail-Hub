@@ -6,7 +6,7 @@ print("========================================")
 print("🚀 UPDATE DOCS SCRIPT")
 
 # Khai báo model ở đây để dùng chung
-MODEL_NAME = "gemini-3.6-flash"
+MODEL_NAME = "gemini-3.6-flash" # Lưu ý: dùng phiên bản ổn định nhất
 print(f"🤖 Gemini model: {MODEL_NAME}")
 
 api_key = os.environ.get("GEMINI_API_KEY")
@@ -37,10 +37,11 @@ CURRENT DOCUMENTATION (index.mdx):
 
 STRICT REQUIREMENTS:
 1. ALL OUTPUT MUST BE STRICTLY IN ENGLISH.
-2. Analyze the code diff to understand what feature was added, modified, or removed.
-3. Update or append descriptions, features, or details in index.mdx based on these code changes.
-4. DO NOT change Frontmatter YAML (at top) or custom HTML badge ("Available on Workspace Marketplace").
-5. Return ONLY the raw MDX content without any wrapper like ```mdx.
+2. Analyze the code diff to understand what feature was added, modified, or removed. Update the documentation based on these changes.
+3. PROACTIVE EXPANSION: Evaluate the CURRENT DOCUMENTATION. If the documentation is sparse, basic, or lacks detailed sections about core features/pages, DO NOT just stop at translating the small code diff. 
+4. ONE PAGE PER UPDATE: Look at the context of the diff or general app logic, identify ONE main user interface page, component, or core feature, and WRITE A DETAILED NEW SECTION about it. Describe its purpose, how users interact with it, and its benefits. Only expand on ONE feature per update to grow the doc incrementally.
+5. DO NOT change the Frontmatter YAML (at the very top) or the custom HTML badge ("Available on Workspace Marketplace").
+6. Return ONLY the raw MDX content without any formatting wrappers like ```mdx.
 """
 
 try:
