@@ -1,0 +1,34 @@
+name: AI Auto Update Docs
+
+on:
+  repository_dispatch:
+    types: [source_updated]
+  workflow_dispatch:
+
+jobs:
+  update-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install Google GenAI SDK
+        run: pip install google-genai
+
+      - name: Run AI Update Script
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          CODE_DIFF: ${{ github.event.client_payload.code_diff }} # Nhận code diff ở đây
+        run: python .github/scripts/update_docs.py
+
+      - name: Commit and Push Changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add src/content/docs/index.mdx
+          git diff --quiet && git diff --staged --quiet || (git commit -m "docs: auto-update documentation via Gemini AI [English]" && git push)
