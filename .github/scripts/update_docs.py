@@ -6,8 +6,8 @@ from google import genai
 print("========================================")
 print("🚀 AI MULTI-PAGE DOCS BUILDER & EXPANDER")
 
-# Nên dùng gemini-1.5-flash vì đây là bản ổn định nhất hiện tại hỗ trợ context dài
-MODEL_NAME = "gemini-1.5-flash" 
+# Không thay gemini-3.6-flash vì đây là bản duy nhất khả thi hiện tại
+MODEL_NAME = "gemini-3.6-flash" 
 print(f"🤖 Gemini model: {MODEL_NAME}")
 
 api_key = os.environ.get("GEMINI_API_KEY")
