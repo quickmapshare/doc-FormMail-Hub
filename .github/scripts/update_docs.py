@@ -6,7 +6,7 @@ from google import genai
 print("========================================")
 print("🚀 AI MULTI-PAGE DOCS BUILDER & EXPANDER")
 
-MODEL_NAME = "gemini-3.6-flash"
+MODEL_NAME = "gemini-3.6-flash" # Đảm bảo bạn dùng 1.5-flash cho tác vụ xử lý context dài
 print(f"🤖 Gemini model: {MODEL_NAME}")
 
 api_key = os.environ.get("GEMINI_API_KEY")
@@ -42,18 +42,20 @@ CURRENT DOCUMENTATION FILES:
 
 STRICT REQUIREMENTS:
 1. ALL OUTPUT MUST BE STRICTLY IN ENGLISH.
-2. PROACTIVE EXPANSION: Evaluate the CURRENT DOCUMENTATION FILES. Find a feature, UI element, or workflow that is currently missing or not explained in detail.
-3. ONE PAGE PER UPDATE: Identify ONE missing topic and WRITE A DETAILED GUIDE about it. Describe its purpose, how users interact with it, and its benefits.
-4. DECISION LOGIC: Based on your expansion, decide whether to dramatically UPDATE an existing file OR CREATE a completely NEW file for this feature.
-5. FRONTMATTER: Every file MUST have valid Frontmatter YAML at the top.
+2. PROACTIVE EXPANSION & AUDIT: Evaluate the CURRENT DOCUMENTATION FILES. Find a feature, technical specification, UI element, or workflow that is missing or under-documented.
+3. CONTENT CATEGORIZATION (CRITICAL): Decide what type of documentation is needed:
+   - GUIDES (Path: src/content/docs/guides/): Step-by-step tutorials, UI walkthroughs, best practices, and "How-to" workflows.
+   - REFERENCE (Path: src/content/docs/reference/): Technical specifications, API details, configuration options, lists of dynamic variable tags, error codes, limits/quotas, or troubleshooting glossaries.
+4. ONE TOPIC PER UPDATE: Identify ONE missing topic. Write a highly detailed, comprehensive markdown page for it. Route it to the correct directory (guides/ or reference/) based on the categorization above. You may UPDATE an existing file or CREATE a new one.
+5. FRONTMATTER: Every file MUST have valid Frontmatter YAML at the top (title, description).
 6. JSON OUTPUT ONLY: You must return a valid JSON array. DO NOT wrap it in ```json.
 7. ESCAPING RULES: You MUST escape all newlines as \\n and double quotes as \\" inside the JSON string values. DO NOT output actual raw line breaks inside the string.
 
 JSON STRUCTURE FORMAT:
 [
   {{
-    "file_path": "src/content/docs/guides/missing-feature.mdx",
-    "content": "---\\ntitle: Example\\ndescription: Example feature\\n---\\n\\nFull Markdown content goes here..."
+    "file_path": "src/content/docs/reference/dynamic-tags.mdx",
+    "content": "---\\ntitle: Dynamic Tags Reference\\ndescription: Comprehensive list of all supported dynamic variables and syntax.\\n---\\n\\nFull Markdown content goes here..."
   }}
 ]
 """
@@ -74,7 +76,6 @@ try:
         cleaned_text = cleaned_text[5:]
     
     try:
-        # THÊM strict=False: Cho phép Python đọc được các dấu xuống dòng "thực tế" nếu AI quên escape
         docs_to_update = json.loads(cleaned_text, strict=False)
     except json.JSONDecodeError as e:
         print(f"❌ LỖI: AI không trả về đúng chuẩn JSON. Chi tiết lỗi: {e}")
@@ -89,8 +90,10 @@ try:
         if not file_path or not content:
             continue
             
+        # SỬA LỖI ĐƯỜNG DẪN: Giữ nguyên cấu trúc thư mục con (guides/ hoặc reference/) nếu AI trả thiếu src/content/docs
         if not file_path.startswith("src/content/docs"):
-            file_path = os.path.join("src/content/docs", os.path.basename(file_path))
+            file_path = file_path.lstrip("/") # Xóa dấu / ở đầu nếu có
+            file_path = os.path.join("src/content/docs", file_path)
 
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
         
