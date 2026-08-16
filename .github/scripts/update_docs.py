@@ -41,9 +41,10 @@ STRICT REQUIREMENTS:
 1. ALL OUTPUT MUST BE STRICTLY IN ENGLISH.
 2. PROACTIVE EXPANSION: Evaluate the CURRENT DOCUMENTATION FILES. If the documentation is sparse, basic, or lacks detailed sections, DO NOT just stop at describing the small code diff.
 3. ONE PAGE PER UPDATE: Look at the context of the diff or general app logic, identify ONE main user interface page, component, or core feature, and WRITE A DETAILED GUIDE about it. Describe its purpose, how users interact with it, and its benefits.
-4. DECISION LOGIC: Based on your expansion, decide whether to dramatically UPDATE an existing file (e.g., 'index.mdx') OR CREATE a completely NEW file for this feature (e.g., 'src/content/docs/features/new-ui-page.mdx'). 
-5. FRONTMATTER: Every file MUST have valid Frontmatter YAML at the top (title, description). Do not change existing frontmatter or custom badges on 'index.mdx'.
-6. JSON OUTPUT ONLY: You must return a valid JSON array containing the files to write. Do not wrap the JSON in Markdown code blocks like ```json. Return pure JSON.
+4. DECISION LOGIC: Based on your expansion, decide whether to dramatically UPDATE an existing file OR CREATE a completely NEW file for this feature (e.g., 'src/content/docs/guides/formmailhub.md'). 
+5. FRONTMATTER: Every file MUST have valid Frontmatter YAML at the top.
+6. JSON OUTPUT ONLY: You must return a valid JSON array. DO NOT wrap it in ```json. 
+7. ESCAPING RULES: You MUST escape all newlines as \\n and double quotes as \\" inside the JSON string values. DO NOT output actual raw line breaks inside the string.
 
 JSON STRUCTURE FORMAT:
 [
@@ -66,11 +67,15 @@ try:
         cleaned_text = cleaned_text.split("\n", 1)[1]
     if cleaned_text.endswith("```"):
         cleaned_text = cleaned_text.rsplit("\n", 1)[0]
+    if cleaned_text.startswith("json\n"):
+        cleaned_text = cleaned_text[5:]
     
     try:
-        docs_to_update = json.loads(cleaned_text)
-    except json.JSONDecodeError:
-        print("❌ LỖI: AI không trả về đúng chuẩn JSON. Dữ liệu thô:")
+        # THÊM strict=False: Cho phép Python đọc được các dấu xuống dòng "thực tế" nếu AI quên escape
+        docs_to_update = json.loads(cleaned_text, strict=False)
+    except json.JSONDecodeError as e:
+        print(f"❌ LỖI: AI không trả về đúng chuẩn JSON. Chi tiết lỗi: {e}")
+        print("Dữ liệu thô:")
         print(cleaned_text)
         sys.exit(1)
 
