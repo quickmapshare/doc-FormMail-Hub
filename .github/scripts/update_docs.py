@@ -27,29 +27,32 @@ if os.path.exists(docs_dir):
                 with open(file_path, "r", encoding="utf-8") as f:
                     existing_docs[file_path] = f.read()
 
+# Xác định xem AI đang chạy do có code mới hay chạy định kỳ
+diff_context = code_diff if code_diff else "NO RECENT CODE CHANGES. Perform a routine documentation audit and expansion based on the current files."
+
 prompt = f"""
 You are an expert technical writer and documentation architect for 'FormMail Hub'.
 Your task is to analyze the source code changes and dramatically expand the documentation.
 
 RAW CODE DIFF FROM SOURCE REPOSITORY:
-{code_diff}
+{diff_context}
 
 CURRENT DOCUMENTATION FILES:
 {json.dumps(existing_docs, indent=2)}
 
 STRICT REQUIREMENTS:
 1. ALL OUTPUT MUST BE STRICTLY IN ENGLISH.
-2. PROACTIVE EXPANSION: Evaluate the CURRENT DOCUMENTATION FILES. If the documentation is sparse, basic, or lacks detailed sections, DO NOT just stop at describing the small code diff.
-3. ONE PAGE PER UPDATE: Look at the context of the diff or general app logic, identify ONE main user interface page, component, or core feature, and WRITE A DETAILED GUIDE about it. Describe its purpose, how users interact with it, and its benefits.
-4. DECISION LOGIC: Based on your expansion, decide whether to dramatically UPDATE an existing file OR CREATE a completely NEW file for this feature (e.g., 'src/content/docs/guides/formmailhub.md'). 
+2. PROACTIVE EXPANSION: Evaluate the CURRENT DOCUMENTATION FILES. Find a feature, UI element, or workflow that is currently missing or not explained in detail.
+3. ONE PAGE PER UPDATE: Identify ONE missing topic and WRITE A DETAILED GUIDE about it. Describe its purpose, how users interact with it, and its benefits.
+4. DECISION LOGIC: Based on your expansion, decide whether to dramatically UPDATE an existing file OR CREATE a completely NEW file for this feature.
 5. FRONTMATTER: Every file MUST have valid Frontmatter YAML at the top.
-6. JSON OUTPUT ONLY: You must return a valid JSON array. DO NOT wrap it in ```json. 
+6. JSON OUTPUT ONLY: You must return a valid JSON array. DO NOT wrap it in ```json.
 7. ESCAPING RULES: You MUST escape all newlines as \\n and double quotes as \\" inside the JSON string values. DO NOT output actual raw line breaks inside the string.
 
 JSON STRUCTURE FORMAT:
 [
   {{
-    "file_path": "src/content/docs/your-file-name.mdx",
+    "file_path": "src/content/docs/guides/missing-feature.mdx",
     "content": "---\\ntitle: Example\\ndescription: Example feature\\n---\\n\\nFull Markdown content goes here..."
   }}
 ]
