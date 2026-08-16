@@ -2,6 +2,13 @@ import os
 import sys
 from google import genai
 
+print("========================================")
+print("🚀 UPDATE DOCS SCRIPT")
+
+# Khai báo model ở đây để dùng chung
+MODEL_NAME = "gemini-3.6-flash"
+print(f"🤖 Gemini model: {MODEL_NAME}")
+
 api_key = os.environ.get("GEMINI_API_KEY")
 if not api_key:
     print("❌ LỖI: Chưa tìm thấy GEMINI_API_KEY trong Repo Secrets!")
@@ -36,16 +43,10 @@ STRICT REQUIREMENTS:
 5. Return ONLY the raw MDX content without any wrapper like ```mdx.
 """
 
-print("========================================")
-print("🚀 UPDATE DOCS SCRIPT")
-print(f"📄 Script: {os.path.abspath(__file__)}")
-print(f"🤖 Gemini model: {MODEL_NAME}")
-print("========================================")
-
 try:
-    # Đã cập nhật đúng tên model: gemini-3.6-flash
+    # Sử dụng biến MODEL_NAME đã khai báo ở trên
     response = client.models.generate_content(
-        model="gemini-3.6-flash",
+        model=MODEL_NAME,
         contents=prompt
     )
 
