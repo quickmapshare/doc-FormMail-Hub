@@ -3,6 +3,7 @@ from google import genai
 
 client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
 
+code_diff = os.environ.get("CODE_DIFF", "")
 file_path = "src/content/docs/index.mdx"
 
 try:
@@ -12,19 +13,21 @@ except FileNotFoundError:
     current_mdx = ""
 
 prompt = f"""
-You are a professional technical writer and developer advocate for FormMail Hub.
-Your task is to update the documentation in the index.mdx file.
+You are an expert technical writer for FormMail Hub documentation.
+Analyze the following source code diff (changes made in the app repository) and update the documentation accordingly.
 
-CRITICAL REQUIREMENTS:
-1. ALL OUTPUT MUST BE STRICTLY IN ENGLISH.
-2. Maintain the Astro/Starlight Frontmatter (YAML at the top) and Starlight components intact (<CardGrid>, <Card>, etc.).
-3. Keep the custom HTML badge "Available on Workspace Marketplace" with its `not-content` wrapper unchanged.
-4. Refine feature descriptions, headlines, and value propositions based on the project scope.
+RAW CODE DIFF FROM SOURCE REPOSITORY:
+{code_diff}
 
-Current file content:
+CURRENT DOCUMENTATION (index.mdx):
 {current_mdx}
 
-Return ONLY the complete updated MDX file content. Do not wrap the response in markdown code blocks like ```mdx or ```.
+STRICT REQUIREMENTS:
+1. ALL OUTPUT MUST BE STRICTLY IN ENGLISH.
+2. Analyze the code diff to understand what feature was added, modified, or removed.
+3. Update or append descriptions, features, or details in index.mdx based on these code changes.
+4. DO NOT change Frontmatter YAML (at top) or custom HTML badge ("Available on Workspace Marketplace").
+5. Return ONLY the raw MDX content without any wrapper like ```mdx.
 """
 
 response = client.models.generate_content(
