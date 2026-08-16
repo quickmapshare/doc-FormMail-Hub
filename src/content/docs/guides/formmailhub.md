@@ -1,42 +1,72 @@
 ---
 title: FormMail Hub - Complete User & Administration Guide
-description: Master Google Forms email automation, custom SMTP integration, conditional routing, and email campaigns with FormMail Hub.
+description: Master Google Forms email automation, custom SMTP integration, conditional routing, domain navigation, and email campaigns with FormMail Hub.
 ---
 
 Welcome to the official **FormMail Hub** documentation. FormMail Hub transforms standard Google Forms™ into an enterprise-grade email automation, lead engagement, and customer communications platform.
 
-Whether you need instant notifications for internal team members, dynamic auto-responders for respondents, or high-volume outreach via enterprise custom SMTP servers, FormMail Hub provides a seamless workflow directly integrated with your Google Workspace ecosystem.
+Access the central documentation hub and official portal anytime at [https://doc.formmailhub.com/](https://doc.formmailhub.com/).
 
 ---
 
-## Quick Start & Installation
+## 1. Core Architecture & Navigation
 
-### 1. Installing FormMail Hub
+FormMail Hub is engineered to operate seamlessly inside the Google Workspace ecosystem while offloading heavy email dispatch operations to optimized delivery networks or your own custom SMTP servers.
+
+### Official Portal Navigation
+The global navigation across the application connects directly to the official documentation hub at `https://doc.formmailhub.com/`. Users and administrators can use this portal to access:
+- Comprehensive setup tutorials and integration walkthroughs.
+- Technical specifications for major SMTP email providers.
+- Live status updates, policy changes, and compliance frameworks.
+
+### Dual-Routing System Architecture
+```
++-----------------------------------------------------------------------+
+|                         Google Forms Submissions                      |
++-----------------------------------------------------------------------+
+                                    |
+                                    v
++-----------------------------------------------------------------------+
+|                           FormMail Hub Engine                         |
++-----------------------------------------------------------------------+
+                /                                       \
+               v                                         v
++-------------------------------+       +--------------------------------+
+| Internal Admin & Team Alerts  |       | Respondent Auto-Responders     |
+| (Dedicated System Relay)      |       | (Custom SMTP: SES, Gmail, etc) |
+| * Consumes 0% Personal Quota  |       | * Scalable up to 10,000+/day   |
++-------------------------------+       +--------------------------------+
+```
+
+---
+
+## 2. Quick Start & Installation
+
+### Single User Installation
 1. Visit the **Google Workspace Marketplace** and search for **FormMail Hub** (or click the Marketplace badge on [doc.formmailhub.com](https://doc.formmailhub.com/)).
-2. Click **Install** or **Domain Install** (if managing organization-wide deployment).
-3. Grant the required permissions to allow FormMail Hub to access Google Forms responses and trigger email dispatches.
+2. Click **Install** or approve individual user permissions.
+3. Open any existing form or create a new form in [Google Forms™](https://forms.google.com).
+4. Click the **Add-ons** puzzle icon in the top toolbar, select **FormMail Hub**, and click **Configure**.
 
-### 2. Opening the Add-On in Google Forms
-1. Open any existing form or create a new form in [Google Forms™](https://forms.google.com).
-2. Click the **Add-ons** puzzle icon in the top toolbar.
-3. Select **FormMail Hub** and click **Configure** to open the main sidebar interface.
+### Domain-Wide Admin Deployment
+1. Log into the **Google Workspace Admin Console** (`admin.google.com`).
+2. Navigate to **Apps** > **Google Workspace Marketplace apps** > **Apps list**.
+3. Click **Domain Install** to grant permissions organization-wide across all user accounts.
 
 ---
 
-## Custom SMTP Setup & Quota Optimization
+## 3. Custom SMTP Setup & Quota Optimization
 
-Standard Google Workspace accounts are subject to daily email sending limits (typically 100 to 1,500 emails/day depending on account type). FormMail Hub eliminates these restrictions by enabling custom **SMTP (Simple Mail Transfer Protocol)** connections.
+Standard Google Workspace accounts enforce daily email sending limits (typically 100 to 1,500 emails/day depending on account type). FormMail Hub eliminates these restrictions by enabling custom **SMTP (Simple Mail Transfer Protocol)** connections.
 
-### High-Volume Email Delivery Options
+### Supported Email Delivery Options
 
-FormMail Hub supports standard SMTP connections for various email services:
-
-| Provider | Daily Limit | Best Use Case |
-| :--- | :--- | :--- |
-| **Google Workspace / Free Gmail™** | Up to 500 / day | Standard transactional confirmations and small business forms |
-| **Amazon SES** | 10,000+ / day | High-volume lead capture, enterprise event registration, and marketing |
-| **SendGrid / Mailgun** | Custom / Tiered | Transactional emails requiring detailed bounce tracking and analytics |
-| **Custom Corporate SMTP** | Server-Defined | Organizations requiring strict internal relay servers (`smtp.yourdomain.com`) |
+| Provider | Daily Limit | Best Use Case | Protocol |
+| :--- | :--- | :--- | :--- |
+| **Google Workspace / Free Gmail™** | Up to 500 / day | Standard transactional confirmations and small business forms | TLS (587) / SSL (465) |
+| **Amazon SES** | 10,000+ / day | High-volume lead capture, enterprise event registration, and marketing | TLS (587) / API |
+| **SendGrid / Mailgun** | Custom / Tiered | Transactional emails requiring detailed bounce tracking and analytics | TLS (587) / API |
+| **Custom Corporate SMTP** | Server-Defined | Organizations requiring strict internal relay servers (`smtp.yourdomain.com`) | STARTTLS / SSL |
 
 ### Configuring Custom SMTP Credentials
 
@@ -46,20 +76,20 @@ FormMail Hub supports standard SMTP connections for various email services:
 4. Input your connection parameters:
    - **SMTP Host:** (e.g., `email-smtp.us-east-1.amazonaws.com` or `smtp.gmail.com`)
    - **Port:** `587` (TLS) or `465` (SSL)
-   - **Authentication:** Username / API Key and Password
-   - **Sender Name & Email:** (e.g., `Support Team <support@yourdomain.com>`)
+   - **Authentication:** Username / API Key and Password / Secret Key
+   - **Sender Identity:** (e.g., `Support Team <support@yourdomain.com>`)
 5. Click **Test Connection** to verify delivery credentials, then save your configuration.
 
-### Dual-Routing Architecture
+### Intelligent Dual-Routing Architecture
 
-FormMail Hub features an intelligent dual-routing mechanism designed to preserve your personal email quota:
+FormMail Hub features a dual-routing mechanism designed to preserve your personal email quota:
 
 - **Internal Admin & Team Alerts:** Routed via FormMail Hub's dedicated internal notification system. This consumes **0%** of your personal SMTP daily quota.
 - **External Respondent Emails:** Dispatched via your configured Custom SMTP server, ensuring 100% of your dedicated sending capacity is reserved for customer outreach.
 
 ---
 
-## Setting Up Auto-Responders & Notifications
+## 4. Setting Up Auto-Responders & Smart Routing
 
 ### Automated Confirmation Responders
 Send instant, tailored confirmation emails to users as soon as they submit a Google Form.
@@ -69,23 +99,25 @@ Send instant, tailored confirmation emails to users as soon as they submit a Goo
 3. Set the **Recipient Field** to match your form's Email question (e.g., `{Email Address}`).
 4. Customize the Email Subject and Body using dynamic tags.
 
-### Dynamic Content Tags (`{tags}`)
+### Dynamic Content Tag Matrix (`{tags}`)
 Incorporate respondent answers directly into email templates using tags corresponding to form questions:
 
-- `{Full Name}` - Replaced by the submitter's answer to "Full Name".
-- `{Form Summary}` - Generates an formatted summary table of all submitted questions and answers.
-- `{Submission Date}` - Inserts the exact timestamp of form submission.
-- `{Unsubscribe link}` - Adds a standard opt-out mechanism for email compliance.
+| Dynamic Tag | Description | Example Output |
+| :--- | :--- | :--- |
+| `{Full Name}` | Replaced by the submitter's answer to "Full Name". | Jane Doe |
+| `{Form Summary}` | Generates a formatted summary table of all submitted questions and answers. | Full question/answer table |
+| `{Submission Date}` | Inserts the exact timestamp of form submission. | 2026-03-31 14:30 UTC |
+| `{Unsubscribe link}` | Adds a standard opt-out mechanism for email compliance. | Opt-out URL |
 
 ### Conditional Email Routing
 Route notifications or specific auto-responders based on user responses:
 
-- **Example Rule:** If *"Department Requested"* equals *"Technical Support"*, send email to `support@yourdomain.com`.
-- **Example Rule:** If *"Ticket Type"* equals *"VIP"*, trigger an instant priority response template via custom SMTP.
+- **Department Rule:** If *"Department Requested"* equals *"Technical Support"*, send email to `support@yourdomain.com`.
+- **VIP Responder Rule:** If *"Ticket Type"* equals *"VIP"*, trigger an instant priority response template via custom SMTP.
 
 ---
 
-## Email Marketing & Broadcast Campaigns
+## 5. Email Marketing & Broadcast Campaigns
 
 Beyond automated triggers, FormMail Hub enables direct email marketing campaigns targeting form respondents.
 
@@ -101,7 +133,7 @@ FormMail Hub automatically indexes contact information submitted through your fo
 
 ---
 
-## Best Practices & Email Deliverability
+## 6. Security, Deliverability & Compliance
 
 To ensure your automated emails consistently land in the primary inbox rather than spam folders:
 
