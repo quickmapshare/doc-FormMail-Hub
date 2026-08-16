@@ -1,16 +1,23 @@
 import os
+import sys
 from google import genai
 
-client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
+# 1. Kiểm tra API Key
+api_key = os.environ.get("GEMINI_API_KEY")
+if not api_key:
+    print("❌ LỖI: Chưa tìm thấy GEMINI_API_KEY trong Repo Secrets!")
+    sys.exit(1)
 
+client = genai.Client(api_key=api_key)
 code_diff = os.environ.get("CODE_DIFF", "")
 file_path = "src/content/docs/index.mdx"
 
-try:
-    with open(file_path, "r", encoding="utf-8") as f:
-        current_mdx = f.read()
-except FileNotFoundError:
-    current_mdx = ""
+if not os.path.exists(file_path):
+    print(f"❌ LỖI: Không tìm thấy file {file_path}")
+    sys.exit(1)
+
+with open(file_path, "r", encoding="utf-8") as f:
+    current_mdx = f.read()
 
 prompt = f"""
 You are an expert technical writer for FormMail Hub documentation.
@@ -30,16 +37,22 @@ STRICT REQUIREMENTS:
 5. Return ONLY the raw MDX content without any wrapper like ```mdx.
 """
 
-response = client.models.generate_content(
-    model="gemini-2.5-flash",
-    contents=prompt
-)
+try:
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=prompt
+    )
 
-cleaned_text = response.text.strip()
-if cleaned_text.startswith("```"):
-    cleaned_text = cleaned_text.split("\n", 1)[1]
-if cleaned_text.endswith("```"):
-    cleaned_text = cleaned_text.rsplit("\n", 1)[0]
+    cleaned_text = response.text.strip()
+    if cleaned_text.startswith("```"):
+        cleaned_text = cleaned_text.split("\n", 1)[1]
+    if cleaned_text.endswith("```"):
+        cleaned_text = cleaned_text.rsplit("\n", 1)[0]
 
-with open(file_path, "w", encoding="utf-8") as f:
-    f.write(cleaned_text.strip())
+    with open(file_path, "w", encoding="utf-8") as f:
+        f.write(cleaned_text.strip())
+    print("✅ Cập nhật thành công file index.mdx bằng Gemini AI!")
+
+except Exception as e:
+    print(f"❌ LỖI khi gọi Gemini API: {e}")
+    sys.exit(1)
