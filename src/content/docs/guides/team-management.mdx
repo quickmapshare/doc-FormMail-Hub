@@ -1,110 +1,59 @@
 ---
 title: Team Member Management & Notification Routing Guide
-description: Learn how to manage team members in FormMail Hub, understand the Primary Connector Admin role, and route specific form submission email notifications to team recipients.
+description: Guide to managing team members, understanding the Primary Connector Admin role, and routing submission alerts in FormMail Hub.
 ---
 
-In enterprise and organizational environments, managing form submission alerts often requires delivering targeted email notifications to specific team members. **FormMail Hub** enables the form Administrator to manage a team list strictly for routing submission email notifications without sharing account credentials or consuming personal daily email quotas.
+Managing form submission alerts in organizational settings requires delivering notifications to designated team members without exposing system configurations or consuming personal email daily limits.
 
 ---
 
 ## 1. Role & Permissions Architecture
 
-FormMail Hub enforces strict, role-based boundaries between the primary Administrator and designated Team Members:
+FormMail Hub enforces strict role boundaries across all form workflows:
 
 ### Primary Connector / Admin Role
-Only the **first user among the form's editors who connects that form to FormMail Hub** is granted exclusive rights to configure settings, templates, triggers, and campaigns for that form. Other co-editors on the Google Form or Google Sheet do not automatically inherit administrative rights.
+Only the **first user among the form's editors who connects that form to FormMail Hub** is granted exclusive rights to configure settings, templates, rules, custom SMTP, and triggers for that form. Co-editors on the form or sheet do not automatically receive administrative rights.
 
-### Team Member Role & Logic
-Team members are **ONLY** added so the Admin can select who receives specific email notifications upon form submission. Team members **DO NOT** have permission to edit, configure settings, or modify forms and campaigns.
-
-```
-+-----------------------------------------------------------------------------------+
-|                              FORMMAIL HUB DASHBOARD                               |
-|            Managed exclusively by the Primary Connector (First Editor)           |
-+-----------------------------------------------------------------------------------+
-                                          |
-          +-------------------------------+-------------------------------+
-          |                                                               |
-          v                                                               v
-+-----------------------------------+                           +-----------------------------------+
-|     PRIMARY CONNECTOR / ADMIN     |                           |       TEAM MEMBER RECIPIENTS      |
-+-----------------------------------+                           +-----------------------------------+
-| Exclusive Administrative Rights:  |                           | Notification Scope ONLY:          |
-| - First editor to connect form    |                           | - Added by Admin to team list     |
-| - Configure Settings & Custom SMTP|                           | - Receive assigned email alerts   |
-| - Create/Edit Templates & Rules   |                           | - CANNOT edit or configure settings|
-| - Manage Team Recipient Lists     |                           | - CANNOT modify templates/triggers|
-| - Launch Campaigns (Sheets Core)  |                           | - CANNOT modify forms or campaigns|
-+-----------------------------------+                           +-----------------------------------+
-```
-
-### Key Advantages of Team Member Notification Routing
-- **Zero Quota Consumption for Internal Alerts:** Internal notification alerts dispatched to team members are routed through FormMail Hub's dedicated internal delivery infrastructure. This preserves 100% of your personal or custom SMTP sending quota for customer-facing auto-responders and marketing campaigns.
-- **Targeted Departmental Routing:** The Admin can attach specific team members to conditional logic rules or global submission alerts based on response values.
-
----
-
-## 2. Adding Team Members (Admin Only)
-
-Only the Primary Connector (Admin) can add or remove team member email addresses from the team roster.
-
-### Step-by-Step Instructions:
-1. Launch **FormMail Hub** from your Google Form™ or connected Google Sheet™.
-2. Open the main dashboard sidebar or click **Dashboard**.
-3. In the navigation menu, navigate to **Team Members**.
-4. In the **Add Team Member** field, enter the team member's email address (e.g., `colleague@yourcompany.com`).
-5. Click **Add Team Member**.
-
-Once added, the team member's email address becomes selectable in dropdown menus across notification settings and conditional logic rules so the Admin can route specific email alerts to them.
-
----
-
-## 3. Routing Submission Alerts to Team Members
-
-After adding team members, the Admin can configure real-time notification rules to dispatch submission alerts to selected team recipients:
-
-### Scenario A: Global Internal Alerts (All Submissions)
-To send notification emails to designated team members whenever a form is submitted:
-1. Navigate to **Email Rules > Internal Alerts**.
-2. Under **Recipients**, select the team member email addresses who should receive submission details.
-3. Select or assign the desired internal notification template (e.g., containing the `{Form Summary}` tag).
-4. Save the rule. Notifications will be dispatched via FormMail Hub's dedicated system relay, consuming **0%** of your personal or SMTP daily quota.
-
-### Scenario B: Conditional Team Routing
-To route submission alerts to specific team members based on user responses (e.g., assigning support tiers or department heads):
-1. Navigate to **Email Rules > Conditional Rules**.
-2. Create a conditional rule (e.g., `If "Department" Equals "Sales"`).
-3. Set the **To Recipient** to the specific sales team member's email address.
-4. Save and activate the rule.
-
----
-
-## 4. Admin vs. Team Member Capabilities Matrix
+### Team Member Logic
+Team members are **ONLY** added so the Admin can select who receives specific email notifications upon form submission. Team members **DO NOT** have permission to edit, configure settings, or modify forms, rules, templates, or campaigns.
 
 | Capability / Action | Primary Connector (Admin) | Team Members |
 | :--- | :---: | :---: |
 | **Granted Exclusive Rights (First Form Editor to Connect)** | ✅ | ❌ |
 | **Configure System & SMTP Settings** | ✅ | ❌ |
-| **Create & Modify Email Templates** | ✅ | ❌ |
-| **Configure Rules & Triggers** | ✅ | ❌ |
+| **Create & Edit Email Templates & Rules** | ✅ | ❌ |
 | **Add / Remove Team Member Email Addresses** | ✅ | ❌ |
-| **Receive Assigned Email Submission Alerts** | ✅ | ✅ |
-| **Launch Bulk Email Campaigns (Google Sheets Core)** | ✅ | ❌ |
+| **Receive Selected Email Submission Alerts** | ✅ | ✅ |
+| **Launch Bulk Campaigns (Sheets Core Add-on)** | ✅ | ❌ |
 
 ---
 
-## 5. Frequently Asked Questions & Troubleshooting
+## 2. Notification Delivery Mechanisms
 
-### FAQ
+FormMail Hub handles internal team notifications separately from customer-facing custom email triggers:
 
-**Q: Who gets administrative control over a form's FormMail Hub configuration?**  
-A: Only the Primary Connector—the first user among the form's editors who connects that form to FormMail Hub—is granted exclusive rights to configure settings, templates, and triggers for that form.
+### Built-in System Notifications (Out-of-the-Box)
+System Notifications is an out-of-the-box feature powered by the system's internal SMTP. It sends default-templated submission alerts to the Form Admin and selected Team Members without requiring custom SMTP setup.
+- **Quota Impact:** Consumes **0%** of the Admin's personal or custom SMTP sending quota.
+- **Setup Required:** None (works out of the box).
 
-**Q: Can team members log in and edit templates or settings?**  
-A: No. Team members do not have permission to edit, configure settings, or modify forms/campaigns. They are added solely so the Admin can select who receives specific email notifications.
+### Custom Team Notification Routing
+If the Admin wishes to send customized HTML notification templates to team members:
+- The Admin **MUST** configure Custom SMTP first, as creating custom templates and rules requires Custom SMTP.
+- The Admin can then set up conditional rules routing custom templates to specific team members based on submission values.
 
-**Q: Why are team members not receiving email alerts?**  
-A: Ensure the Admin has added the team member's address under **Team Members** and explicitly selected their address in an active Email Rule or Conditional Rule. Also verify that the address is spelled correctly and that internal corporate spam filters permit system relay dispatches.
+---
+
+## 3. Adding Team Members (Admin Workflow)
+
+Only the Primary Connector (Admin) can manage the team member roster:
+
+1. Launch **FormMail Hub** from Google Forms™ or Google Sheets™.
+2. Navigate to **Team Members** in the dashboard sidebar.
+3. Enter the email address of the team member (e.g., `colleague@yourcompany.com`).
+4. Click **Add Team Member**.
+
+Once added, the team member's address becomes selectable in notification recipient lists and conditional rule routing menus for the Admin.
 
 ---
 

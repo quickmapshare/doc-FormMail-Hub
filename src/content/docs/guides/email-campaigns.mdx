@@ -1,119 +1,82 @@
 ---
 title: Broadcast Campaigns & Lead List Management Guide
-description: Master setting up bulk email broadcast campaigns, managing collected form respondents, contact segmentation, and unsubscribe compliance in FormMail Hub.
+description: Master creating, segmenting, and dispatching bulk email campaigns using the FormMail Hub Google Sheets core add-on.
 ---
 
-While real-time transactional auto-responders send single emails immediately upon form completion, **FormMail Hub's Broadcast Campaign Engine** enables you to engage your collected lead database with targeted newsletters, product updates, event announcements, and follow-up email series.
-
-*Note: Bulk email broadcasting (Campaigns) is **ONLY** available when launching FormMail Hub from the **Google Sheets core add-on**. It is not accessible from Google Forms entry add-ons.*
-
----
-
-## 1. Automated Lead Indexing & Contact Management
-
-Every time a respondent fills out a Google Form™ connected to FormMail Hub, the system automatically indexes their response into a central subscriber list within the backing Google Sheet™.
-
-### Key Capabilities of Contact Indexing
-- **Zero Manual Exporting:** Eliminates the need to download CSV files from Google Sheets™ or copy-paste email addresses into external CRM platforms.
-- **Metadata Mapping:** Captures submission timestamps, individual field responses (e.g., job title, location, interest tier), and consent status.
-- **Deduplication:** Automatically handles duplicate form submissions from the same respondent, maintaining a clean unique contact registry.
+While real-time transactional auto-responders deliver single emails upon form completion, **FormMail Hub's Broadcast Campaign Engine** enables Administrators to send targeted bulk communications to collected respondents.
 
 ---
 
-## 2. Audience Segmentation & Dynamic Filters
+## 1. Prerequisites & Ecosystem Constraints
 
-Sending generic mass emails to your entire contact list can lower engagement and increase spam complaints. FormMail Hub allows you to filter and segment collected leads using submission data stored in your Google Sheet.
+Before launching a broadcast campaign, the following requirements must be met:
 
-### Common Segmentation Rules
-- **Date-Based Filtering:** Target respondents who submitted forms within a specific date range (e.g., leads collected in Q1 or within the last 30 days).
-- **Response Value Matching:** Filter contacts based on specific form choices (e.g., target only users who selected `"Interested in Enterprise Plan"` or `"Location = New York"`).
-- **Opt-In Status Filter:** Automatically exclude addresses that have unsubscribed or bounced during previous campaigns.
+1. **Custom SMTP Requirement:** Admins **MUST** configure custom SMTP settings before creating email templates, rules, campaigns, or accessing analytics, as these features require sending emails under the Admin's own email identity.
+2. **Google Sheets Core Add-on Exclusivity:** Bulk sending (Campaigns) is **ONLY** available when launched from the **FormMail Hub Google Sheets add-on**. It is not accessible from Google Forms entry add-ons because broad audience segmentation, cell-vector list queries, and batch execution require Google Sheets environment capabilities.
 
 ---
 
-## 3. Step-by-Step Walkthrough: Creating & Dispatching a Campaign
+## 2. Campaign Creation & Dispatch Workflow
 
-Follow this workflow to create, synchronize, and dispatch a targeted broadcast campaign to form respondents:
+To send a proactive campaign to form respondents, the Admin follows this exact workflow:
 
 ```
 +-----------------------------------------------------------------------------------+
-| 1. Create Campaign Template  -->  2. Configure Filtering Rules in Google Sheet    |
+| 1. Admin creates campaign template (incorporating required {Unsubscribe link})    |
 +-----------------------------------------------------------------------------------+
                                           |
                                           v
 +-----------------------------------------------------------------------------------+
-| 3. Enable Rule as Active     -->  4. Open Sheets Add-on & Switch to Campaign View |
+| 2. Admin configures filtering rules to target respondents in responses Sheet     |
 +-----------------------------------------------------------------------------------+
                                           |
                                           v
 +-----------------------------------------------------------------------------------+
-| 5. Select Synchronized Name  -->  6. Click 'Dispatch' Button to Initiate Bulk Send|
+| 3. Admin enables the rule as an active campaign                                   |
++-----------------------------------------------------------------------------------+
+                                          |
+                                          v
++-----------------------------------------------------------------------------------+
+| 4. Admin opens FormMail Hub Google Sheets add-on on responses sheet & switches   |
+|    to Campaign view                                                               |
++-----------------------------------------------------------------------------------+
+                                          |
+                                          v
++-----------------------------------------------------------------------------------+
+| 5. Admin selects the synchronized campaign name                                  |
++-----------------------------------------------------------------------------------+
+                                          |
+                                          v
++-----------------------------------------------------------------------------------+
+| 6. Admin clicks 'Dispatch' button to initiate bulk email dispatch                |
 +-----------------------------------------------------------------------------------+
 ```
 
-### Step 1: Create a Campaign Template
-1. In the FormMail Hub interface, navigate to the template builder.
-2. Draft your email message using Rich Text or HTML formatting.
-3. Incorporate dynamic personalization tags (e.g., `{First Name}`, `{Company Name}`) and mandatory compliance tags (`{Unsubscribe link}`).
-4. Save the campaign template.
-
-### Step 2: Configure Filtering Rules
-1. Define segmentation criteria targeting specific respondent rows in the backing responses Google Sheet™ (e.g., `Plan = Enterprise` AND `Date >= 2026-01-01`).
-2. Map the template variables to the corresponding spreadsheet response columns.
-
-### Step 3: Enable the Active Campaign Rule
-1. Review rule parameters and toggle the rule state to **Active**.
-2. This synchronizes the campaign configuration with the backing response sheet.
-
-### Step 4: Open FormMail Hub in Google Sheets & Switch to Campaign View
-1. Open the backing responses **Google Sheet™**.
-2. Launch the **FormMail Hub** add-on (Campaign sending is strictly supported in the Google Sheets core add-on).
-3. Switch the interface view to the **Campaign** view.
-
-### Step 5: Select Synchronized Campaign & Dispatch
-1. Locate and select the synchronized campaign name from the campaign list.
-2. Review the final calculated audience summary.
-3. Click the **Dispatch** button to initiate the bulk email broadcast.
+### Detailed Workflow Steps:
+1. **Create Campaign Template:** The Admin navigates to the template builder, drafts the message content, and inserts mandatory compliance tags (`{Unsubscribe link}`) alongside dynamic tags (`{First Name}`).
+2. **Configure Filtering Rules:** In rule settings, set targeting criteria against the backing responses Google Sheet™ (e.g., `Submission Date >= 2026-01-01` or `Product Interest Equals Enterprise`).
+3. **Enable Active Campaign Rule:** Toggle the rule state to **Active** to synchronize it with the spreadsheet.
+4. **Open Google Sheets Core Add-on & Switch to Campaign View:** Open the responses Google Sheet™, launch the **FormMail Hub** Google Sheets add-on, and switch the interface view to **Campaign**.
+5. **Select Synchronized Campaign Name:** Choose the synchronized campaign name from the dropdown selection list.
+6. **Click 'Dispatch':** Click the **Dispatch** button to initiate the bulk email dispatch process.
 
 ---
 
-## 4. Compliance, Opt-Out Handling & Suppression Lists
+## 3. Compliance & Suppression Registry
 
-FormMail Hub handles compliance automatically to protect your domain's reputation and adhere to global email privacy standards.
-
-### How `{Unsubscribe link}` Works
-1. When a recipient clicks `{Unsubscribe link}`, they are directed to a hosted secure confirmation page.
-2. Upon confirmation, their email address is flagged as `SUPPRESSED` in your FormMail Hub database.
-3. **Automated Blocking:** Future broadcast campaigns and transactional auto-responders automatically skip suppressed email addresses, returning an internal log status of `OPT_OUT_SKIPPED`.
-
-### Managing Your Suppression List
-- View, search, or manually add unsubscribed contacts under **Campaigns** > **Suppression List** in the Google Sheets core add-on.
-- Export suppression records for internal compliance audits.
+- **Mandatory Unsubscribe Link:** Broadcast campaign templates require the `{Unsubscribe link}` tag.
+- **Opt-Out Handling:** When a recipient clicks the unsubscribe link, their email address is flagged as `SUPPRESSED`.
+- **Automatic Suppression Enforcement:** During campaign dispatch, the system queries the suppression registry and skips unsubscribed addresses, logging an `OPT_OUT_SKIPPED` event status.
 
 ---
 
-## 5. High-Volume Dispatch & Rate Limiting
+## 4. Monitoring Dispatch Performance
 
-When sending broadcasts to thousands of contacts, provider daily limits must be managed:
+Once **Dispatch** is clicked, the Admin can monitor batch processing and analytics within the Google Sheets core add-on:
 
-| Sending Route | Max Daily Broadcast Quota | Best Strategy |
-| :--- | :--- | :--- |
-| **Free Gmail™ SMTP** | 500 emails / day | Suitable for small lists and community notifications. |
-| **Google Workspace SMTP** | Up to 1,500 emails / day | Good for medium business outreach. |
-| **Amazon SES / SendGrid** | 10,000+ emails / day | Essential for high-volume marketing broadcasts and transactional series. |
-
-*Tip: Connect Amazon SES or SendGrid under **Settings > Custom SMTP** before scheduling dispatches exceeding 500 recipients to avoid standard Google rate limit errors (`ERR_QUOTA_EXCEEDED`).*
-
----
-
-## 6. Campaign Analytics & Performance Diagnostics
-
-After clicking **Dispatch** in the Google Sheets core add-on, track real-time delivery status in the **Campaign Analytics Dashboard**:
-
-- **Delivered Rate:** Percentage of messages successfully accepted by recipient mail servers.
-- **Hard / Soft Bounces:** Invalid email addresses are categorized and added to the diagnostic log.
-- **Unsubscribe Rate:** Track opt-out counts per campaign to measure content relevance.
-- **Retry Queue Status:** If a remote SMTP connection experiences temporary throttles, FormMail Hub buffers remaining messages and retries automatically.
+- **Delivered Count:** Successfully accepted messages by downstream mail servers.
+- **Bounces & Errors:** Tracked via hard (`BOUNCED_HARD`) and soft (`BOUNCED_SOFT`) status codes.
+- **Opt-Out Counts:** Total unsubscribes recorded for the campaign run.
 
 ---
 

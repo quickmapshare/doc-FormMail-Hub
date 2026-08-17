@@ -1,148 +1,133 @@
 ---
 title: FormMail Hub - Complete User & Administration Guide
-description: Master Google Forms email automation, custom SMTP integration, conditional routing, domain navigation, and email campaigns with FormMail Hub.
+description: Comprehensive guide for Google Forms email automation, custom SMTP setup, team routing, campaign dispatches, and quota expansion with FormMail Hub.
 ---
 
-Welcome to the official **FormMail Hub** documentation. FormMail Hub transforms standard Google Forms™ into an enterprise-grade email automation, lead engagement, and customer communications platform.
+Welcome to the official **FormMail Hub** user and administration guide. FormMail Hub transforms standard Google Forms™ into an enterprise-grade customer communications, lead engagement, and email automation platform.
 
-Access the central documentation hub and official portal anytime at [https://doc.formmailhub.com/](https://doc.formmailhub.com/).
+Access the central documentation portal anytime at [https://doc.formmailhub.com/](https://doc.formmailhub.com/).
 
 ---
 
-## 1. Core Architecture & Navigation
+## 1. Ecosystem & Application Architecture
 
-FormMail Hub is engineered to operate seamlessly inside the Google Workspace ecosystem while offloading heavy email dispatch operations to optimized delivery networks or your own custom SMTP servers.
+FormMail Hub operates as an integrated multi-addon suite across Google Workspace, bringing powerful communication capabilities to Google Forms™ and Google Sheets™.
 
-### Official Portal Navigation
-The global navigation across the application connects directly to the official documentation hub at `https://doc.formmailhub.com/`. Users and administrators can use this portal to access:
-- Comprehensive setup tutorials and integration walkthroughs.
-- Technical specifications for major SMTP email providers.
-- Live status updates, policy changes, and compliance frameworks.
-
-### Dual-Routing System Architecture
 ```
-+-----------------------------------------------------------------------+
-|                         Google Forms Submissions                      |
-+-----------------------------------------------------------------------+
-                                    |
-                                    v
-+-----------------------------------------------------------------------+
-|                           FormMail Hub Engine                         |
-+-----------------------------------------------------------------------+
-                /                                       \
-               v                                         v
-+-------------------------------+       +--------------------------------+
-| Internal Admin & Team Alerts  |       | Respondent Auto-Responders     |
-| (Dedicated System Relay)      |       | (Custom SMTP: SES, Gmail, etc) |
-| * Consumes 0% Personal Quota  |       | * Scalable up to 10,000+/day   |
-+-------------------------------+       +--------------------------------+
++-----------------------------------------------------------------------------------+
+|                             GOOGLE FORMS ENTRY POINTS                             |
+|  +---------------------------+  +-------------------+  +-----------------------+  |
+|  | Form Confirmation Emails  |  |   Form to Email   |  | Form Notifications    |  |
+|  |        (Add-on)           |  |     (Add-on)      |  |     SMTP (Add-on)     |  |
+|  +---------------------------+  +-------------------+  +-----------------------+  |
++------------------------------------------+----------------------------------------+
+                                           |
+                                           v
++-----------------------------------------------------------------------------------+
+|                             CORE APPLICATION HUB                                  |
+|                     FormMail Hub for Google Sheets™ Add-on                        |
+|                  (Full-Featured Application & Storage Layer)                      |
++-----------------------------------------------------------------------------------+
 ```
 
----
+### Connected Add-ons
+- **3 Google Forms Add-ons:** Connect directly into the platform to streamline setup:
+  1. *Form Confirmation Emails*
+  2. *Form to Email*
+  3. *Form Notifications SMTP*
+- **Full-Featured Core Application ("FormMail Hub" Google Sheets Add-on):** The central management application. Bulk broadcasting (Campaigns), full analytics, and list indexing are exclusively powered from the Google Sheets core add-on interface.
 
-## 2. Quick Start & Installation
-
-### Single User Installation
-1. Visit the **Google Workspace Marketplace** and search for **FormMail Hub** (or click the Marketplace badge on [doc.formmailhub.com](https://doc.formmailhub.com/)).
-2. Click **Install** or approve individual user permissions.
-3. Open any existing form or create a new form in [Google Forms™](https://forms.google.com).
-4. Click the **Add-ons** puzzle icon in the top toolbar, select **FormMail Hub**, and click **Configure**.
-
-### Domain-Wide Admin Deployment
-1. Log into the **Google Workspace Admin Console** (`admin.google.com`).
-2. Navigate to **Apps** > **Google Workspace Marketplace apps** > **Apps list**.
-3. Click **Domain Install** to grant permissions organization-wide across all user accounts.
+### Form Quota Expansion via Google Sheets
+Standard configurations restrict form limits. Connecting a spreadsheet via the **'FormMail Hub' Google Sheets add-on** enables scaling beyond the standard 20-form limit. Because a single spreadsheet can contain multiple Form Responses tabs while using only one active connection, you can manage and scale notifications across numerous forms effortlessly.
 
 ---
 
-## 3. Custom SMTP Setup & Quota Optimization
+## 2. Roles & Permissions Architecture
 
-Standard Google Workspace accounts enforce daily email sending limits (typically 100 to 1,500 emails/day depending on account type). FormMail Hub eliminates these restrictions by enabling custom **SMTP (Simple Mail Transfer Protocol)** connections.
+FormMail Hub maintains strict permission boundaries between administrators and team members:
 
-### Supported Email Delivery Options
-
-| Provider | Daily Limit | Best Use Case | Protocol |
-| :--- | :--- | :--- | :--- |
-| **Google Workspace / Free Gmail™** | Up to 500 / day | Standard transactional confirmations and small business forms | TLS (587) / SSL (465) |
-| **Amazon SES** | 10,000+ / day | High-volume lead capture, enterprise event registration, and marketing | TLS (587) / API |
-| **SendGrid / Mailgun** | Custom / Tiered | Transactional emails requiring detailed bounce tracking and analytics | TLS (587) / API |
-| **Custom Corporate SMTP** | Server-Defined | Organizations requiring strict internal relay servers (`smtp.yourdomain.com`) | STARTTLS / SSL |
-
-### Configuring Custom SMTP Credentials
-
-1. Launch the FormMail Hub sidebar in Google Forms.
-2. Navigate to **Settings** > **SMTP Configuration**.
-3. Choose your SMTP provider or select **Custom SMTP**.
-4. Input your connection parameters:
-   - **SMTP Host:** (e.g., `email-smtp.us-east-1.amazonaws.com` or `smtp.gmail.com`)
-   - **Port:** `587` (TLS) or `465` (SSL)
-   - **Authentication:** Username / API Key and Password / Secret Key
-   - **Sender Identity:** (e.g., `Support Team <support@yourdomain.com>`)
-5. Click **Test Connection** to verify delivery credentials, then save your configuration.
-
-### Intelligent Dual-Routing Architecture
-
-FormMail Hub features a dual-routing mechanism designed to preserve your personal email quota:
-
-- **Internal Admin & Team Alerts:** Routed via FormMail Hub's dedicated internal notification system. This consumes **0%** of your personal SMTP daily quota.
-- **External Respondent Emails:** Dispatched via your configured Custom SMTP server, ensuring 100% of your dedicated sending capacity is reserved for customer outreach.
+- **Primary Connector / Admin Role:** Only the **first user among the form's editors who connects that form to FormMail Hub** is granted exclusive rights to configure settings, templates, rules, custom SMTP, and triggers for that form. Co-editors do not gain configuration access.
+- **Team Member Role:** Team members are **ONLY** added so the Admin can select who receives email notifications upon form submission. Team members **DO NOT** have edit or configuration permissions.
 
 ---
 
-## 4. Setting Up Auto-Responders & Smart Routing
+## 3. Delivery Infrastructure & Custom SMTP Requirement
 
-### Automated Confirmation Responders
-Send instant, tailored confirmation emails to users as soon as they submit a Google Form.
+FormMail Hub provides a clear separation between out-of-the-box alerts and custom outreach:
 
-1. Go to **Email Rules** > **Create New Rule**.
-2. Select **Trigger: On Form Submit**.
-3. Set the **Recipient Field** to match your form's Email question (e.g., `{Email Address}`).
-4. Customize the Email Subject and Body using dynamic tags.
+```
++-----------------------------------------------------------------------------------+
+|                        FORMMAIL HUB DELIVERY INFRASTRUCTURE                       |
++-----------------------------------------------------------------------------------+
+                                  |                      |
+          +-----------------------+                      +-----------------------+
+          |                                                              |
+          v                                                              v
++-----------------------------------+                          +-----------------------------------+
+|    BUILT-IN SYSTEM NOTIFICATIONS  |                          | USER-CONFIGURED CUSTOM SMTP       |
++-----------------------------------+                          +-----------------------------------+
+| - Out-of-the-box feature          |                          | - MANDATORY requirement before    |
+| - Uses system internal SMTP       |                          |   creating templates, rules,      |
+| - Sends default submission alerts |                          |   campaigns, or viewing analytics |
+| - Targets Admin & Team Members    |                          | - Sends under Admin's identity    |
+| - Consumes 0% personal SMTP quota |                          | - Scalable to 10,000+ msgs/day    |
++-----------------------------------+                          +-----------------------------------+
+```
 
-### Dynamic Content Tag Matrix (`{tags}`)
-Incorporate respondent answers directly into email templates using tags corresponding to form questions:
+### Built-in System Notifications (Out-of-the-Box)
+System Notifications work right out of the box powered by FormMail Hub's internal SMTP. It delivers default-templated submission alerts directly to the Form Admin and selected Team Members without requiring custom SMTP setup.
 
-| Dynamic Tag | Description | Example Output |
-| :--- | :--- | :--- |
-| `{Full Name}` | Replaced by the submitter's answer to "Full Name". | Jane Doe |
-| `{Form Summary}` | Generates a formatted summary table of all submitted questions and answers. | Full question/answer table |
-| `{Submission Date}` | Inserts the exact timestamp of form submission. | 2026-03-31 14:30 UTC |
-| `{Unsubscribe link}` | Adds a standard opt-out mechanism for email compliance. | Opt-out URL |
+### Mandatory Custom SMTP Requirement
+Admins **MUST** configure custom SMTP settings before creating email templates, rules, campaigns, or accessing analytics. These features send custom communications under the Admin's own email identity and require verified SMTP transport.
 
-### Conditional Email Routing
-Route notifications or specific auto-responders based on user responses:
-
-- **Department Rule:** If *"Department Requested"* equals *"Technical Support"*, send email to `support@yourdomain.com`.
-- **VIP Responder Rule:** If *"Ticket Type"* equals *"VIP"*, trigger an instant priority response template via custom SMTP.
-
----
-
-## 5. Email Marketing & Broadcast Campaigns
-
-Beyond automated real-time triggers, FormMail Hub provides a powerful Broadcast Campaign Engine for bulk emails targeting form respondents. Bulk sending is **ONLY** available when launched from the **FormMail Hub Google Sheets add-on**.
-
-### 1. Lead Indexing
-FormMail Hub automatically indexes response records into your connected responses Google Sheet™, organizing submitted data into targeted contact segments.
-
-### 2. Creating & Dispatching Broadcast Campaigns
-To send a proactive campaign to form respondents:
-1. **Create Template:** Create a campaign template featuring rich text or HTML content along with required `{Unsubscribe link}` compliance tags.
-2. **Configure Filtering Rules:** Set up rules to target specific respondents in the responses Google Sheet.
-3. **Enable Active Campaign:** Enable the rule as an active campaign.
-4. **Open Google Sheets Core Add-on:** Within the FormMail Hub Google Sheets add-on interface on the responses sheet, switch to the **Campaign** view.
-5. **Select & Dispatch:** Select the synchronized campaign name from the list and click the **Dispatch** button to initiate the bulk email dispatch.
+#### Supported Custom SMTP Providers
+- **Free Gmail™ / Google Workspace:** Up to 500 emails/day using a 16-character Google App Password.
+- **Amazon SES:** Scale to 10,000+ emails/day with enterprise deliverability.
+- **SendGrid / Mailgun / Postmark:** API/SMTP relays with advanced tracking.
+- **Custom Corporate Relays:** Connect directly to `smtp.yourdomain.com`.
 
 ---
 
-## 6. Security, Deliverability & Compliance
+## 4. Setting Up Auto-Responders & Conditional Rules
 
-To ensure your automated emails consistently land in the primary inbox rather than spam folders:
+Once Custom SMTP is configured by the Admin, custom email automation and rules can be established:
 
-1. **Verify Sender Domain (SPF & DKIM):** When using Amazon SES, SendGrid, or custom domains, ensure SPF, DKIM, and DMARC DNS records are fully configured.
-2. **Use Clear Sender Names:** Clearly identify your company or team in the "From" name field.
-3. **Include Opt-Out Links:** Always place an `{Unsubscribe link}` in bulk broadcast emails to remain compliant with CAN-SPAM and GDPR regulations.
-4. **Monitor Quota Usage:** Keep track of your daily limit directly inside the FormMail Hub dashboard settings.
+### Dynamic Tag Personalization
+Templates parse submission fields into dynamic tags wrapped in curly braces (`{Tag Name}`):
+- `{Question Title}`: Inserts exact answers provided by respondents.
+- `{Form Summary}`: Generates an inline HTML table of all submitted response fields.
+- `{Submission Date}`: Localized timestamp of the response.
+- `{Unsubscribe link}`: Generates a mandatory opt-out URL for campaign compliance.
+
+### Smart Conditional Logic Routing
+Route custom email templates based on specific submission field criteria (e.g., `If "Department" Equals "Sales"` -> Route to `sales@yourdomain.com` using Custom SMTP).
 
 ---
 
-*Google Forms™ and Gmail™ are trademarks of Google LLC.*
+## 5. Broadcast Campaigns & Lead List Management
+
+Proactive bulk email marketing to form respondents is powered by the **FormMail Hub Google Sheets add-on**.
+
+### Campaign Availability & Requirement
+Bulk sending (Campaigns) is **ONLY** available when launched from the **FormMail Hub Google Sheets add-on**. It is intentionally disabled within Google Forms entry add-ons.
+
+### Campaign Creation & Dispatch Workflow
+To send a proactive campaign to form respondents, follow this exact step-by-step workflow:
+
+1. **Create Campaign Template:** The Admin creates a campaign template containing desired content and mandatory compliance tags (`{Unsubscribe link}`).
+2. **Configure Filtering Rules:** The Admin configures filtering rules to target specific respondents in the responses Google Sheet™ (e.g., date ranges, response field choices).
+3. **Enable Active Campaign Rule:** The Admin enables the rule as an active campaign.
+4. **Open Google Sheets Core Add-on:** Within the backing responses Google Sheet™, the Admin launches the **FormMail Hub** add-on and switches to the **Campaign** view.
+5. **Select Synchronized Campaign:** Select the synchronized campaign name from the list.
+6. **Initiate Dispatch:** Click the **'Dispatch'** button to initiate the bulk email dispatch.
+
+---
+
+## 6. Audit Logging & Compliance
+
+- **Suppression Management:** When a contact unsubscribes via `{Unsubscribe link}`, their record is flagged as `SUPPRESSED` and automatically excluded from future campaign dispatches.
+- **Audit Diagnostics:** View delivery status (`DELIVERED`, `BOUNCED_HARD`, `FAILED_SMTP_AUTH`, `OPT_OUT_SKIPPED`) in real-time diagnostic logs.
+
+---
+
+*Google Forms™, Google Sheets™, and Gmail™ are trademarks of Google LLC.*

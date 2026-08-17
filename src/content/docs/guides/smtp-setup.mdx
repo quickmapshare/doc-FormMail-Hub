@@ -1,105 +1,96 @@
 ---
 title: Custom SMTP & Domain Authentication Guide
-description: Complete step-by-step instructions for integrating Amazon SES, SendGrid, Mailgun, and Google Workspace SMTP with FormMail Hub, including SPF, DKIM, and DMARC verification.
+description: Complete guide for configuring Custom SMTP providers in FormMail Hub, understanding mandatory SMTP prerequisites, and setting up SPF, DKIM, and DMARC verification.
 ---
 
-Standard Google Workspace accounts enforce daily email limits that restrict customer communication. By configuring a **Custom SMTP (Simple Mail Transfer Protocol)** server in FormMail Hub, you can scale automated email dispatch from 500 to over 10,000+ emails per day while preserving personal sending quotas and maintaining maximum deliverability.
+FormMail Hub utilizes a flexible dual-transport model to deliver administrative submission alerts and client-facing custom outreach. 
 
-This guide provides step-by-step configuration instructions for popular transactional email providers and detailed domain authentication (SPF, DKIM, DMARC) setup instructions.
-
----
-
-## 1. Provider Configuration Guides
-
-### Provider A: Amazon SES (Simple Email Service)
-Amazon SES offers high deliverability and low costs for high-volume email triggers.
-
-1. **Verify Your Domain in AWS:**
-   - Log into the AWS Management Console and navigate to **Amazon SES**.
-   - Under **Configuration** > **Verified Identities**, click **Create Identity**.
-   - Select **Domain**, enter your domain name (e.g., `yourcompany.com`), and choose your DKIM key settings.
-   - Publish the generated CNAME records in your domain's DNS manager (Cloudflare, Route53, GoDaddy, etc.).
-2. **Generate SMTP Credentials:**
-   - In the Amazon SES console, navigate to **Account Level Settings** > **SMTP Settings**.
-   - Click **Create SMTP Credentials**.
-   - AWS will generate an IAM user with dedicated **SMTP Username** and **SMTP Password** credentials. Download or copy these credentials immediately.
-3. **Request Production Access (Exit Sandbox):**
-   - By default, new AWS SES accounts are in the Sandbox environment (limited to verified recipient emails).
-   - Request production access under **Account Details** > **Request Production Access** to send emails to any recipient.
-4. **Configure FormMail Hub:**
-   - In FormMail Hub, select **Settings** > **SMTP Configuration** > **Amazon SES**.
-   - **Host:** `email-smtp.us-east-1.amazonaws.com` (adjust region as appropriate).
-   - **Port:** `587` (TLS) or `465` (SSL).
-   - **Username:** Your AWS SES SMTP Username.
-   - **Password:** Your AWS SES SMTP Password.
+Understanding when Custom SMTP is required—and how to configure it—is essential for unlocking the full suite of email automation features.
 
 ---
 
-### Provider B: Google Workspace & Gmail™ App Passwords
-To use a custom Gmail™ or Google Workspace account without hitting OAuth scope limitations, use an **App Password**.
+## 1. Built-in Notifications vs. Custom SMTP Requirement
 
-1. **Enable 2-Step Verification:**
-   - Go to your Google Account security settings (`myaccount.google.com/security`).
-   - Under "How you sign in to Google", ensure **2-Step Verification** is turned **ON**.
-2. **Create an App Password:**
-   - Search for **App Passwords** in the Google Account search bar.
-   - Enter an app name (e.g., `FormMail Hub SMTP`).
-   - Click **Create** and copy the generated 16-character secret key.
+```
++-----------------------------------------------------------------------------------+
+|                        DELIVERY SYSTEM CONFIGURATION PATH                         |
++-----------------------------------------------------------------------------------+
+                                  |
+          +-----------------------+-----------------------+
+          |                                               |
+          v                                               v
++-----------------------------------+           +-----------------------------------+
+|   BUILT-IN SYSTEM NOTIFICATIONS   |           |    CUSTOM SMTP INTEGRATION        |
++-----------------------------------+           +-----------------------------------+
+| - Powered by system internal SMTP |           | - MANDATORY setup BEFORE creating |
+| - Out-of-the-box submission alerts|           |   templates, rules, campaigns, or |
+| - Delivered to Admin & Team       |           |   accessing analytics             |
+| - No custom SMTP required         |           | - Sends under Admin's identity    |
++-----------------------------------+           +-----------------------------------+
+```
+
+### Built-in System Notifications (No Setup Required)
+System Notifications is an out-of-the-box feature powered by the system's internal SMTP. It sends default-templated submission alerts to the Form Admin and selected Team Members immediately upon installation, consuming **0%** of your personal daily email quota.
+
+### Absolute Requirement for Custom SMTP
+Admins **MUST** configure custom SMTP settings before creating email templates, rules, campaigns, or accessing analytics, as these features require sending emails under the Admin's own email identity.
+
+---
+
+## 2. Step-by-Step Provider Setup Guides
+
+### Provider A: Google Workspace & Gmail™ App Passwords
+To send emails under your Google identity without hitting native Apps Script restrictions, generate a Google App Password.
+
+1. **Enable 2-Step Verification:** Go to Google Account Security (`myaccount.google.com/security`) and ensure 2-Step Verification is **ON**.
+2. **Generate App Password:** Search for **App Passwords**, enter `FormMail Hub`, and copy the generated 16-character secret key.
 3. **Configure FormMail Hub:**
-   - In FormMail Hub, select **Settings** > **SMTP Configuration** > **Gmail / Google Workspace**.
+   - Navigate to **Settings > SMTP Configuration**.
    - **Host:** `smtp.gmail.com`
    - **Port:** `587` (TLS) or `465` (SSL)
-   - **Username:** Your full Gmail or Workspace email address (e.g., `sales@yourcompany.com`).
-   - **Password:** The generated 16-character App Password (spaces excluded).
+   - **Username:** Your full Gmail/Workspace email address.
+   - **Password:** The 16-character App Password (without spaces).
+
+### Provider B: Amazon SES (Simple Email Service)
+1. **Verify Identity:** In the AWS SES Console, create and verify your sending domain identity via CNAME records.
+2. **Generate SMTP Credentials:** Navigate to **SES > Account Level Settings > SMTP Settings** and click **Create SMTP Credentials**.
+3. **Request Production Access:** Request exit from the AWS SES Sandbox environment.
+4. **Configure FormMail Hub:**
+   - **Host:** `email-smtp.{region}.amazonaws.com` (e.g., `email-smtp.us-east-1.amazonaws.com`)
+   - **Port:** `587` (TLS)
+   - **Username / Password:** AWS SES IAM SMTP credentials.
+
+### Provider C: SendGrid / Mailgun / Custom Corporate Relays
+- **SendGrid:** Host `smtp.sendgrid.net`, Port `587`, Username `apikey`, Password = Your API Key.
+- **Mailgun:** Host `smtp.mailgun.org`, Port `587`, Username = Postmaster address, Password = SMTP password.
+- **Custom Relay:** Input corporate host (`smtp.yourdomain.com`), port (`587` or `465`), and authorized user credentials.
 
 ---
 
-### Provider C: SendGrid
-1. Log into your **SendGrid** account and navigate to **Settings** > **API Keys**.
-2. Click **Create API Key**, assign **Full Access** or **Restricted Access** (with Mail Send permissions), and copy the key.
-3. Navigate to **Settings** > **Sender Authentication** to verify your domain via CNAME DNS records.
-4. **FormMail Hub Settings:**
-   - **Host:** `smtp.sendgrid.net`
-   - **Port:** `587`
-   - **Username:** `apikey` (literal string)
-   - **Password:** Your generated SendGrid API Key
+## 3. Domain Authentication (SPF, DKIM & DMARC)
 
----
+To ensure high inbox placement when sending via Custom SMTP, configure DNS records at your domain host:
 
-## 2. Domain Authentication (SPF, DKIM & DMARC)
-
-To ensure emails sent via custom SMTP land directly in the recipient's **Primary Inbox** and avoid spam filters, configure these essential DNS records:
-
-### SPF (Sender Policy Framework)
-SPF specifies which server IP addresses are authorized to send email on behalf of your domain.
-- Add a DNS `TXT` record at your root domain (`@`):
+- **SPF (Sender Policy Framework):**
   ```txt
   v=spf1 include:amazonses.com include:_spf.google.com ~all
   ```
-*(Include only the providers active on your domain).* 
-
-### DKIM (DomainKeys Identified Mail)
-DKIM attaches a cryptographic signature to every outbound email.
-- Copy the CNAME or TXT keys generated in your SMTP provider's dashboard (e.g., Amazon SES or SendGrid) and insert them into your DNS provider.
-
-### DMARC (Domain-based Message Authentication)
-DMARC tells receiving inbox providers how to handle emails that fail SPF or DKIM checks.
-- Add a DNS `TXT` record at `_dmarc.yourdomain.com`:
+- **DKIM (DomainKeys Identified Mail):** Publish the CNAME/TXT keys generated by Amazon SES, SendGrid, or Google Workspace.
+- **DMARC:**
   ```txt
   v=DMARC1; p=none; rua=mailto:dmarc-reports@yourdomain.com
   ```
 
 ---
 
-## 3. Testing & Troubleshooting
+## 4. Diagnostics & Connection Troubleshooting
 
-| Error / Symptom | Possible Cause | Resolution |
+| Error Code | Primary Cause | Resolution |
 | :--- | :--- | :--- |
-| `535 5.7.8 Authentication Failed` | Incorrect credentials or lack of App Password. | Re-check credentials. Ensure Google Workspace users use an **App Password**, not standard password. |
-| `Connection Timeout on Port 25` | Port 25 blocked by cloud ISP or firewall. | Switch connection port to **587** (STARTTLS) or **465** (SSL). |
-| `Email Delivered to Spam` | Unverified domain or missing SPF/DKIM DNS records. | Complete Sender Domain Verification and add valid SPF and DKIM records. |
-| `SES Messaging Account in Sandbox` | Amazon SES sandbox restriction. | Submit a SES Production Access request in the AWS Console. |
+| `FAILED_SMTP_AUTH` / `535 5.7.8` | Invalid username or account password used instead of App Password. | Re-enter credentials. For Gmail accounts, generate a dedicated 16-character App Password. |
+| `FAILED_SMTP_CONNECT` | Host port blocked by network firewall or wrong hostname. | Switch connection port from 25 to **587** (TLS) or **465** (SSL). |
+| `Feature Access Locked` | Custom SMTP not configured. | Admins must complete Custom SMTP setup before creating templates, rules, campaigns, or viewing analytics. |
 
 ---
 
-*Google Forms™ and Gmail™ are trademarks of Google LLC.*
+*Google Forms™, Google Sheets™, and Gmail™ are trademarks of Google LLC.*
