@@ -30,9 +30,10 @@ else:
     product_rules = """# PRODUCT RULES & ABSOLUTE TRUTHS
 
 1. Team Member Logic: Team members are ONLY added so the Admin can select who receives email notifications. Team members DO NOT have edit or configuration permissions.
-2. Ecosystem: FormMail Hub connects from 3 Google Forms add-ons ("Form Confirmation Emails", "Form to Email", "Form Notifications SMTP").
-3. Core App: The Google Sheets add-on named "FormMail Hub" is the core application.
-4. Campaign Logic: Bulk sending (Campaigns) is ONLY available when launched from the Google Sheets add-on.
+2. Primary Connector / Admin Role: Only the first user among the form's editors who connects that form to FormMail Hub is granted exclusive rights to configure settings, templates, and triggers for that form.
+3. Ecosystem: FormMail Hub connects from 3 Google Forms add-ons ("Form Confirmation Emails", "Form to Email", "Form Notifications SMTP").
+4. Full-Featured Application: The Google Sheets add-on named "FormMail Hub" is the full-featured application of the ecosystem.
+5. Campaign Logic: Bulk sending (Campaigns) is ONLY available when launched from the Google Sheets add-on.
 """
     with open(rules_file, "w", encoding="utf-8") as f:
         f.write(product_rules)
