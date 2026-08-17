@@ -61,7 +61,7 @@ Errors occurring within the Google Workspace runtime environment or form submit 
 | :--- | :--- | :--- | :--- |
 | `ERR_AUTH_SCOPE` | Missing required OAuth permissions. | Workspace scopes modified or authorization revoked. | Re-open FormMail Hub add-on sidebar and complete the account re-authorization prompt. |
 | `ERR_FORM_ID_NOT_FOUND` | Detached form instance. | Form container moved or copy created without resetting trigger bindings. | Re-bind FormMail Hub in the new Google Form via **Settings > Re-link Form**. |
-| `ERR_MAX_EXECUTION_TIME` | Apps Script execution limit hit (6 minutes). | High submission spike processed synchronously or slow remote SMTP timeouts. | Enable Custom SMTP background dispatching or switch to asynchronous API delivery. |
+| `ERR_MAX_EXECUTION_TIME` | Apps Script execution limit hit (6 minutes). | High submission spike processed synchronously or slow remote SMTP timeouts. | Enable Custom SMTP background dispatching or segment execution into smaller batch chunks. |
 | `ERR_QUOTA_EXCEEDED` | Google Workspace daily email quota exhausted. | Form triggered using default Google relay without Custom SMTP. | Configure a Custom SMTP integration (e.g., Amazon SES or SendGrid) to bypass Google limits. |
 | `ERR_TAG_PARSING_FAILED` | Dynamic tag evaluator failure. | Corrupted bracket syntax (e.g., `{Question Name` missing closing brace `}`). | Correct syntax in the email template editor. |
 
