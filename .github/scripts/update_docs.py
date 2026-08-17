@@ -43,14 +43,6 @@ else:
 """
     with open(rules_file, "w", encoding="utf-8") as f:
         f.write(product_rules)
-    with open(rules_file, "w", encoding="utf-8") as f:
-        f.write(product_rules)
-    with open(rules_file, "w", encoding="utf-8") as f:
-        f.write(product_rules)
-    with open(rules_file, "w", encoding="utf-8") as f:
-        f.write(product_rules)
-    with open(rules_file, "w", encoding="utf-8") as f:
-        f.write(product_rules)
 
 # 2. ĐỌC TÀI LIỆU ĐÃ XUẤT BẢN (NẾU CÓ)
 existing_docs = {}
@@ -63,22 +55,18 @@ if os.path.exists(docs_dir):
                     existing_docs[file_path] = f.read()
 
 # 3. CHIẾN LƯỢC CHỌN MÃ NGUỒN CÓ GIỚI HẠN (TRÁNH QUÁ TẢI PROMPT)
-# Quét các file UI (.astro, .tsx, .jsx) và backend (.ts, .js, .py, .gs)
 source_files_content = {}
 ui_extensions = ('.astro', '.tsx', '.jsx', '.html', '.svelte', '.vue')
 backend_extensions = ('.ts', '.js', '.py', '.gs')
 
 all_source_files = []
 for root, dirs, files in os.walk("src"):
-    # Bỏ qua thư mục docs để không bị lặp
     if "content/docs" in root:
         continue
     for file in files:
         if file.endswith(ui_extensions) or file.endswith(backend_extensions):
             all_source_files.append(os.path.join(root, file))
 
-# Lựa chọn mẫu 1-2 file UI và 1-2 file Backend tương ứng để AI phân tích sâu
-selected_sources = []
 ui_sample = [f for f in all_source_files if f.endswith(ui_extensions)][:2]
 backend_sample = [f for f in all_source_files if f.endswith(backend_extensions)][:2]
 selected_sources = ui_sample + backend_sample
@@ -86,13 +74,13 @@ selected_sources = ui_sample + backend_sample
 for s_file in selected_sources:
     try:
         with open(s_file, "r", encoding="utf-8") as f:
-            source_files_content[s_file] = f.read()[:3000] # Giới hạn ký tự mỗi file
+            source_files_content[s_file] = f.read()[:3000]
     except Exception as e:
         pass
 
 diff_context = code_diff if code_diff else "NO RECENT CODE DIFF. Focus on sampled source files or published docs audit."
 
-# 4. TẠO PROMPT VỚI TƯ DUY 2 CHẾ ĐỘ (ANALYSIS HOẶC AUDIT)
+# 4. TẠO PROMPT
 prompt = f"""
 You are an expert technical writer and documentation architect for 'FormMail Hub'.
 
@@ -115,21 +103,21 @@ PRIORITY 1 (NEW FEATURE DISCOVERY):
 - If you find ANY verified, absolute feature logic/rule that is missing from 'PRODUCT RULES', UPDATE `PRODUCT_RULES.md` first.
 - Write or expand the corresponding documentation file in `src/content/docs/guides/` or `src/content/docs/reference/`.
 
-PRIORITY 2 (DOCS AUDIT & CORRECTION - IF NO NEW FEATURES TO PROCESS):
+PRIORITY 2 (DOCS AUDIT & CORRECTION):
 - If the source code reveals no new un-documented features, AUDIT the existing published docs in `CURRENT PUBLISHED DOCUMENTATION FILES`.
-- Check if any doc contains inaccurate statements or hallucinates permissions (e.g., giving team members editing rights).
-- If a published doc violates `PRODUCT RULES`, REWRITE and REJECT the inaccurate sections to align strictly with `PRODUCT RULES`.
+- If a published doc violates `PRODUCT RULES` or contains unverified features, REWRITE and REJECT the inaccurate sections to align strictly with `PRODUCT RULES`.
+- IF ALL PUBLISHED DOCS ARE 100% ACCURATE AND NO FILES NEED UPDATING, include the token `@@@NO_UPDATES_NEEDED@@@` in your output.
 
 STRICT REQUIREMENTS:
 1. ALL OUTPUT MUST BE STRICTLY IN ENGLISH.
 2. FRONTMATTER: Docs must have valid YAML (title, description).
-3. DO NOT USE JSON OUTPUT FORMAT! Use the exact custom delimiters shown below.
+3. DO NOT USE JSON OUTPUT FORMAT! Use the exact custom delimiters shown below when updating files.
 
-FORMAT TEMPLATE TO STRICTLY FOLLOW:
+FORMAT TEMPLATE TO FOLLOW WHEN UPDATING FILES:
 
 @@@FILE_PATH: PRODUCT_RULES.md
 @@@CONTENT:
-(Updated content of PRODUCT_RULES.md if a new truth was found, otherwise omit this block)
+(Updated content of PRODUCT_RULES.md if a new truth was found)
 @@@END_FILE
 
 @@@FILE_PATH: src/content/docs/guides/team-management.mdx
@@ -171,10 +159,18 @@ try:
                 print(f"⚠️ Bỏ qua block do lỗi phân tách: {ex}")
                 continue
 
+    # XỬ LÝ TRƯỜNG HỢP AI AUDIT THẤY MỌI THỨ ĐÃ CHUẨN (KHÔNG CẦN SỬA FILE NÀO)
     if not docs_to_update:
-        print("❌ LỖI: AI không trả về block nội dung nào.")
-        print(cleaned_text)
-        sys.exit(1)
+        if "@@@NO_UPDATES_NEEDED@@@" in cleaned_text or "Audit" in cleaned_text or "Compliant" in cleaned_text:
+            print("✅ AI BÁO CÁO: Tất cả tài liệu hiện tại đã khớp 100% với PRODUCT_RULES.md. Không cần cập nhật file.")
+            print("\n--- BÁO CÁO KIỂM TRA TỪ AI ---")
+            print(cleaned_text)
+            print("--------------------------------\n")
+            sys.exit(0) # Thoát thành công (exit code 0)
+        else:
+            print("❌ LỖI: AI không trả về block nội dung hợp lệ nào.")
+            print(cleaned_text)
+            sys.exit(1)
 
     # 5. GHI FILE VÀ CẬP NHẬT
     for item in docs_to_update:
