@@ -111,11 +111,13 @@ When a user fills out a connected Google Form, execution flows as follows:
 7. **Audit Logging:** Status (`DELIVERED`, `BOUNCED_HARD`, `FAILED_SMTP_AUTH`) is written to the audit log.
 
 ### Bulk Campaign Pipeline (Google Sheets Core Only)
-1. **Audience Filtering:** Admin defines segment filters (e.g., `Column C = 'Premium'` AND `Opt-In Status != Suppressed`).
-2. **Subscriber Verification:** The Campaign Engine queries spreadsheet rows and cross-references the suppression registry.
-3. **Batch Queueing:** Dispatch jobs are batched into chunks to comply with provider rate limits.
-4. **Asynchronous Send:** Messages are handed off to the Admin's Custom SMTP server.
-5. **State Update:** Spreadsheet metadata and campaign analytics are updated in real time.
+1. **Template & Rule Setup:** Admin creates a campaign template and configures filtering rules targeting specific respondents in the responses Google Sheet.
+2. **Rule Activation:** Admin enables the configured rule as an active campaign.
+3. **Synchronized Selection:** Within the FormMail Hub Google Sheets add-on interface on the responses sheet, the Admin switches to the Campaign view and selects the synchronized campaign name.
+4. **Dispatch Initiation:** Admin clicks the **Dispatch** button to initiate the bulk email dispatch.
+5. **Subscriber Verification:** The Campaign Engine queries targeted spreadsheet rows, evaluates conditions, and cross-references the suppression registry.
+6. **Batch Queueing & Send:** Dispatch jobs are batched into chunks and handed off asynchronously to the Admin's Custom SMTP server.
+7. **State Update:** Spreadsheet metadata, audit logs, and campaign analytics are updated in real time.
 
 ---
 

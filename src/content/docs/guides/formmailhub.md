@@ -119,17 +119,18 @@ Route notifications or specific auto-responders based on user responses:
 
 ## 5. Email Marketing & Broadcast Campaigns
 
-Beyond automated triggers, FormMail Hub enables direct email marketing campaigns targeting form respondents.
+Beyond automated real-time triggers, FormMail Hub provides a powerful Broadcast Campaign Engine for bulk emails targeting form respondents. Bulk sending is **ONLY** available when launched from the **FormMail Hub Google Sheets add-on**.
 
-### 1. Managing Collected Leads
-FormMail Hub automatically indexes contact information submitted through your forms, organizing them into ready-to-use subscriber lists.
+### 1. Lead Indexing
+FormMail Hub automatically indexes response records into your connected responses Google Sheet™, organizing submitted data into targeted contact segments.
 
-### 2. Creating Broadcast Campaigns
-1. In the FormMail Hub dashboard, select **Campaigns** > **New Broadcast**.
-2. Choose the target Google Form list or filtered response segment.
-3. Draft your email message using rich text or HTML formatting.
-4. Insert mandatory compliance elements, such as dynamic `{Unsubscribe link}` tags.
-5. Click **Schedule** or **Send Now**.
+### 2. Creating & Dispatching Broadcast Campaigns
+To send a proactive campaign to form respondents:
+1. **Create Template:** Create a campaign template featuring rich text or HTML content along with required `{Unsubscribe link}` compliance tags.
+2. **Configure Filtering Rules:** Set up rules to target specific respondents in the responses Google Sheet.
+3. **Enable Active Campaign:** Enable the rule as an active campaign.
+4. **Open Google Sheets Core Add-on:** Within the FormMail Hub Google Sheets add-on interface on the responses sheet, switch to the **Campaign** view.
+5. **Select & Dispatch:** Select the synchronized campaign name from the list and click the **Dispatch** button to initiate the bulk email dispatch.
 
 ---
 

@@ -22,7 +22,7 @@ Every time a respondent fills out a Google Form™ connected to FormMail Hub, th
 
 ## 2. Audience Segmentation & Dynamic Filters
 
-Sending generic mass emails to your entire contact list can lower engagement and increase spam complaints. FormMail Hub allows you to filter and segment collected leads using submission data.
+Sending generic mass emails to your entire contact list can lower engagement and increase spam complaints. FormMail Hub allows you to filter and segment collected leads using submission data stored in your Google Sheet.
 
 ### Common Segmentation Rules
 - **Date-Based Filtering:** Target respondents who submitted forms within a specific date range (e.g., leads collected in Q1 or within the last 30 days).
@@ -31,40 +31,49 @@ Sending generic mass emails to your entire contact list can lower engagement and
 
 ---
 
-## 3. Step-by-Step Walkthrough: Launching a Broadcast Campaign
+## 3. Step-by-Step Walkthrough: Creating & Dispatching a Campaign
 
-Follow these steps to build and dispatch a targeted email broadcast:
+Follow this workflow to create, synchronize, and dispatch a targeted broadcast campaign to form respondents:
 
-### Step 1: Open the Campaign Studio in Google Sheets
-1. Launch the **FormMail Hub** add-on from your connected **Google Sheet™** (Campaigns are strictly available from the Google Sheets core add-on).
-2. In the navigation menu, select **Campaigns** > **+ Create Broadcast**.
-
-### Step 2: Select Target Audience & Source Form
-1. Choose the source **Google Form** from which contacts were collected.
-2. Apply any required **Segment Filters** (e.g., `Submission Date >= 2026-01-01` AND `Plan = Premium`).
-3. View the live estimated recipient count to verify list accuracy.
-
-### Step 3: Design Email Content & Dynamic Personalization
-1. Choose your authoring mode (**Rich Text** or **Advanced HTML Editor**).
-2. Specify the **Subject Line**, incorporating dynamic personalization tags:
-   ```text
-   Exclusive Update for {Company Name} - Spring 2026 Preview
-   ```
-3. Craft the email body, utilizing personal tags such as `{First Name}`, `{Submission Date}`, or custom field values.
-
-### Step 4: Add Required Compliance Elements
-To maintain CAN-SPAM and GDPR compliance, every marketing email must contain an active opt-out link. Insert the mandatory tag:
-```html
-<p style="font-size: 12px; color: #64748b;">
-  You are receiving this email because you registered on our site. 
-  <a href="{Unsubscribe link}">Click here to unsubscribe</a> at any time.
-</p>
+```
++-----------------------------------------------------------------------------------+
+| 1. Create Campaign Template  -->  2. Configure Filtering Rules in Google Sheet    |
++-----------------------------------------------------------------------------------+
+                                          |
+                                          v
++-----------------------------------------------------------------------------------+
+| 3. Enable Rule as Active     -->  4. Open Sheets Add-on & Switch to Campaign View |
++-----------------------------------------------------------------------------------+
+                                          |
+                                          v
++-----------------------------------------------------------------------------------+
+| 5. Select Synchronized Name  -->  6. Click 'Dispatch' Button to Initiate Bulk Send|
++-----------------------------------------------------------------------------------+
 ```
 
-### Step 5: Select Email Delivery Route & Schedule
-1. **Select Sender Identity / SMTP Profile:** Choose between your verified **Custom SMTP** (Amazon SES, SendGrid, Mailgun) or Google Workspace account.
-2. **Dispatch Mode:** Select **Send Immediately** or set a scheduled date and time for automated future delivery.
-3. Click **Dispatch Campaign**.
+### Step 1: Create a Campaign Template
+1. In the FormMail Hub interface, navigate to the template builder.
+2. Draft your email message using Rich Text or HTML formatting.
+3. Incorporate dynamic personalization tags (e.g., `{First Name}`, `{Company Name}`) and mandatory compliance tags (`{Unsubscribe link}`).
+4. Save the campaign template.
+
+### Step 2: Configure Filtering Rules
+1. Define segmentation criteria targeting specific respondent rows in the backing responses Google Sheet™ (e.g., `Plan = Enterprise` AND `Date >= 2026-01-01`).
+2. Map the template variables to the corresponding spreadsheet response columns.
+
+### Step 3: Enable the Active Campaign Rule
+1. Review rule parameters and toggle the rule state to **Active**.
+2. This synchronizes the campaign configuration with the backing response sheet.
+
+### Step 4: Open FormMail Hub in Google Sheets & Switch to Campaign View
+1. Open the backing responses **Google Sheet™**.
+2. Launch the **FormMail Hub** add-on (Campaign sending is strictly supported in the Google Sheets core add-on).
+3. Switch the interface view to the **Campaign** view.
+
+### Step 5: Select Synchronized Campaign & Dispatch
+1. Locate and select the synchronized campaign name from the campaign list.
+2. Review the final calculated audience summary.
+3. Click the **Dispatch** button to initiate the bulk email broadcast.
 
 ---
 
@@ -99,7 +108,7 @@ When sending broadcasts to thousands of contacts, provider daily limits must be 
 
 ## 6. Campaign Analytics & Performance Diagnostics
 
-After dispatching a broadcast, track real-time delivery status in the **Campaign Analytics Dashboard** inside the Google Sheets core add-on:
+After clicking **Dispatch** in the Google Sheets core add-on, track real-time delivery status in the **Campaign Analytics Dashboard**:
 
 - **Delivered Rate:** Percentage of messages successfully accepted by recipient mail servers.
 - **Hard / Soft Bounces:** Invalid email addresses are categorized and added to the diagnostic log.
