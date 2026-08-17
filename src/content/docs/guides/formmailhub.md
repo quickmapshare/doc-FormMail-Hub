@@ -93,10 +93,9 @@ Admins **MUST** configure custom SMTP settings before creating email templates, 
 Once Custom SMTP is configured by the Admin, custom email automation and rules can be established:
 
 ### Dynamic Tag Personalization
-Templates parse submission fields into dynamic tags wrapped in curly braces (`{Tag Name}`):
-- `{Question Title}`: Inserts exact answers provided by respondents.
-- `{Form Summary}`: Generates an inline HTML table of all submitted response fields.
-- `{Submission Date}`: Localized timestamp of the response.
+Templates parse submission fields and system parameters into dynamic tags wrapped in curly braces (`{Tag Name}`):
+- `{Question Title}`: Inserts exact answers provided by respondents for a specific form question (e.g., `{First Name}`).
+- `{Form Title}`: The official title of the connected Google Form™.
 - `{Unsubscribe link}`: Generates a mandatory opt-out URL for campaign compliance.
 
 ### Smart Conditional Logic Routing
