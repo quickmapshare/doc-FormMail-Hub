@@ -1,6 +1,7 @@
 import os
 import sys
 import json
+import glob
 from google import genai
 
 print("========================================")
@@ -17,7 +18,26 @@ if not api_key:
 client = genai.Client(api_key=api_key)
 code_diff = os.environ.get("CODE_DIFF", "")
 docs_dir = "src/content/docs"
+rules_file = "PRODUCT_RULES.md"
 
+# 1. ĐỌC HOẶC KHỞI TẠO FILE GROUND TRUTH
+product_rules = ""
+if os.path.exists(rules_file):
+    with open(rules_file, "r", encoding="utf-8") as f:
+        product_rules = f.read()
+else:
+    print(f"⚠️ Chưa tìm thấy {rules_file}, đang khởi tạo...")
+    product_rules = """# PRODUCT RULES & ABSOLUTE TRUTHS
+
+1. Team Member Logic: Team members are ONLY added so the Admin can select who receives email notifications. Team members DO NOT have edit or configuration permissions.
+2. Ecosystem: FormMail Hub connects from 3 Google Forms add-ons ("Form Confirmation Emails", "Form to Email", "Form Notifications SMTP").
+3. Core App: The Google Sheets add-on named "FormMail Hub" is the core application.
+4. Campaign Logic: Bulk sending (Campaigns) is ONLY available when launched from the Google Sheets add-on.
+"""
+    with open(rules_file, "w", encoding="utf-8") as f:
+        f.write(product_rules)
+
+# 2. ĐỌC TÀI LIỆU ĐÃ XUẤT BẢN (NẾU CÓ)
 existing_docs = {}
 if os.path.exists(docs_dir):
     for root, dirs, files in os.walk(docs_dir):
@@ -27,61 +47,95 @@ if os.path.exists(docs_dir):
                 with open(file_path, "r", encoding="utf-8") as f:
                     existing_docs[file_path] = f.read()
 
-diff_context = code_diff if code_diff else "NO RECENT CODE CHANGES. Perform a routine documentation audit and expansion based on the current files."
+# 3. CHIẾN LƯỢC CHỌN MÃ NGUỒN CÓ GIỚI HẠN (TRÁNH QUÁ TẢI PROMPT)
+# Quét các file UI (.astro, .tsx, .jsx) và backend (.ts, .js, .py, .gs)
+source_files_content = {}
+ui_extensions = ('.astro', '.tsx', '.jsx', '.html', '.svelte', '.vue')
+backend_extensions = ('.ts', '.js', '.py', '.gs')
 
-# CẬP NHẬT PROMPT: Đổi từ JSON sang cấu trúc thẻ đánh dấu (Custom Delimiters)
+all_source_files = []
+for root, dirs, files in os.walk("src"):
+    # Bỏ qua thư mục docs để không bị lặp
+    if "content/docs" in root:
+        continue
+    for file in files:
+        if file.endswith(ui_extensions) or file.endswith(backend_extensions):
+            all_source_files.append(os.path.join(root, file))
+
+# Lựa chọn mẫu 1-2 file UI và 1-2 file Backend tương ứng để AI phân tích sâu
+selected_sources = []
+ui_sample = [f for f in all_source_files if f.endswith(ui_extensions)][:2]
+backend_sample = [f for f in all_source_files if f.endswith(backend_extensions)][:2]
+selected_sources = ui_sample + backend_sample
+
+for s_file in selected_sources:
+    try:
+        with open(s_file, "r", encoding="utf-8") as f:
+            source_files_content[s_file] = f.read()[:3000] # Giới hạn ký tự mỗi file
+    except Exception as e:
+        pass
+
+diff_context = code_diff if code_diff else "NO RECENT CODE DIFF. Focus on sampled source files or published docs audit."
+
+# 4. TẠO PROMPT VỚI TƯ DUY 2 CHẾ ĐỘ (ANALYSIS HOẶC AUDIT)
 prompt = f"""
 You are an expert technical writer and documentation architect for 'FormMail Hub'.
-Your task is to analyze the source code changes and dramatically expand the documentation.
 
-RAW CODE DIFF FROM SOURCE REPOSITORY:
+ABSOLUTE PRODUCT RULES (GROUND TRUTH - NEVER VIOLATE THESE):
+{product_rules}
+
+SAMPLED SOURCE CODE FILES FOR THIS SESSION (UI + BACKEND):
+{json.dumps(source_files_content, indent=2)}
+
+RAW CODE DIFF (IF ANY):
 {diff_context}
 
-CURRENT DOCUMENTATION FILES:
+CURRENT PUBLISHED DOCUMENTATION FILES:
 {json.dumps(existing_docs, indent=2)}
 
-CRITICAL PRODUCT ARCHITECTURE (ALWAYS KEEP IN MIND):
-1. Integration Ecosystem: FormMail Hub can connect from 3 different Google Forms add-ons: "Form Confirmation Emails", "Form to Email", and "Form Notifications SMTP".
-2. The Core App: The Google Sheets add-on named "FormMail Hub" is the main character (core application) of the ecosystem.
-3. Campaign Feature Logic: The "Campaign" (bulk sending) feature is ONLY enabled and accessible when the dashboard is launched from the Google Sheets add-on. It is NOT available when launched from the Forms add-ons. Reason: Bulk sending requires the responses list data which is stored in the Google Sheet. Always clarify this limitation when documenting the dashboard or campaign features.
+INSTRUCTIONS & WORKFLOW PRIORITY:
+
+PRIORITY 1 (NEW FEATURE DISCOVERY):
+- Examine the SAMPLED SOURCE CODE FILES and RAW CODE DIFF.
+- If you find ANY verified, absolute feature logic/rule that is missing from 'PRODUCT RULES', UPDATE `PRODUCT_RULES.md` first.
+- Write or expand the corresponding documentation file in `src/content/docs/guides/` or `src/content/docs/reference/`.
+
+PRIORITY 2 (DOCS AUDIT & CORRECTION - IF NO NEW FEATURES TO PROCESS):
+- If the source code reveals no new un-documented features, AUDIT the existing published docs in `CURRENT PUBLISHED DOCUMENTATION FILES`.
+- Check if any doc contains inaccurate statements or hallucinates permissions (e.g., giving team members editing rights).
+- If a published doc violates `PRODUCT RULES`, REWRITE and REJECT the inaccurate sections to align strictly with `PRODUCT RULES`.
 
 STRICT REQUIREMENTS:
 1. ALL OUTPUT MUST BE STRICTLY IN ENGLISH.
-2. PROACTIVE EXPANSION & AUDIT: Evaluate the CURRENT DOCUMENTATION FILES. Find a feature, technical specification, UI element, or workflow that is missing or under-documented.
-3. CONTENT CATEGORIZATION (CRITICAL): Decide what type of documentation is needed:
-   - GUIDES (Path: src/content/docs/guides/): Step-by-step tutorials, UI walkthroughs, best practices, and "How-to" workflows.
-   - REFERENCE (Path: src/content/docs/reference/): Technical specifications, API details, configuration options, lists of dynamic variable tags, error codes, limits/quotas, or troubleshooting glossaries.
-4. ONE TOPIC PER UPDATE: Identify ONE missing topic. Write a highly detailed, comprehensive markdown page for it. Route it to the correct directory (guides/ or reference/) based on the categorization above. You may UPDATE an existing file or CREATE a new one.
-5. FRONTMATTER: Every file MUST have valid Frontmatter YAML at the top (title, description).
-6. OUTPUT FORMAT (CRITICAL): DO NOT USE JSON! JSON parsing causes escaping issues with markdown tables and ASCII diagrams. You MUST use the exact custom text blocks format shown below.
+2. FRONTMATTER: Docs must have valid YAML (title, description).
+3. DO NOT USE JSON OUTPUT FORMAT! Use the exact custom delimiters shown below.
 
 FORMAT TEMPLATE TO STRICTLY FOLLOW:
-@@@FILE_PATH: src/content/docs/reference/dynamic-tags.mdx
+
+@@@FILE_PATH: PRODUCT_RULES.md
+@@@CONTENT:
+(Updated content of PRODUCT_RULES.md if a new truth was found, otherwise omit this block)
+@@@END_FILE
+
+@@@FILE_PATH: src/content/docs/guides/team-management.mdx
 @@@CONTENT:
 ---
-title: Dynamic Tags Reference
-description: Comprehensive list of all supported dynamic variables and syntax.
+title: Corrected Guide Title
+description: Accurate description here
 ---
-
-Your markdown text, tables, and diagrams go here exactly as they should appear...
+Your markdown content here...
 @@@END_FILE
 """
 
 try:
-    print("⏳ Đang gửi dữ liệu cho AI phân tích và tự động viết bài...")
+    print("⏳ Đang gửi dữ liệu cho AI phân tích...")
     response = client.models.generate_content(
         model=MODEL_NAME,
         contents=prompt
     )
 
     cleaned_text = response.text.strip()
-    
-    # ---------------------------------------------------------
-    # HỆ THỐNG PARSER MỚI: Bất tử trước mọi lỗi Markdown/Escape
-    # ---------------------------------------------------------
     docs_to_update = []
-    
-    # Tách các block file dựa trên thẻ @@@FILE_PATH:
     blocks = cleaned_text.split("@@@FILE_PATH:")
     
     for block in blocks:
@@ -90,11 +144,8 @@ try:
             
         if "@@@CONTENT:" in block and "@@@END_FILE" in block:
             try:
-                # Tách lấy đường dẫn
                 path_part, rest = block.split("@@@CONTENT:", 1)
                 file_path = path_part.strip()
-                
-                # Tách lấy nội dung
                 content = rest.split("@@@END_FILE")[0].strip()
                 
                 docs_to_update.append({
@@ -102,34 +153,35 @@ try:
                     "content": content
                 })
             except Exception as ex:
-                print(f"⚠️ Bỏ qua một block do lỗi phân tách: {ex}")
+                print(f"⚠️ Bỏ qua block do lỗi phân tách: {ex}")
                 continue
 
     if not docs_to_update:
-        print("❌ LỖI: Không tìm thấy block dữ liệu hợp lệ nào từ AI.")
-        print("Dữ liệu thô AI trả về:")
+        print("❌ LỖI: AI không trả về block nội dung nào.")
         print(cleaned_text)
         sys.exit(1)
 
-    # ---------------------------------------------------------
-    # GHI FILE
-    # ---------------------------------------------------------
+    # 5. GHI FILE VÀ CẬP NHẬT
     for item in docs_to_update:
         file_path = item.get("file_path")
         content = item.get("content")
         
-        # Đảm bảo đường dẫn chính xác
-        if not file_path.startswith("src/content/docs"):
-            file_path = file_path.lstrip("/") 
-            file_path = os.path.join("src/content/docs", file_path)
+        if file_path == "PRODUCT_RULES.md":
+            target_path = "PRODUCT_RULES.md"
+        else:
+            if not file_path.startswith("src/content/docs"):
+                file_path = file_path.lstrip("/") 
+                target_path = os.path.join("src/content/docs", file_path)
+            else:
+                target_path = file_path
 
-        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        os.makedirs(os.path.dirname(target_path) if os.path.dirname(target_path) else ".", exist_ok=True)
         
-        with open(file_path, "w", encoding="utf-8") as f:
+        with open(target_path, "w", encoding="utf-8") as f:
             f.write(content.strip())
             
-        print(f"✅ Đã ghi/cập nhật thành công file: {file_path}")
+        print(f"✅ Đã cập nhật: {target_path}")
 
 except Exception as e:
-    print(f"❌ LỖI khi thực thi kịch bản: {e}")
+    print(f"❌ LỖI khi thực thi script: {e}")
     sys.exit(1)
