@@ -38,8 +38,11 @@ else:
 7. Custom SMTP Requirement: Admins MUST configure custom SMTP settings before creating email templates, rules, campaigns, or accessing analytics, as these features require sending emails under the Admin's own email identity.
 8. Built-in System Notifications: System Notifications is an out-of-the-box feature powered by the system's internal SMTP. It sends default-templated submission alerts to the Form Admin and selected Team Members without requiring custom SMTP setup.
 9. Form Quota Expansion via Google Sheets: Connecting a spreadsheet via the 'FormMail Hub' Google Sheets add-on enables scaling beyond the standard 20-form limit, because a single spreadsheet can contain multiple Form Responses tabs while using only one active connection.
-10. Email-Only Scope (NO WEB HOOKS): FormMail Hub ONLY receives/processes Google Forms submissions and dispatches emails via rules. It DOES NOT support webhooks, HTTP POST calls, or 3rd-party integrations (Slack, Teams, Discord, Zapier). NEVER document unverified webhook or integration features.
+10. Email-Only Scope (NO WEBHOOKS): FormMail Hub ONLY receives/processes Google Forms submissions and dispatches emails via rules. It DOES NOT support webhooks, HTTP POST calls, or 3rd-party integrations (Slack, Teams, Discord, Zapier). NEVER document unverified webhook or integration features.
+11. Dynamic Tags Strict Accuracy: Only dynamic field name tags `{Question Title}` and `{Form Title}` are valid unless explicitly parsed in backend code. DO NOT invent tags like `{Form Summary}`, `{Response ID}`, `{Submission Date}`, or `{Submitter Email}`.
 """
+    with open(rules_file, "w", encoding="utf-8") as f:
+        f.write(product_rules)
     with open(rules_file, "w", encoding="utf-8") as f:
         f.write(product_rules)
     with open(rules_file, "w", encoding="utf-8") as f:
