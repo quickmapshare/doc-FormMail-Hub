@@ -1,39 +1,40 @@
 ---
 title: Ecosystem Architecture & Integration Matrix
-description: Technical reference detailing the FormMail Hub multi-addon ecosystem, Google Sheets core application, quota expansion, role boundaries, and feature availability matrix.
+description: Technical reference detailing the FormMail Hub multi-addon ecosystem, external cloud platform engine, Google Sheets management client, role boundaries, and feature availability matrix.
 ---
 
-This technical reference details the underlying architecture of **FormMail Hub**, detailing the relationship between Google Forms™ entry add-ons, the core Google Sheets™ application, role permissions, delivery routing layers, and quota expansion mechanics.
+This technical reference details the underlying architecture of **FormMail Hub**, detailing the relationship between the independent cloud platform engine, Google Forms™ entry add-ons, the core Google Sheets™ management client, role permissions, delivery routing layers, and quota expansion mechanics.
 
 ---
 
-## 1. Multi-Addon Ecosystem Overview
+## 1. Ecosystem Architecture & Platform Philosophy
 
-FormMail Hub consists of three Google Forms™ entry add-ons and a core Google Sheets™ application:
+FormMail Hub is engineered to decouple execution from Google Workspace runtime constraints:
 
 ```
 +-----------------------------------------------------------------------------------+
-|                             GOOGLE FORMS ENTRY POINTS                             |
+|                        DATA INGESTION BRIDGES (GOOGLE ADD-ONS)                     |
 |  +---------------------------+  +-------------------+  +-----------------------+  |
 |  | Form Confirmation Emails  |  |   Form to Email   |  | Form Notifications    |  |
-|  |        (Add-on)           |  |     (Add-on)      |  |     SMTP (Add-on)     |  |
+|  |     (Forms Add-on)        |  |  (Forms Add-on)   |  |    SMTP (Forms)       |  |
 |  +---------------------------+  +-------------------+  +-----------------------+  |
+|  +-----------------------------------------------------------------------------+  |
+|  |                 FormMail Hub for Google Sheets™ (Add-on)                    |  |
+|  |                (Primary Management Client / Campaign Launchpad)            |  |
+|  +-----------------------------------------------------------------------------+  |
 +------------------------------------------+----------------------------------------+
-                                           |
+                                           | Pushes Submission Events & Config Data
                                            v
 +-----------------------------------------------------------------------------------+
-|                             CORE APPLICATION HUB                                  |
-|                     FormMail Hub for Google Sheets™ Add-on                        |
-|                  (Full-Featured Application & Engine Layer)                       |
+|                   INDEPENDENT CLOUD PLATFORM ENGINE (EXTERNAL)                    |
+|       (High-Performance Event Processing, Rule Evaluation & SMTP Engine)          |
 +-----------------------------------------------------------------------------------+
 ```
 
-### Core Application vs. Entry Add-ons
-- **Full-Featured Core Application ("FormMail Hub" Google Sheets Add-on):** The main application of the ecosystem. Manages lead index datasets, hosts campaign batch execution, executes bulk email broadcasts, and provides full diagnostic logs.
-- **Google Forms Entry Add-ons:** Three Google Forms add-ons (*Form Confirmation Emails*, *Form to Email*, and *Form Notifications SMTP*) provide entry points directly within the Google Forms editor for real-time submission triggers.
-
-### Form Quota Expansion via Google Sheets
-Standard configurations enforce limits on the number of connected forms (typically 20 forms). Connecting a spreadsheet via the **'FormMail Hub' Google Sheets add-on** enables scaling beyond the standard 20-form limit, because a single spreadsheet can contain multiple Form Responses tabs while using only one active connection.
+### Core Architecture Components
+- **Independent Cloud Platform Engine:** FormMail Hub operates on a powerful, independent external cloud backend platform specifically built to overcome Google Workspace's native execution limits, quotas, and trigger constraints.
+- **Entry Points / Data Ingestion Bridges:** All Google add-ons—the 3 Google Forms entry add-ons (*Form Confirmation Emails*, *Form to Email*, *Form Notifications SMTP*) and the 1 Google Sheets add-on (*FormMail Hub*)—act strictly as data ingestion bridges/entry points that push submission events and configuration data to the FormMail Hub cloud platform.
+- **Full-Featured Google Sheets Management Client:** The **"FormMail Hub" Google Sheets add-on** acts as the primary full-featured management client for the ecosystem. Because a single Google Spreadsheet can host multiple Form Responses tabs, connecting via the Sheets add-on uses only 1 connection slot while scaling across multiple forms, and provides the interface to launch proactive bulk email Campaigns processed by our cloud platform engine.
 
 ---
 
@@ -41,12 +42,12 @@ Standard configurations enforce limits on the number of connected forms (typical
 
 FormMail Hub enforces strict role boundaries:
 
-- **Primary Connector / Admin Role:** Only the **first user among the form's editors who connects that form to FormMail Hub** is granted exclusive rights to configure settings, templates, rules, custom SMTP, and triggers for that form.
+- **Primary Connector / Admin Role:** Only the **first user among the form's editors who connects that form to FormMail Hub** is granted exclusive rights to configure settings, templates, rules, custom SMTP, and triggers for that form. Co-editors do not gain configuration access.
 - **Team Member Logic:** Team members are **ONLY** added so the Admin can select who receives email notifications upon form submission. Team members **DO NOT** have edit or configuration permissions.
 
 ---
 
-## 3. Delivery Infrastructure & Transport Layer
+## 3. Delivery Infrastructure & Transport Scope
 
 ```
 +-----------------------------------------------------------------------------------+
@@ -57,15 +58,21 @@ FormMail Hub enforces strict role boundaries:
           |                                                              |
           v                                                              v
 +-----------------------------------+                          +-----------------------------------+
-|   BUILT-IN SYSTEM NOTIFICATIONS   |                          |     USER CUSTOM SMTP TRANSPORT    |
+|   BUILT-IN SYSTEM SMTP RELAY      |                          |     USER CUSTOM SMTP TRANSPORT    |
 +-----------------------------------+                          +-----------------------------------+
-| - Out-of-the-box feature          |                          | - MANDATORY requirement before    |
-| - Internal system SMTP relay      |                          |   creating templates, rules,      |
-| - Sends default submission alerts |                          |   campaigns, or viewing analytics |
-| - Targets Admin & Team Members    |                          | - Sends under Admin's identity    |
-| - Consumes 0% personal SMTP quota |                          | - Amazon SES, SendGrid, Gmail, etc|
+| - RESTRICTED strictly to default  |                          | - MANDATORY configuration & test  |
+|   templated submission alerts to  |                          |   before unlocking Templates,     |
+|   Form Admin & Team Members       |                          |   Rules, Campaigns, Analytics     |
+| - Serves as live demo & saves     |                          | - Unlocks UI locked tabs          |
+|   Admin personal SMTP quota       |                          | - Handles custom templates, rules,|
+| - CANNOT send custom templates or |                          |   and respondent auto-responders  |
+|   respondent auto-responders      |                          | - Amazon SES, SendGrid, Gmail, etc|
 +-----------------------------------+                          +-----------------------------------+
 ```
+
+### Transport Scope Rules
+1. **Custom SMTP Requirement & UI Lock State:** Admins **MUST** configure and test custom SMTP settings before unlocking Templates, Rules, Campaigns, or Analytics. Until custom SMTP is active, these feature tabs remain strictly locked in the UI.
+2. **Built-in System SMTP Scope:** Built-in System SMTP is **STRICTLY** restricted to sending default-templated submission alerts to the Form Admin and selected Team Members (serving as a live demo and conserving Admin SMTP quota). System SMTP **CANNOT** be used for custom templates, rule-based notifications, or respondent auto-responders.
 
 ---
 
@@ -73,24 +80,24 @@ FormMail Hub enforces strict role boundaries:
 
 | Feature / Capability | Google Forms Entry Add-ons | Google Sheets Core Add-on | Architectural / Role Ground Truth |
 | :--- | :---: | :---: | :--- |
-| **Built-in System Notifications** | ✅ Supported | ✅ Supported | Out-of-the-box internal SMTP alerts for Admin/Team. |
-| **Custom SMTP Requirement** | ✅ Required for Custom | ✅ Required for Custom | **MUST** be configured before creating templates, rules, campaigns, or accessing analytics. |
-| **Team Member Selection** | ✅ Supported | ✅ Supported | Admin selects recipients; Team Members have **NO** edit rights. |
-| **Form Quota Expansion (>20 Forms)** | ❌ Standard Limits | ✅ **ENABLED** | Single spreadsheet with multiple response tabs uses 1 connection. |
-| **Broadcast Campaigns (Bulk Sending)** | ⛔ **NOT AVAILABLE** | ✅ **FULLY ENABLED** | **ONLY** available when launched from Google Sheets core add-on. |
+| **Built-in System SMTP Alerts** | ✅ Supported | ✅ Supported | Strictly restricted to default submission alerts to Admin & selected Team Members. |
+| **Custom SMTP Requirement & UI Lock** | ✅ Required for Custom | ✅ Required for Custom | **MUST** be configured and tested before unlocking Templates, Rules, Campaigns, or Analytics. |
+| **Team Member Selection** | ✅ Supported | ✅ Supported | Admin selects recipients; Team Members have **NO** edit or config permissions. |
+| **Form Connection Scaling (>20 Forms)** | ❌ Standard Limits | ✅ **ENABLED** | Connecting via Sheets add-on uses 1 connection slot while scaling across multi-tab response sheets. |
+| **Broadcast Campaigns (Bulk Sending)** | ⛔ **NOT AVAILABLE** | ✅ **FULLY ENABLED** | **ONLY** available when launched from Google Sheets core management client. |
 
 ---
 
 ## 5. Campaign Creation & Dispatch Workflow
 
-Bulk email marketing dispatches follow a strict execution sequence in the core Google Sheets add-on:
+Bulk email marketing dispatches follow a strict execution sequence using the Google Sheets management client:
 
-1. **Template Creation:** Admin creates a campaign template containing required `{Unsubscribe link}` compliance tags.
-2. **Rule Configuration:** Admin configures filtering rules to target specific respondents in the responses Google Sheet™.
-3. **Rule Activation:** Admin enables the rule as an active campaign.
-4. **Interface Navigation:** Within the FormMail Hub Google Sheets add-on interface on the responses sheet, Admin switches to the **Campaign** view.
-5. **Campaign Selection:** Admin selects the synchronized campaign name from the campaign list.
-6. **Dispatch Execution:** Admin clicks the **'Dispatch'** button to initiate the bulk email dispatch.
+1. **Campaign Template Creation:** The Admin creates a campaign template.
+2. **Filtering Rule Configuration:** The Admin configures filtering rules to target specific respondents in the responses Google Sheet.
+3. **Rule Activation:** The Admin enables the rule as an active campaign.
+4. **Interface Navigation:** Within the FormMail Hub Google Sheets add-on interface on the responses sheet, the Admin switches to the **Campaign** view.
+5. **Campaign Selection:** The Admin selects the synchronized campaign name.
+6. **Dispatch Execution:** The Admin clicks the **'Dispatch'** button to initiate the bulk email dispatch processed by the cloud platform engine.
 
 ---
 

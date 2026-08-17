@@ -15,32 +15,30 @@ FormMail Hub enforces strict role boundaries across all form workflows:
 Only the **first user among the form's editors who connects that form to FormMail Hub** is granted exclusive rights to configure settings, templates, rules, custom SMTP, and triggers for that form. Co-editors on the form or sheet do not automatically receive administrative rights.
 
 ### Team Member Logic
-Team members are **ONLY** added so the Admin can select who receives specific email notifications upon form submission. Team members **DO NOT** have permission to edit, configure settings, or modify forms, rules, templates, or campaigns.
+Team members are **ONLY** added so the Admin can select who receives email notifications upon form submission. Team members **DO NOT** have edit or configuration permissions.
 
 | Capability / Action | Primary Connector (Admin) | Team Members |
 | :--- | :---: | :---: |
 | **Granted Exclusive Rights (First Form Editor to Connect)** | ✅ | ❌ |
-| **Configure System & SMTP Settings** | ✅ | ❌ |
+| **Configure System & Custom SMTP Settings** | ✅ | ❌ |
 | **Create & Edit Email Templates & Rules** | ✅ | ❌ |
 | **Add / Remove Team Member Email Addresses** | ✅ | ❌ |
 | **Receive Selected Email Submission Alerts** | ✅ | ✅ |
-| **Launch Bulk Campaigns (Sheets Core Add-on)** | ✅ | ❌ |
+| **Launch Bulk Campaigns (Sheets Add-on)** | ✅ | ❌ |
 
 ---
 
-## 2. Notification Delivery Mechanisms
+## 2. Notification Delivery Mechanics
 
 FormMail Hub handles internal team notifications separately from customer-facing custom email triggers:
 
-### Built-in System Notifications (Out-of-the-Box)
-System Notifications is an out-of-the-box feature powered by the system's internal SMTP. It sends default-templated submission alerts to the Form Admin and selected Team Members without requiring custom SMTP setup.
-- **Quota Impact:** Consumes **0%** of the Admin's personal or custom SMTP sending quota.
-- **Setup Required:** None (works out of the box).
+### Built-in System SMTP Scope (Out-of-the-Box)
+Built-in System SMTP is **STRICTLY** restricted to sending default-templated submission alerts to the Form Admin and selected Team Members (serving as a live demo and conserving Admin SMTP quota). System SMTP **CANNOT** be used for custom templates, rule-based notifications, or respondent auto-responders.
 
 ### Custom Team Notification Routing
-If the Admin wishes to send customized HTML notification templates to team members:
-- The Admin **MUST** configure Custom SMTP first, as creating custom templates and rules requires Custom SMTP.
-- The Admin can then set up conditional rules routing custom templates to specific team members based on submission values.
+If the Admin wishes to send custom templates or rule-based notifications to team members:
+- Admins **MUST** configure and test custom SMTP settings before unlocking Templates, Rules, Campaigns, or Analytics. Until custom SMTP is active, these feature tabs remain strictly locked in the UI.
+- Once unlocked, the Admin can set up multi-condition rules routing custom templates to specific team members based on submission values using custom SMTP.
 
 ---
 
@@ -49,11 +47,11 @@ If the Admin wishes to send customized HTML notification templates to team membe
 Only the Primary Connector (Admin) can manage the team member roster:
 
 1. Launch **FormMail Hub** from Google Forms™ or Google Sheets™.
-2. Navigate to **Team Members** in the dashboard sidebar.
+2. Navigate to **Team Members** in the sidebar.
 3. Enter the email address of the team member (e.g., `colleague@yourcompany.com`).
 4. Click **Add Team Member**.
 
-Once added, the team member's address becomes selectable in notification recipient lists and conditional rule routing menus for the Admin.
+Once added, the team member's address becomes selectable by the Admin for receiving notification alerts upon form submission.
 
 ---
 

@@ -1,56 +1,55 @@
 ---
 title: Dynamic Tags & HTML Email Template Customization Guide
-description: Master FormMail Hub's template engine, dynamic placeholders, responsive HTML email design, and variable tags.
+description: Master FormMail Hub's template engine, dynamic question placeholders, responsive HTML email design, and custom templates.
 ---
 
 Standard transactional email triggers often feel generic or rigid. **FormMail Hub's Template & Dynamic Variable Engine** empowers you to create beautifully styled, personalized, and mobile-responsive email notifications and auto-responders that reflect your brand identity.
 
-By utilizing dynamic placeholders, custom HTML/CSS, and automated compliance tags, you can construct targeted communications tailored to each form submission.
+By utilizing dynamic placeholders and custom HTML/CSS, you can construct targeted communications tailored to each form submission.
 
 ---
 
 ## 1. Dynamic Tag System Overview
 
-FormMail Hub extracts form responses and system metadata immediately upon submission, mapping them to dynamic tags wrapped in curly brackets: `{Tag Name}`. When an email trigger or broadcast campaign is initiated, these tags are replaced with actual user input or form metadata.
+FormMail Hub extracts form responses immediately upon submission, mapping them to dynamic tags wrapped in curly brackets: `{Question Title}`. When an email trigger or broadcast campaign is initiated by the cloud platform engine, these tags are replaced with actual user input or form title metadata.
 
 ### How Field Mapping Works
-- **Form Question Field Tags:** Any question defined in your Google Forms™ automatically becomes a dynamic tag matching the exact question text (e.g., a question titled `"What is your company name?"` becomes `{What is your company name?}`).
-- **Case Sensitivity:** Tags are case-insensitive, but maintaining exact matching with your form question labels ensures maximum readability and consistency.
-- **Dynamic Resiliency:** If you rename a form question in Google Forms™, FormMail Hub automatically updates internal mappings, keeping active templates functional.
+- **Form Question Field Tags:** Any question defined in your Google Forms™ automatically becomes a dynamic tag matching the exact question text (e.g., a question titled `"First Name"` becomes `{First Name}`).
+- **Case Sensitivity:** Tags match form field question labels.
+- **Dynamic Resiliency:** If you rename a form question in Google Forms™, FormMail Hub updates internal mappings.
 
 ---
 
 ## 2. Dynamic Tag Reference
 
-Below is the verified catalog of dynamic tags supported in FormMail Hub templates:
+Below is the strict verified catalog of dynamic tags supported in FormMail Hub templates:
 
 ### Supported Dynamic Tags
 
 | Dynamic Tag | Source Data / Description | Example Output Value |
 | :--- | :--- | :--- |
-| `{Question Title}` | Dynamically retrieves the answer for the specified form field question. | `Jane Doe` (for field `{First Name}`) |
+| `{Question Title}` | Dynamically retrieves the answer for the specified form field question label. | `Jane` (for field `{First Name}`) |
 | `{Form Title}` | The official title of the connected Google Form™. | `Customer Onboarding Intake` |
-| `{Unsubscribe link}` | Renders a unique, CAN-SPAM/GDPR compliant opt-out URL (required for campaigns). | `https://hub.formmailhub.com/optout?id=...` |
 
-> **Note on Custom SMTP & Templates:** Admins MUST configure custom SMTP settings before creating email templates, rules, campaigns, or accessing analytics, as these features require sending emails under the Admin's own email identity.
+> **Strict Dynamic Tag Rule:** Dynamic template tags are strictly handled by the codebase parser. Only dynamic question field tags (e.g., `{Question Title}`) and `{Form Title}` are valid default tags. Writers and template authors MUST NOT invent or assume unverified system tags (such as `{Form Summary}`, `{Response ID}`, `{Submission Date}`, `{Submitter Email}`, etc.).
+
+> **Custom SMTP Requirement:** Admins MUST configure and test custom SMTP settings before unlocking Templates, Rules, Campaigns, or Analytics. Until custom SMTP is active, these feature tabs remain strictly locked in the UI.
 
 ---
 
 ## 3. Visual & HTML Code Editors
 
-FormMail Hub provides two authoring modes for designing email templates:
+FormMail Hub provides authoring modes for designing email templates:
 
 ### Mode A: Rich Text / WYSIWYG Editor
 Ideal for non-technical users who want to craft clean, professional emails quickly without touching raw code.
 - **Formatting Options:** Bold, italic, underline, list bullets, text alignment, and font coloring.
-- **Tag Inserter:** Dropdown menu allowing instant insertion of dynamic tags into the subject line or message body.
-- **Link Builder:** Tool for attaching URLs or formatting CTA buttons.
+- **Tag Inserter:** Menu allowing instant insertion of dynamic question field tags into the subject line or message body.
 
 ### Mode B: Advanced HTML / Code Editor
 Built for developers and marketers who require full custom branding, complex table structures, dark-mode styling, and embedded CSS.
-- **Full Control:** Supports standard HTML5 elements (`<div>`, `<table>`, `<img>`, `<a>`, `<span>`).
-- **Inline CSS Injection:** Mail client engines (e.g., Outlook, Gmail, Apple Mail) render HTML best when CSS styles are applied inline (e.g., `<td style="color: #1e293b; padding: 12px;">`).
-- **Responsive Media Queries:** Support for embedded `<style>` blocks in the `<head>` for responsive email layouts across desktop and mobile devices.
+- **Full Control:** Supports standard HTML elements (`<div>`, `<table>`, `<img>`, `<a>`, `<span>`).
+- **Inline CSS Injection:** Mail client engines (e.g., Outlook, Gmail, Apple Mail) render HTML best when CSS styles are applied inline.
 
 ---
 
@@ -59,7 +58,7 @@ Built for developers and marketers who require full custom branding, complex tab
 Follow these steps to construct a personalized auto-responder email template:
 
 1. Launch **FormMail Hub** in Google Forms™ or Google Sheets™.
-2. Ensure Custom SMTP is configured under **Settings > SMTP Config**.
+2. Configure and test Custom SMTP under **Settings > SMTP Config** to unlock locked UI feature tabs.
 3. Go to **Email Templates** > **+ Create New Template**.
 4. Set the **Template Name** (e.g., `Client Onboarding Welcome`).
 5. Set the **Email Subject**:
@@ -78,7 +77,6 @@ Follow these steps to construct a personalized auto-responder email template:
     .card { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 8px; border: 1px solid #e2e8f0; overflow: hidden; }
     .header { background-color: #2563eb; color: #ffffff; padding: 24px; text-align: center; }
     .content { padding: 32px; }
-    .button { display: inline-block; background-color: #2563eb; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: bold; margin-top: 16px; }
     .footer { background-color: #f1f5f9; padding: 16px; text-align: center; font-size: 12px; color: #64748b; }
   </style>
 </head>
@@ -88,13 +86,12 @@ Follow these steps to construct a personalized auto-responder email template:
       <h1 style="margin:0; font-size:22px;">Welcome Aboard, {First Name}!</h1>
     </div>
     <div class="content">
-      <p>Hello <strong>{First Name} {Last Name}</strong>,</p>
-      <p>Thank you for submitting your onboarding intake for <strong>{Company Name}</strong> via {Form Title}.</p>
-      
+      <p>Hello <strong>{First Name}</strong>,</p>
+      <p>Thank you for submitting your intake for {Form Title}.</p>
       <p>Our team is currently reviewing your submission details and will follow up shortly.</p>
     </div>
     <div class="footer">
-      <p>Sent via FormMail Hub. If you wish to opt out of future emails, <a href="{Unsubscribe link}">click here to unsubscribe</a>.</p>
+      <p>Sent via FormMail Hub.</p>
     </div>
   </div>
 </body>
@@ -102,7 +99,7 @@ Follow these steps to construct a personalized auto-responder email template:
 ```
 
 7. Click **Save Template**.
-8. Navigate to **Email Rules**, attach this template to your trigger, and select your verified **Custom SMTP** route.
+8. Navigate to **Email Rules**, attach this template to your trigger rule, and select your verified **Custom SMTP** route.
 
 ---
 
@@ -110,9 +107,9 @@ Follow these steps to construct a personalized auto-responder email template:
 
 Before deploying a template to live users, verify variable substitution and layout rendering:
 
-- **Send Test Submission Email:** Click **Send Test Email** in the template editor to dispatch a sample email populated with test or mock question data.
-- **Mobile Responsiveness Verification:** Open test emails on both mobile devices and desktop clients (Outlook, Gmail, Apple Mail) to check for proper padding and button scaling.
-- **Link & Dynamic Tag Audit:** Click all links in the test email to confirm that dynamic question field tags and compliance links (`{Unsubscribe link}`) resolve correctly.
+- **Send Test Submission Email:** Click **Send Test Email** in the template editor to dispatch a sample email populated with test question data.
+- **Mobile Responsiveness Verification:** Open test emails on both mobile devices and desktop clients (Outlook, Gmail, Apple Mail) to check for proper padding and scaling.
+- **Dynamic Tag Audit:** Confirm that dynamic question field tags (e.g., `{First Name}`) and `{Form Title}` resolve correctly.
 
 ---
 

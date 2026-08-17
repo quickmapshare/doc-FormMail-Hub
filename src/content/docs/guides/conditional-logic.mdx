@@ -1,30 +1,29 @@
 ---
 title: Conditional Logic & Smart Email Routing Guide
-description: Master advanced conditional logic rules, multi-condition triggers, variable routing, department assignment, and fallback email workflows in FormMail Hub.
+description: Master multi-condition logic rules, targeted triggers, variable routing, department assignment, and fallback email workflows in FormMail Hub.
 ---
 
-Standard form submit triggers send identical email notifications to the same recipient list for every single response. **FormMail Hub Conditional Logic** transforms this static workflow by dynamically evaluating submission answers in real time and routing personalized emails, administrative alerts, and dedicated attachments based on exact conditions.
-
-Whether you need to route support requests to specific regional teams, trigger priority alerts for high-value sales leads, or send customized resource guides depending on user interest, conditional logic delivers the precise message to the right recipient every time.
-
----
-
-## 1. Prerequisites: Custom SMTP Requirement
-
-Before configuring conditional logic rules or custom email templates, the Admin **MUST** complete Custom SMTP setup under **Settings > SMTP Config**. 
-
-- **Custom SMTP Mandatory:** Creating rules, custom email templates, broadcast campaigns, or viewing analytics requires sending emails under the Admin's own verified email identity.
-- **Built-in System Notifications:** Default submission alerts to the Form Admin and selected Team Members function out-of-the-box via internal system SMTP without custom SMTP configuration.
+Standard form submit triggers send identical email notifications for every single response. **FormMail Hub Multi-Condition Routing Logic** transforms this static workflow by evaluating multiple form response fields simultaneously to trigger targeted custom templates and route emails to specific recipients or internal teams.
 
 ---
 
-## 2. Core Architecture & Operators
+## 1. Prerequisites: Custom SMTP Requirement & UI Lock State
 
-Conditional rules evaluate form field responses immediately upon submission before any outgoing email is constructed. Each rule consists of three core components:
+Before configuring conditional logic rules or custom email templates, the Admin **MUST** complete Custom SMTP setup:
 
-1. **Trigger Condition:** The specific form question and answer condition to evaluate.
-2. **Logic Operator:** The comparison method used to test the answer value.
-3. **Target Action:** The specific email template, recipient list (To, CC, BCC), and sender profile (Custom SMTP) to invoke when conditions are met.
+- **Custom SMTP Requirement & UI Lock State:** Admins **MUST** configure and test custom SMTP settings before unlocking Templates, Rules, Campaigns, or Analytics. Until custom SMTP is active, these feature tabs remain strictly locked in the UI.
+- **Built-in System SMTP Scope:** Built-in System SMTP is **STRICTLY** restricted to sending default-templated submission alerts to the Form Admin and selected Team Members (serving as a live demo and conserving Admin SMTP quota). System SMTP **CANNOT** be used for custom templates, rule-based notifications, or respondent auto-responders.
+
+---
+
+## 2. Core Architecture & Multi-Condition Logic
+
+Rules evaluate form response fields upon submission via the independent cloud platform engine before outgoing emails are constructed:
+
+1. **Multi-Condition Evaluation:** Rules support evaluating multiple form response fields simultaneously to trigger targeted custom templates and route emails to specific recipients or internal teams.
+2. **Logic Combination Modes:**
+   - **ALL Conditions Must Be Met (AND):** Every condition in the rule group must evaluate to true.
+   - **ANY Condition May Be Met (OR):** The rule triggers if at least one condition evaluates to true.
 
 ### Condition Operator Reference
 
@@ -32,121 +31,51 @@ Conditional rules evaluate form field responses immediately upon submission befo
 | :--- | :--- | :--- |
 | `Equals` | Exact string or selection match (case-insensitive). | Dropdown selections like Department = "Billing". |
 | `Not Equals` | Triggers when the answer does not match the value. | Exclude specific tiers or categories from generic templates. |
-| `Contains` | Matches if the key phrase appears anywhere in the answer. | Free-text field containing keywords like "urgent" or "bug". |
-| `Does Not Contain` | Matches if the phrase is absent from the response. | Filtering out specific domain suffixes or negative keywords. |
-| `Starts With` / `Ends With` | Prefix or suffix matching. | Phone numbers starting with international codes, or email domains. |
-| `Is Greater Than` | Numerical comparison (numeric inputs). | Budgets > $10,000 or group registration size > 50. |
-| `Is Less Than` | Numerical comparison (numeric inputs). | Inventory levels, age groups, or lower pricing tiers. |
-| `Is Empty` / `Is Not Empty` | Checks for presence or absence of an answer. | Optional file uploads or optional feedback fields. |
-
-### Logic Combination Modes
-
-When a rule contains multiple conditions, you can select how they are evaluated:
-
-- **ALL Conditions Must Be Met (AND):** Every single condition in the rule group must evaluate to true. Ideal for narrow targeting (e.g., `Region = "North America"` AND `Budget > $5,000`).
-- **ANY Condition May Be Met (OR):** The rule triggers if at least one condition evaluates to true. Useful for grouping multiple triggering answers (e.g., `Role = "CEO"` OR `Role = "VP of Sales"`).
+| `Contains` | Matches if the key phrase appears anywhere in the answer. | Free-text field containing keywords like "urgent". |
+| `Does Not Contain` | Matches if the phrase is absent from the response. | Filtering out specific domain suffixes. |
+| `Starts With` / `Ends With` | Prefix or suffix matching. | Phone numbers or domain formats. |
+| `Is Greater Than` | Numerical comparison. | Budgets > 10000. |
+| `Is Less Than` | Numerical comparison. | Lower pricing tiers. |
+| `Is Empty` / `Is Not Empty` | Checks for presence or absence of an answer. | Optional response fields. |
 
 ---
 
 ## 3. Step-by-Step Setup Guide
 
-Follow these steps to create your first conditional email routing rule in FormMail Hub:
+Follow these steps to create a conditional email routing rule in FormMail Hub:
 
 ### Step 1: Open Rule Configuration
-1. Ensure Custom SMTP is configured under **Settings > SMTP Config**.
+1. Ensure Custom SMTP is configured and tested under **Settings > SMTP Config** to unlock feature tabs.
 2. Launch Google Forms™ and open your form.
 3. Open the **FormMail Hub** add-on sidebar.
 4. Navigate to **Email Rules** > **Conditional Rules**.
 5. Click **+ Add Conditional Rule**.
 
-### Step 2: Define Trigger Conditions
+### Step 2: Define Multi-Condition Triggers
 1. **Rule Name:** Enter a descriptive title (e.g., *Technical Support Escalation*).
-2. Select the **Target Form Field** from the drop-down menu (e.g., *What service do you need?*).
+2. Select the **Target Form Field** from the drop-down menu (e.g., *Service Required*).
 3. Choose your **Operator** (e.g., *Equals*).
 4. Enter the **Target Value** (e.g., *Technical Support*).
-5. *(Optional)* Click **+ Add Condition** to attach secondary criteria using **AND** / **OR** logic.
+5. *(Optional)* Click **+ Add Condition** to evaluate multiple form response fields simultaneously using **AND** / **OR** logic.
 
 ### Step 3: Configure Recipient & Template Actions
-1. **To Recipients:** Enter static email addresses (e.g., `tech-support@yourcompany.com`) or select dynamic answer tags like `{Email Address}`.
-2. **CC / BCC Routing:** Optionally specify management or archive mailboxes.
-3. **Email Template:** Choose a pre-built template or create a custom HTML auto-responder specific to this condition.
-4. **Sender Identity / Custom SMTP:** Select which verified SMTP server account dispatches this notification (e.g., send support responses from `support@yourdomain.com`).
+1. **To Recipients:** Enter static email addresses (e.g., `tech-support@yourcompany.com`) or select dynamic question tags like `{Email Address}`.
+2. **Email Template:** Choose a pre-built custom template.
+3. **Sender Identity / Custom SMTP:** Select the verified SMTP server account that dispatches this notification.
 
-### Step 4: Save & Order Rules
+### Step 4: Save & Activate
 1. Click **Save Rule**.
 2. Ensure the rule is toggled **Active**.
 
 ---
 
-## 4. Practical Implementation Scenarios
-
-### Scenario A: Departmental Ticket & Request Routing
-**Goal:** Automatically route inquiry form submissions to specialized company departments based on user choice.
-
-- **Form Question:** "Select Department"
-- **Condition 1:** If answer equals `Sales` &rarr; Send Template *"Sales Inquiry Confirmation"* to `sales@yourcompany.com` and `{Email Address}`.
-- **Condition 2:** If answer equals `Billing` &rarr; Send Template *"Billing Support Ticket"* to `billing@yourcompany.com` and `{Email Address}`.
-- **Condition 3:** If answer equals `Careers` &rarr; Send Template *"HR Application Received"* to `careers@yourcompany.com`.
-
-```
-+-------------------------------------------------------------------+
-|                    Form Submission Received                       |
-+-------------------------------------------------------------------+
-                                  |
-           +----------------------+----------------------+
-           |                      |                      |
-           v                      v                      v
-  [Department = Sales]  [Department = Billing]  [Department = Careers]
-           |                      |                      |
-           v                      v                      v
-  Route to Sales Team    Route to Billing Team     Route to HR Team
-```
-
----
-
-### Scenario B: VIP High-Value Lead Alert
-**Goal:** Immediately alert sales leadership when a prospect indicates a budget over $10,000, and send the prospect an urgent meeting link.
-
-- **Condition:** If `Estimated Budget` is greater than `10000`
-- **Recipient To:** `vp-sales@yourcompany.com`, `{Email Address}`
-- **Recipient BCC:** `crm-ingest@yourcompany.com`
-- **Subject:** `[URGENT VIP LEAD] {Company Name} - {Full Name}`
-- **Custom Delivery:** High Priority Flag via Custom SMTP.
-
----
-
-### Scenario C: Region-Specific Multilingual Responders
-**Goal:** Deliver confirmation responses in the customer's preferred language.
-
-- **Rule 1:** If `Language Preference` equals `Spanish` &rarr; Dispatch Spanish HTML Template via `soporte@yourdomain.es`.
-- **Rule 2:** If `Language Preference` equals `French` &rarr; Dispatch French HTML Template via `support@yourdomain.fr`.
-- **Fallback Rule:** If no language condition matches &rarr; Send default English Template.
-
----
-
-## 5. Fallback Handling & Logic Execution Order
-
-### Rule Execution Cascade
-FormMail Hub processes conditional rules top-to-bottom in the order listed in the dashboard:
-
-1. **First-Match vs. Multi-Match Execution:**
-   - **Stop on First Match:** Once a condition evaluates to true, the assigned email action fires and subsequent conditional rules are skipped.
-   - **Evaluate All Rules:** Every active rule is evaluated independently, allowing multiple distinct emails to trigger if multiple non-overlapping conditions are met.
-2. **Fallback / Default Rule:**
-   - Create a **Default Rule** that fires when no conditional rules match. This guarantees that every form submitter receives a confirmation email, preventing lost inquiries.
-
----
-
-## 6. Diagnostics, Testing & Rule Debugging
-
-To ensure your conditional workflows execute seamlessly in production:
+## 4. Diagnostics & Rule Debugging
 
 | Symptom / Issue | Likely Cause | Solution |
 | :--- | :--- | :--- |
-| Rule does not trigger on submission | String casing mismatch or extra trailing spaces in option value. | Ensure target values match form choices exactly, or use `Contains` operator instead of `Equals`. |
-| Multiple conflicting emails sent | Logic set to evaluate all rules instead of stopping on first match. | Adjust Rule Execution Settings to **Stop on First Match** or refine logic parameters. |
-| Email sent to wrong recipient | Incorrect dynamic field mapping (`{Email}` tag pointed to wrong question). | Re-check recipient tag mappings in the Rule Editor. |
-| Numerical rule fails | Non-numeric characters (e.g., `$10,000` instead of `10000`) in answer field. | Set input validation in Google Forms™ to enforce numeric-only responses. |
+| Feature tabs locked | Custom SMTP not configured or tested. | Admins MUST configure and test custom SMTP under **Settings > SMTP Config** to unlock Rules, Templates, Campaigns, and Analytics. |
+| Rule does not trigger | Value mismatch or trailing spaces. | Ensure target values match form choices exactly, or use `Contains` operator. |
+| System SMTP cannot send rule email | Attempting to use System SMTP for rule notifications. | System SMTP is strictly restricted to default alerts for Admin and Team Members. Use verified Custom SMTP for rules. |
 
 ---
 

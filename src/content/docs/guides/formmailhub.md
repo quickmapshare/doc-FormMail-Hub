@@ -11,34 +11,32 @@ Access the central documentation portal anytime at [https://doc.formmailhub.com/
 
 ## 1. Ecosystem & Application Architecture
 
-FormMail Hub operates as an integrated multi-addon suite across Google Workspace, bringing powerful communication capabilities to Google Forms™ and Google Sheets™.
+FormMail Hub operates via an independent external cloud platform engine coupled with Google Workspace data ingestion bridges.
 
 ```
 +-----------------------------------------------------------------------------------+
-|                             GOOGLE FORMS ENTRY POINTS                             |
+|                        DATA INGESTION BRIDGES (GOOGLE ADD-ONS)                     |
 |  +---------------------------+  +-------------------+  +-----------------------+  |
 |  | Form Confirmation Emails  |  |   Form to Email   |  | Form Notifications    |  |
-|  |        (Add-on)           |  |     (Add-on)      |  |     SMTP (Add-on)     |  |
+|  |     (Forms Add-on)        |  |  (Forms Add-on)   |  |    SMTP (Forms)       |  |
 |  +---------------------------+  +-------------------+  +-----------------------+  |
+|  +-----------------------------------------------------------------------------+  |
+|  |                 FormMail Hub for Google Sheets™ (Add-on)                    |  |
+|  |                (Primary Management Client / Campaign Launchpad)            |  |
+|  +-----------------------------------------------------------------------------+  |
 +------------------------------------------+----------------------------------------+
-                                           |
+                                           | Pushes Submission Events & Config Data
                                            v
 +-----------------------------------------------------------------------------------+
-|                             CORE APPLICATION HUB                                  |
-|                     FormMail Hub for Google Sheets™ Add-on                        |
-|                  (Full-Featured Application & Storage Layer)                      |
+|                   INDEPENDENT CLOUD PLATFORM ENGINE (EXTERNAL)                    |
+|       (High-Performance Event Processing, Rule Evaluation & SMTP Engine)          |
 +-----------------------------------------------------------------------------------+
 ```
 
-### Connected Add-ons
-- **3 Google Forms Add-ons:** Connect directly into the platform to streamline setup:
-  1. *Form Confirmation Emails*
-  2. *Form to Email*
-  3. *Form Notifications SMTP*
-- **Full-Featured Core Application ("FormMail Hub" Google Sheets Add-on):** The central management application. Bulk broadcasting (Campaigns), full analytics, and list indexing are exclusively powered from the Google Sheets core add-on interface.
-
-### Form Quota Expansion via Google Sheets
-Standard configurations restrict form limits. Connecting a spreadsheet via the **'FormMail Hub' Google Sheets add-on** enables scaling beyond the standard 20-form limit. Because a single spreadsheet can contain multiple Form Responses tabs while using only one active connection, you can manage and scale notifications across numerous forms effortlessly.
+### Architecture Overview
+- **Independent Cloud Platform Engine:** FormMail Hub operates on a powerful, independent external cloud backend platform specifically built to overcome Google Workspace's native execution limits, quotas, and trigger constraints.
+- **Data Ingestion Bridges:** All 3 Google Forms entry add-ons (*Form Confirmation Emails*, *Form to Email*, *Form Notifications SMTP*) and the 1 Google Sheets add-on (*FormMail Hub*) act strictly as data ingestion bridges/entry points that push submission events and configuration data to the FormMail Hub cloud platform.
+- **Full-Featured Google Sheets Management Client:** The **"FormMail Hub" Google Sheets add-on** acts as the primary full-featured management client. Because a single Google Spreadsheet can host multiple Form Responses tabs, connecting via the Sheets add-on uses only 1 connection slot while scaling across multiple forms, and provides the interface to launch proactive bulk email Campaigns processed by our cloud platform engine.
 
 ---
 
@@ -53,7 +51,7 @@ FormMail Hub maintains strict permission boundaries between administrators and t
 
 ## 3. Delivery Infrastructure & Custom SMTP Requirement
 
-FormMail Hub provides a clear separation between out-of-the-box alerts and custom outreach:
+FormMail Hub separates internal administrative alerts from client-facing custom outreach:
 
 ```
 +-----------------------------------------------------------------------------------+
@@ -64,68 +62,69 @@ FormMail Hub provides a clear separation between out-of-the-box alerts and custo
           |                                                              |
           v                                                              v
 +-----------------------------------+                          +-----------------------------------+
-|    BUILT-IN SYSTEM NOTIFICATIONS  |                          | USER-CONFIGURED CUSTOM SMTP       |
+|    BUILT-IN SYSTEM SMTP RELAY     |                          | USER-CONFIGURED CUSTOM SMTP       |
 +-----------------------------------+                          +-----------------------------------+
-| - Out-of-the-box feature          |                          | - MANDATORY requirement before    |
-| - Uses system internal SMTP       |                          |   creating templates, rules,      |
-| - Sends default submission alerts |                          |   campaigns, or viewing analytics |
-| - Targets Admin & Team Members    |                          | - Sends under Admin's identity    |
-| - Consumes 0% personal SMTP quota |                          | - Scalable to 10,000+ msgs/day    |
+| - Out-of-the-box feature          |                          | - MANDATORY setup & test BEFORE   |
+| - Strictly restricted to default  |                          |   unlocking Templates, Rules,     |
+|   alerts to Admin & Team Members  |                          |   Campaigns, or Analytics         |
+| - Serves as live demo & saves     |                          | - Sends under Admin's identity    |
+|   Admin personal SMTP quota       |                          | - Custom templates & responders   |
+| - Cannot send custom templates    |                          | - Scalable to 10,000+ msgs/day    |
 +-----------------------------------+                          +-----------------------------------+
 ```
 
-### Built-in System Notifications (Out-of-the-Box)
-System Notifications work right out of the box powered by FormMail Hub's internal SMTP. It delivers default-templated submission alerts directly to the Form Admin and selected Team Members without requiring custom SMTP setup.
+### Built-in System SMTP Scope
+Built-in System SMTP is **STRICTLY** restricted to sending default-templated submission alerts to the Form Admin and selected Team Members (serving as a live demo and conserving Admin SMTP quota). System SMTP **CANNOT** be used for custom templates, rule-based notifications, or respondent auto-responders.
 
-### Mandatory Custom SMTP Requirement
-Admins **MUST** configure custom SMTP settings before creating email templates, rules, campaigns, or accessing analytics. These features send custom communications under the Admin's own email identity and require verified SMTP transport.
+### Mandatory Custom SMTP Requirement & UI Lock State
+Admins **MUST** configure and test custom SMTP settings before unlocking Templates, Rules, Campaigns, or Analytics. Until custom SMTP is active, these feature tabs remain strictly locked in the UI.
 
 #### Supported Custom SMTP Providers
-- **Free Gmail™ / Google Workspace:** Up to 500 emails/day using a 16-character Google App Password.
+- **Free Gmail™ / Google Workspace:** Send using a 16-character Google App Password.
 - **Amazon SES:** Scale to 10,000+ emails/day with enterprise deliverability.
-- **SendGrid / Mailgun / Postmark:** API/SMTP relays with advanced tracking.
+- **SendGrid / Mailgun / Postmark:** Transactional email relays.
 - **Custom Corporate Relays:** Connect directly to `smtp.yourdomain.com`.
 
 ---
 
 ## 4. Setting Up Auto-Responders & Conditional Rules
 
-Once Custom SMTP is configured by the Admin, custom email automation and rules can be established:
+Once custom SMTP settings are configured and tested by the Admin to unlock feature tabs:
 
 ### Dynamic Tag Personalization
-Templates parse submission fields and system parameters into dynamic tags wrapped in curly braces (`{Tag Name}`):
+Templates parse submission fields into dynamic tags wrapped in curly braces (`{Tag Name}`):
 - `{Question Title}`: Inserts exact answers provided by respondents for a specific form question (e.g., `{First Name}`).
 - `{Form Title}`: The official title of the connected Google Form™.
-- `{Unsubscribe link}`: Generates a mandatory opt-out URL for campaign compliance.
 
-### Smart Conditional Logic Routing
-Route custom email templates based on specific submission field criteria (e.g., `If "Department" Equals "Sales"` -> Route to `sales@yourdomain.com` using Custom SMTP).
+*Note: Only dynamic question field tags (e.g., `{Question Title}`) and `{Form Title}` are valid default tags.*
+
+### Multi-Condition Routing Logic
+Rules support evaluating multiple form response fields simultaneously to trigger targeted custom templates and route emails to specific recipients or internal teams based on exact conditions.
 
 ---
 
 ## 5. Broadcast Campaigns & Lead List Management
 
-Proactive bulk email marketing to form respondents is powered by the **FormMail Hub Google Sheets add-on**.
+Proactive bulk email marketing to form respondents is powered exclusively by the **FormMail Hub Google Sheets add-on**.
 
-### Campaign Availability & Requirement
-Bulk sending (Campaigns) is **ONLY** available when launched from the **FormMail Hub Google Sheets add-on**. It is intentionally disabled within Google Forms entry add-ons.
+### Campaign Availability
+Bulk sending (Campaigns) is **ONLY** available when launched from the **FormMail Hub Google Sheets add-on**.
 
 ### Campaign Creation & Dispatch Workflow
-To send a proactive campaign to form respondents, follow this exact step-by-step workflow:
+To send a proactive campaign to form respondents, the Admin follows this exact workflow:
 
-1. **Create Campaign Template:** The Admin creates a campaign template containing desired content and mandatory compliance tags (`{Unsubscribe link}`).
-2. **Configure Filtering Rules:** The Admin configures filtering rules to target specific respondents in the responses Google Sheet™ (e.g., date ranges, response field choices).
+1. **Create Campaign Template:** The Admin creates a campaign template.
+2. **Configure Filtering Rules:** The Admin configures filtering rules to target specific respondents in the responses Google Sheet™.
 3. **Enable Active Campaign Rule:** The Admin enables the rule as an active campaign.
-4. **Open Google Sheets Core Add-on:** Within the backing responses Google Sheet™, the Admin launches the **FormMail Hub** add-on and switches to the **Campaign** view.
-5. **Select Synchronized Campaign:** Select the synchronized campaign name from the list.
-6. **Initiate Dispatch:** Click the **'Dispatch'** button to initiate the bulk email dispatch.
+4. **Switch to Campaign View:** Within the FormMail Hub Google Sheets add-on interface on the responses sheet, the Admin switches to the **Campaign** view.
+5. **Select Synchronized Campaign:** The Admin selects the synchronized campaign name.
+6. **Initiate Dispatch:** The Admin clicks the **'Dispatch'** button to initiate the bulk email dispatch.
 
 ---
 
 ## 6. Audit Logging & Compliance
 
-- **Suppression Management:** When a contact unsubscribes via `{Unsubscribe link}`, their record is flagged as `SUPPRESSED` and automatically excluded from future campaign dispatches.
-- **Audit Diagnostics:** View delivery status (`DELIVERED`, `BOUNCED_HARD`, `FAILED_SMTP_AUTH`, `OPT_OUT_SKIPPED`) in real-time diagnostic logs.
+- **Audit Diagnostics:** View delivery execution status (`DELIVERED`, `BOUNCED_HARD`, `FAILED_SMTP_AUTH`, `OPT_OUT_SKIPPED`) in real-time diagnostic logs.
 
 ---
 

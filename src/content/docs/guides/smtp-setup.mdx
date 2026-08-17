@@ -1,15 +1,15 @@
 ---
 title: Custom SMTP & Domain Authentication Guide
-description: Complete guide for configuring Custom SMTP providers in FormMail Hub, understanding mandatory SMTP prerequisites, and setting up SPF, DKIM, and DMARC verification.
+description: Complete guide for configuring Custom SMTP providers in FormMail Hub, understanding mandatory SMTP UI lock prerequisites, and setting up SPF, DKIM, and DMARC verification.
 ---
 
-FormMail Hub utilizes a flexible dual-transport model to deliver administrative submission alerts and client-facing custom outreach. 
+FormMail Hub utilizes a flexible dual-transport model to deliver administrative submission alerts and client-facing custom outreach via its independent cloud platform engine.
 
-Understanding when Custom SMTP is required—and how to configure it—is essential for unlocking the full suite of email automation features.
+Understanding when Custom SMTP is required—and testing credentials to unlock feature tabs—is essential for leveraging the full platform capabilities.
 
 ---
 
-## 1. Built-in Notifications vs. Custom SMTP Requirement
+## 1. Built-in System SMTP Scope vs. Custom SMTP Requirement
 
 ```
 +-----------------------------------------------------------------------------------+
@@ -20,20 +20,23 @@ Understanding when Custom SMTP is required—and how to configure it—is essent
           |                                               |
           v                                               v
 +-----------------------------------+           +-----------------------------------+
-|   BUILT-IN SYSTEM NOTIFICATIONS   |           |    CUSTOM SMTP INTEGRATION        |
+|     BUILT-IN SYSTEM SMTP RELAY    |           |    CUSTOM SMTP INTEGRATION        |
 +-----------------------------------+           +-----------------------------------+
-| - Powered by system internal SMTP |           | - MANDATORY setup BEFORE creating |
-| - Out-of-the-box submission alerts|           |   templates, rules, campaigns, or |
-| - Delivered to Admin & Team       |           |   accessing analytics             |
-| - No custom SMTP required         |           | - Sends under Admin's identity    |
+| - Internal system SMTP relay      |           | - MANDATORY setup & test BEFORE   |
+| - STRICTLY restricted to default  |           |   unlocking Templates, Rules,     |
+|   alerts to Admin & Team Members  |           |   Campaigns, or Analytics         |
+| - Serves as live demo & saves     |           | - Feature tabs strictly locked in |
+|   Admin personal SMTP quota       |           |   UI until Custom SMTP is active  |
+| - CANNOT send custom templates or |           | - Sends under Admin's identity    |
+|   respondent auto-responders      |           | - Responders, rules, campaigns    |
 +-----------------------------------+           +-----------------------------------+
 ```
 
-### Built-in System Notifications (No Setup Required)
-System Notifications is an out-of-the-box feature powered by the system's internal SMTP. It sends default-templated submission alerts to the Form Admin and selected Team Members immediately upon installation, consuming **0%** of your personal daily email quota.
+### Built-in System SMTP Scope
+Built-in System SMTP is **STRICTLY** restricted to sending default-templated submission alerts to the Form Admin and selected Team Members (serving as a live demo and conserving Admin SMTP quota). System SMTP **CANNOT** be used for custom templates, rule-based notifications, or respondent auto-responders.
 
-### Absolute Requirement for Custom SMTP
-Admins **MUST** configure custom SMTP settings before creating email templates, rules, campaigns, or accessing analytics, as these features require sending emails under the Admin's own email identity.
+### Absolute Custom SMTP Requirement & UI Lock State
+Admins **MUST** configure and test custom SMTP settings before unlocking Templates, Rules, Campaigns, or Analytics. Until custom SMTP is active, these feature tabs remain strictly locked in the UI.
 
 ---
 
@@ -44,27 +47,30 @@ To send emails under your Google identity without hitting native Apps Script res
 
 1. **Enable 2-Step Verification:** Go to Google Account Security (`myaccount.google.com/security`) and ensure 2-Step Verification is **ON**.
 2. **Generate App Password:** Search for **App Passwords**, enter `FormMail Hub`, and copy the generated 16-character secret key.
-3. **Configure FormMail Hub:**
+3. **Configure & Test in FormMail Hub:**
    - Navigate to **Settings > SMTP Config**.
    - **Host:** `smtp.gmail.com`
    - **Port:** `587` (TLS) or `465` (SSL)
    - **Username:** Your full Gmail/Workspace email address.
    - **Password:** The 16-character App Password (without spaces).
+   - **Test Connection:** Click **Test Connection** to verify settings and unlock the UI tabs (Templates, Rules, Campaigns, Analytics).
 
 ### Provider B: Amazon SES (Simple Email Service)
 1. **Verify Identity:** In the AWS SES Console, create and verify your sending domain identity via CNAME records.
 2. **Generate SMTP Credentials:** Navigate to **SES > Account Level Settings > SMTP Settings** and click **Create SMTP Credentials**.
 3. **Request Production Access:** Request exit from the AWS SES Sandbox environment.
-4. **Configure FormMail Hub:**
+4. **Configure & Test in FormMail Hub:**
    - Navigate to **Settings > SMTP Config**.
    - **Host:** `email-smtp.{region}.amazonaws.com` (e.g., `email-smtp.us-east-1.amazonaws.com`)
    - **Port:** `587` (TLS)
    - **Username / Password:** AWS SES IAM SMTP credentials.
+   - **Test Connection:** Test settings to unlock locked UI feature tabs.
 
 ### Provider C: SendGrid / Mailgun / Custom Corporate Relays
 - **SendGrid:** Host `smtp.sendgrid.net`, Port `587`, Username `apikey`, Password = Your API Key.
 - **Mailgun:** Host `smtp.mailgun.org`, Port `587`, Username = Postmaster address, Password = SMTP password.
 - **Custom Relay:** Input corporate host (`smtp.yourdomain.com`), port (`587` or `465`), and authorized user credentials under **Settings > SMTP Config**.
+- **Test Connection:** Test credentials to verify transport and unlock UI feature tabs.
 
 ---
 
@@ -88,9 +94,9 @@ To ensure high inbox placement when sending via Custom SMTP, configure DNS recor
 
 | Error Code | Primary Cause | Resolution |
 | :--- | :--- | :--- |
-| `FAILED_SMTP_AUTH` / `535 5.7.8` | Invalid username or account password used instead of App Password. | Re-enter credentials under **Settings > SMTP Config**. For Gmail accounts, generate a dedicated 16-character App Password. |
+| `FAILED_SMTP_AUTH` / `535 5.7.8` | Invalid username or account password used instead of App Password. | Re-enter credentials under **Settings > SMTP Config**. For Gmail accounts, generate a dedicated 16-character App Password and test connection. |
 | `FAILED_SMTP_CONNECT` | Host port blocked by network firewall or wrong hostname. | Switch connection port from 25 to **587** (TLS) or **465** (SSL). |
-| `Feature Access Locked` | Custom SMTP not configured. | Admins must complete Custom SMTP setup under **Settings > SMTP Config** before creating templates, rules, campaigns, or viewing analytics. |
+| `Feature Access Locked` | Custom SMTP not configured or tested. | Admins MUST configure and test custom SMTP settings under **Settings > SMTP Config** before unlocking Templates, Rules, Campaigns, or Analytics. |
 
 ---
 

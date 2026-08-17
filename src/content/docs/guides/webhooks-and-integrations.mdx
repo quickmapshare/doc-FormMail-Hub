@@ -1,11 +1,11 @@
 ---
 title: Scope Boundaries & Email-Only Architecture Guide
-description: Technical overview of FormMail Hub's email-only operational scope, system design principles, and integration boundaries.
+description: Technical overview of FormMail Hub's email-only operational scope, cloud engine architecture, and integration boundaries.
 ---
 
 FormMail Hub is engineered specifically as a dedicated, high-performance email receiving, processing, and dispatching engine for Google Forms™ and Google Sheets™.
 
-This guide outlines the system's core architecture, functional scope boundaries, and the technical design principles governing form response processing.
+This guide outlines the system's core cloud engine architecture, functional scope boundaries, and integration reality.
 
 ---
 
@@ -15,62 +15,48 @@ FormMail Hub operates strictly as an **email-only notification and campaign auto
 
 ```
 +-----------------------------------------------------------------------------------+
-|                            Google Form™ Submission                                |
+|                        DATA INGESTION BRIDGES (GOOGLE ADD-ONS)                     |
+|  +---------------------------+  +-------------------+  +-----------------------+  |
+|  | Form Confirmation Emails  |  |   Form to Email   |  | Form Notifications    |  |
+|  |     (Forms Add-on)        |  |  (Forms Add-on)   |  |    SMTP (Forms)       |  |
+|  +---------------------------+  +-------------------+  +-----------------------+  |
+|  +-----------------------------------------------------------------------------+  |
+|  |                 FormMail Hub for Google Sheets™ (Add-on)                    |  |
+|  |                (Primary Management Client / Campaign Launchpad)            |  |
+|  +-----------------------------------------------------------------------------+  |
++------------------------------------------+----------------------------------------+
+                                           | Pushes Submission Events & Config Data
+                                           v
 +-----------------------------------------------------------------------------------+
-                                          |
-                                          v
-+-----------------------------------------------------------------------------------+
-|                           FormMail Hub Engine                                     |
-+-----------------------------------------------------------------------------------+
-                                          |
-                                          v
-+-----------------------------------------------------------------------------------+
-|                       EMAIL DISPATCH INFRASTRUCTURE                               |
-|                                                                                   |
-|  +----------------------------------+    +-------------------------------------+  |
-|  | Internal System Notifications    |    | User Custom SMTP Transport          |  |
-|  | (Default Admin & Team Alerts)    |    | (Amazon SES, SendGrid, Gmail, etc.) |  |
-|  +----------------------------------+    +-------------------------------------+  |
+|                   INDEPENDENT CLOUD PLATFORM ENGINE (EXTERNAL)                    |
+|       (High-Performance Event Processing, Rule Evaluation & SMTP Engine)          |
 +-----------------------------------------------------------------------------------+
 ```
 
-### Strict Scope Boundaries
-
-To maintain platform stability, deliverability focus, and data privacy within Google Workspace, FormMail Hub strictly adheres to the following feature boundaries:
-
-- **Email-Only Scope:** FormMail Hub processes form submissions strictly to construct, format, and dispatch emails.
-- **No Webhook or HTTP Forwarding Support:** The platform **DOES NOT** support webhooks, HTTP POST payload forwarding, external REST API calls, or custom HTTP notification endpoints.
-- **No Third-Party App Integrations:** FormMail Hub does not offer native connectors or data forwarding to third-party messaging or CRM services (such as Slack, Microsoft Teams, Discord, Zapier, Make, or external database APIs).
+### Key Architectural Principles
+1. **Independent Cloud Platform Engine:** FormMail Hub operates on a powerful, independent external cloud backend platform specifically built to overcome Google Workspace's native execution limits, quotas, and trigger constraints.
+2. **Data Ingestion Bridges:** All 3 Google Forms entry add-ons (*Form Confirmation Emails*, *Form to Email*, *Form Notifications SMTP*) and the 1 Google Sheets add-on (*FormMail Hub*) act strictly as data ingestion bridges/entry points that push submission events and configuration data to the FormMail Hub cloud platform.
+3. **Full-Featured Google Sheets Management Client:** The **"FormMail Hub" Google Sheets add-on** acts as the primary full-featured management client. Connecting via the Sheets add-on uses only 1 connection slot while scaling across multiple forms (via multi-tab response sheets), and provides the interface to launch proactive bulk email Campaigns.
 
 ---
 
-## 2. Integrated Google Workspace Ecosystem
+## 2. Strict Scope Boundaries (NO WEBHOOKS)
 
-While external data forwarding is outside the core scope, FormMail Hub provides deep integration across the Google Workspace ecosystem:
+To maintain engine performance, deliverability focus, and clear architectural boundaries, FormMail Hub strictly enforces the following boundaries:
 
-### Google Forms Entry Add-ons
-FormMail Hub integrates directly within the Google Forms editor through three entry add-ons:
-1. **Form Confirmation Emails**
-2. **Form to Email**
-3. **Form Notifications SMTP**
-
-These entry points allow form creators to configure submission triggers, built-in system notifications, and custom SMTP auto-responders directly where forms are built.
-
-### Google Sheets Core Application
-The **FormMail Hub Google Sheets add-on** serves as the core, full-featured application of the ecosystem. It provides:
-- **Quota Expansion:** Connecting a spreadsheet enables scaling beyond standard 20-form limits by managing multiple Form Responses tabs within a single connection.
-- **Broadcast Campaign Engine:** Bulk email broadcasting to lists of form respondents is enabled exclusively within the Google Sheets core add-on.
-- **Audit Logging:** Full diagnostic logs tracking delivery statuses (`DELIVERED`, `BOUNCED_HARD`, `FAILED_SMTP_AUTH`, `OPT_OUT_SKIPPED`) are maintained inside backing spreadsheet tabs.
+- **Email-Only Operational Scope:** FormMail Hub operates strictly as an email receiving, processing, and dispatching engine based on admin-defined rules.
+- **NO Webhooks / HTTP Forwarding:** FormMail Hub **DOES NOT** support webhooks, HTTP POST forwarding, external API calls, or custom HTTP endpoints.
+- **NO Third-Party App Integrations:** FormMail Hub does not provide native connectors or integrations for external non-email platforms (such as Slack, Microsoft Teams, Discord, Zapier, CRMs, or custom endpoints).
+- **Strict Code-First Reality:** Documentation reflects strictly existing, verified functionality. FormMail Hub does not draft guides or offer theoretical features, future roadmaps, or non-existent integrations.
 
 ---
 
-## 3. Security & Data Privacy Advantages
+## 3. Delivery Infrastructure Scope
 
-Operating as a self-contained email engine within Google Workspace offers key security advantages:
+FormMail Hub isolates delivery pipelines to preserve quotas and guarantee clear functionality:
 
-1. **Zero External Data Storage:** Form responses remain within your organization's Google Forms and Google Sheets infrastructure. Submission payloads are not mirrored or posted to external data collectors.
-2. **Reduced Egress Vulnerabilities:** By eliminating third-party webhook forwards, sensitive respondent inputs (PII) are protected from unencrypted HTTP transmission or downstream integration leaks.
-3. **Dedicated Transport Infrastructure:** Email transmission relies entirely on Google's internal infrastructure for system alerts or user-authenticated custom SMTP servers (e.g., Amazon SES, SendGrid, Google Workspace) for client-facing outreach.
+- **Built-in System SMTP Scope:** Built-in System SMTP is **STRICTLY** restricted to sending default-templated submission alerts to the Form Admin and selected Team Members (serving as a live demo and conserving Admin SMTP quota). System SMTP **CANNOT** be used for custom templates, rule-based notifications, or respondent auto-responders.
+- **Custom SMTP Transport:** Admins **MUST** configure and test custom SMTP settings before unlocking Templates, Rules, Campaigns, or Analytics. Until custom SMTP is active, these feature tabs remain strictly locked in the UI.
 
 ---
 
