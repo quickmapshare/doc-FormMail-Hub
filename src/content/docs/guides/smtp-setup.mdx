@@ -45,7 +45,7 @@ To send emails under your Google identity without hitting native Apps Script res
 1. **Enable 2-Step Verification:** Go to Google Account Security (`myaccount.google.com/security`) and ensure 2-Step Verification is **ON**.
 2. **Generate App Password:** Search for **App Passwords**, enter `FormMail Hub`, and copy the generated 16-character secret key.
 3. **Configure FormMail Hub:**
-   - Navigate to **Settings > SMTP Configuration**.
+   - Navigate to **Settings > SMTP Config**.
    - **Host:** `smtp.gmail.com`
    - **Port:** `587` (TLS) or `465` (SSL)
    - **Username:** Your full Gmail/Workspace email address.
@@ -56,6 +56,7 @@ To send emails under your Google identity without hitting native Apps Script res
 2. **Generate SMTP Credentials:** Navigate to **SES > Account Level Settings > SMTP Settings** and click **Create SMTP Credentials**.
 3. **Request Production Access:** Request exit from the AWS SES Sandbox environment.
 4. **Configure FormMail Hub:**
+   - Navigate to **Settings > SMTP Config**.
    - **Host:** `email-smtp.{region}.amazonaws.com` (e.g., `email-smtp.us-east-1.amazonaws.com`)
    - **Port:** `587` (TLS)
    - **Username / Password:** AWS SES IAM SMTP credentials.
@@ -63,7 +64,7 @@ To send emails under your Google identity without hitting native Apps Script res
 ### Provider C: SendGrid / Mailgun / Custom Corporate Relays
 - **SendGrid:** Host `smtp.sendgrid.net`, Port `587`, Username `apikey`, Password = Your API Key.
 - **Mailgun:** Host `smtp.mailgun.org`, Port `587`, Username = Postmaster address, Password = SMTP password.
-- **Custom Relay:** Input corporate host (`smtp.yourdomain.com`), port (`587` or `465`), and authorized user credentials.
+- **Custom Relay:** Input corporate host (`smtp.yourdomain.com`), port (`587` or `465`), and authorized user credentials under **Settings > SMTP Config**.
 
 ---
 
@@ -87,10 +88,10 @@ To ensure high inbox placement when sending via Custom SMTP, configure DNS recor
 
 | Error Code | Primary Cause | Resolution |
 | :--- | :--- | :--- |
-| `FAILED_SMTP_AUTH` / `535 5.7.8` | Invalid username or account password used instead of App Password. | Re-enter credentials. For Gmail accounts, generate a dedicated 16-character App Password. |
+| `FAILED_SMTP_AUTH` / `535 5.7.8` | Invalid username or account password used instead of App Password. | Re-enter credentials under **Settings > SMTP Config**. For Gmail accounts, generate a dedicated 16-character App Password. |
 | `FAILED_SMTP_CONNECT` | Host port blocked by network firewall or wrong hostname. | Switch connection port from 25 to **587** (TLS) or **465** (SSL). |
-| `Feature Access Locked` | Custom SMTP not configured. | Admins must complete Custom SMTP setup before creating templates, rules, campaigns, or viewing analytics. |
+| `Feature Access Locked` | Custom SMTP not configured. | Admins must complete Custom SMTP setup under **Settings > SMTP Config** before creating templates, rules, campaigns, or viewing analytics. |
 
 ---
 
-*Google Forms™, Google Sheets™, and Gmail™ are trademarks of Google LLC.*
+*Google Forms™ and Gmail™ are trademarks of Google LLC.*

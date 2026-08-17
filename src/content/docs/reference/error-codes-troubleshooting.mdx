@@ -43,7 +43,7 @@ FormMail Hub captures raw response strings returned by custom SMTP servers (Amaz
 
 ### 5xx Permanent Failures
 - **`535 5.7.8 Authentication credentials invalid`**: SMTP username or password rejected.
-  - *Action:* Re-authenticate credentials under **Settings > SMTP Configuration**. For Gmail/Workspace accounts, ensure 2-Step Verification is enabled and an **App Password** is used instead of your normal account password.
+  - *Action:* Re-authenticate credentials under **Settings > SMTP Config**. For Gmail/Workspace accounts, ensure 2-Step Verification is enabled and an **App Password** is used instead of your normal account password.
 - **`550 5.1.1 User unknown / Invalid recipient`**: Recipient address does not exist on target domain.
   - *Action:* Address marked invalid.
 - **`550 5.7.1 Message rejected due to DMARC / SPF policy`**: Sender domain failed domain authentication verification at recipient inbound gateway.
@@ -115,7 +115,7 @@ Check Audit Log Status Code
 ### Remediation Steps
 
 #### Step A: Re-verify Credentials & App Passwords
-1. Open **FormMail Hub > Settings > SMTP Configuration**.
+1. Open **FormMail Hub > Settings > SMTP Config**.
 2. If using Gmail/Workspace, confirm **2-Step Verification** is active in Google Account settings.
 3. Generate a brand new 16-character **App Password** and paste it into the password field without spaces.
 4. Click **Test Connection** to verify response code `235`.
@@ -125,7 +125,7 @@ Check Audit Log Status Code
 2. Verify that the form question uses Google Forms **Response Validation** configured to require a valid email format (`Text > Email`).
 
 #### Step C: Configure Custom SMTP Provider
-1. Connect an external email infrastructure provider (Amazon SES, SendGrid, Mailgun) under **SMTP Configuration**.
+1. Connect an external email infrastructure provider (Amazon SES, SendGrid, Mailgun) under **Settings > SMTP Config**.
 2. Ensure production mode access is granted if using AWS SES (exit sandbox mode).
 
 #### Step D: Verify Domain SPF / DKIM / DMARC

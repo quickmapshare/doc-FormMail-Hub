@@ -131,7 +131,7 @@ FormMail Hub supports secure socket connections across all industry-standard por
 
 | Symptom / Error Code | Root Cause | Technical Remediation Strategy |
 | :--- | :--- | :--- |
-| `ERR_QUOTA_EXCEEDED` | Google Workspace daily email limit hit via native relay. | Switch delivery route to Custom SMTP (Amazon SES or SendGrid) in **Settings > SMTP Configuration**. |
+| `ERR_QUOTA_EXCEEDED` | Google Workspace daily email limit hit via native relay. | Switch delivery route to Custom SMTP (Amazon SES or SendGrid) in **Settings > SMTP Config**. |
 | `452 4.5.3 Too many recipients` | Provider single-transaction recipient limit exceeded. | Enable batch mode in FormMail Hub settings to deliver messages as individual transactions. |
 | `535 5.7.8 Auth Failed` | Google Account password used instead of App Password. | Enable 2FA on Google Account and generate a dedicated 16-character **App Password**. |
 | `SES Sandbox Limit Reached` | AWS SES account restricted to sandbox recipient list. | Submit an AWS SES Production Access request in the AWS SES Console. |

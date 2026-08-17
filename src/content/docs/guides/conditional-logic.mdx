@@ -9,7 +9,16 @@ Whether you need to route support requests to specific regional teams, trigger p
 
 ---
 
-## 1. Core Architecture & Operators
+## 1. Prerequisites: Custom SMTP Requirement
+
+Before configuring conditional logic rules or custom email templates, the Admin **MUST** complete Custom SMTP setup under **Settings > SMTP Config**. 
+
+- **Custom SMTP Mandatory:** Creating rules, custom email templates, broadcast campaigns, or viewing analytics requires sending emails under the Admin's own verified email identity.
+- **Built-in System Notifications:** Default submission alerts to the Form Admin and selected Team Members function out-of-the-box via internal system SMTP without custom SMTP configuration.
+
+---
+
+## 2. Core Architecture & Operators
 
 Conditional rules evaluate form field responses immediately upon submission before any outgoing email is constructed. Each rule consists of three core components:
 
@@ -39,15 +48,16 @@ When a rule contains multiple conditions, you can select how they are evaluated:
 
 ---
 
-## 2. Step-by-Step Setup Guide
+## 3. Step-by-Step Setup Guide
 
 Follow these steps to create your first conditional email routing rule in FormMail Hub:
 
 ### Step 1: Open Rule Configuration
-1. Launch Google Forms™ and open your form.
-2. Open the **FormMail Hub** add-on sidebar.
-3. Navigate to **Email Rules** > **Conditional Rules**.
-4. Click **+ Add Conditional Rule**.
+1. Ensure Custom SMTP is configured under **Settings > SMTP Config**.
+2. Launch Google Forms™ and open your form.
+3. Open the **FormMail Hub** add-on sidebar.
+4. Navigate to **Email Rules** > **Conditional Rules**.
+5. Click **+ Add Conditional Rule**.
 
 ### Step 2: Define Trigger Conditions
 1. **Rule Name:** Enter a descriptive title (e.g., *Technical Support Escalation*).
@@ -60,7 +70,7 @@ Follow these steps to create your first conditional email routing rule in FormMa
 1. **To Recipients:** Enter static email addresses (e.g., `tech-support@yourcompany.com`) or select dynamic answer tags like `{Email Address}`.
 2. **CC / BCC Routing:** Optionally specify management or archive mailboxes.
 3. **Email Template:** Choose a pre-built template or create a custom HTML auto-responder specific to this condition.
-4. **Sender Identity / Custom SMTP:** Select which SMTP server account dispatches this notification (e.g., send support responses from `support@yourdomain.com`).
+4. **Sender Identity / Custom SMTP:** Select which verified SMTP server account dispatches this notification (e.g., send support responses from `support@yourdomain.com`).
 
 ### Step 4: Save & Order Rules
 1. Click **Save Rule**.
@@ -68,7 +78,7 @@ Follow these steps to create your first conditional email routing rule in FormMa
 
 ---
 
-## 3. Practical Implementation Scenarios
+## 4. Practical Implementation Scenarios
 
 ### Scenario A: Departmental Ticket & Request Routing
 **Goal:** Automatically route inquiry form submissions to specialized company departments based on user choice.
@@ -114,7 +124,7 @@ Follow these steps to create your first conditional email routing rule in FormMa
 
 ---
 
-## 4. Fallback Handling & Logic Execution Order
+## 5. Fallback Handling & Logic Execution Order
 
 ### Rule Execution Cascade
 FormMail Hub processes conditional rules top-to-bottom in the order listed in the dashboard:
@@ -127,7 +137,7 @@ FormMail Hub processes conditional rules top-to-bottom in the order listed in th
 
 ---
 
-## 5. Diagnostics, Testing & Rule Debugging
+## 6. Diagnostics, Testing & Rule Debugging
 
 To ensure your conditional workflows execute seamlessly in production:
 
