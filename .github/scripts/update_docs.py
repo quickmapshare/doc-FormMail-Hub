@@ -33,18 +33,20 @@ else:
 2. Primary Connector / Admin Role: Only the first user among the form's editors who connects that form to FormMail Hub is granted exclusive rights to configure settings, templates, and triggers for that form.
 3. Ecosystem: FormMail Hub connects from 3 Google Forms add-ons ("Form Confirmation Emails", "Form to Email", "Form Notifications SMTP").
 4. Full-Featured Application: The Google Sheets add-on named "FormMail Hub" is the full-featured application of the ecosystem.
-5. Campaign Availability: Bulk sending (Campaigns) is ONLY available when launched from the Google Sheets add-on.
-6. Campaign Creation & Dispatch Workflow: To send a proactive campaign to form respondents, the Admin creates a campaign template, configures filtering rules to target specific respondents in the responses Google Sheet, and enables the rule as an active campaign. Then, within the FormMail Hub Google Sheets add-on interface on the responses sheet, the Admin switches to the Campaign view, selects the synchronized campaign name, and clicks the 'Dispatch' button to initiate the bulk email dispatch.
-7. Custom SMTP Requirement: Admins MUST configure custom SMTP settings before creating email templates, rules, campaigns, or accessing analytics, as these features require sending emails under the Admin's own email identity.
-8. Built-in System Notifications: System Notifications is an out-of-the-box feature powered by the system's internal SMTP. It sends default-templated submission alerts to the Form Admin and selected Team Members without requiring custom SMTP setup.
-9. Form Quota Expansion via Google Sheets: Connecting a spreadsheet via the 'FormMail Hub' Google Sheets add-on enables scaling beyond the standard 20-form limit, because a single spreadsheet can contain multiple Form Responses tabs while using only one active connection.
-10. Email-Only Scope (NO WEBHOOKS): FormMail Hub ONLY receives/processes Google Forms submissions and dispatches emails via rules. It DOES NOT support webhooks, HTTP POST calls, or 3rd-party integrations (Slack, Teams, Discord, Zapier). NEVER document unverified webhook or integration features.
-11. Dynamic Tags Strict Accuracy: Only dynamic field name tags `{Question Title}` and `{Form Title}` are valid unless explicitly parsed in backend code. DO NOT invent tags like `{Form Summary}`, `{Response ID}`, `{Submission Date}`, or `{Submitter Email}`.
+5. Form Quota Expansion via Google Sheets: Connecting a spreadsheet via the 'FormMail Hub' Google Sheets add-on enables scaling beyond the standard 20-form limit, because a single spreadsheet can contain multiple Form Responses tabs while using only one active connection.
+6. Campaign Availability: Bulk sending (Campaigns) is ONLY available when launched from the Google Sheets add-on.
+7. Campaign Creation & Dispatch Workflow: To send a proactive campaign to form respondents, the Admin creates a campaign template, configures filtering rules to target specific respondents in the responses Google Sheet, and enables the rule as an active campaign. Then, within the FormMail Hub Google Sheets add-on interface on the responses sheet, the Admin switches to the Campaign view, selects the synchronized campaign name, and clicks the 'Dispatch' button to initiate the bulk email dispatch.
+8. Custom SMTP Requirement & UI Lock State: Admins MUST configure and test custom SMTP before unlocking Templates, Rules, Campaigns, or Analytics. Until custom SMTP is active, these tabs remain strictly locked in the UI.
+9. Built-in System SMTP Scope: System SMTP is STRICTLY restricted to default-templated submission alerts to Admin & Team Members (for live demo and conserving quota). It CANNOT be used for custom templates or respondent auto-responders.
+10. Multi-Condition Routing Logic: Rules support evaluating multiple form response fields simultaneously to trigger targeted templates and route emails.
+11. Dynamic Tags Strict Accuracy: Only dynamic field tags `{Question Title}` and `{Form Title}` are valid. DO NOT invent `{Form Summary}`, `{Response ID}`, `{Submission Date}`, `{Submitter Email}`.
+12. Email-Only Scope (NO WEBHOOKS): FormMail Hub DOES NOT support webhooks, HTTP POST calls, or 3rd-party integrations (Slack, Teams, Discord, Zapier).
+13. Strict Code-First Reality: Documentation must ONLY reflect verified code functionality and PRODUCT_RULES.md.
 """
     with open(rules_file, "w", encoding="utf-8") as f:
         f.write(product_rules)
 
-# 2. ĐỌC TÀI LIỆU ĐÃ XUẤT BẢN (NẾU CÓ)
+# 2. ĐỌC TÀI LIỆU ĐÃ XUẤT BẢN
 existing_docs = {}
 if os.path.exists(docs_dir):
     for root, dirs, files in os.walk(docs_dir):
@@ -54,7 +56,7 @@ if os.path.exists(docs_dir):
                 with open(file_path, "r", encoding="utf-8") as f:
                     existing_docs[file_path] = f.read()
 
-# 3. CHIẾN LƯỢC CHỌN MÃ NGUỒN CÓ GIỚI HẠN (TRÁNH QUÁ TẢI PROMPT)
+# 3. CHIẾN LƯỢC CHỌN MÃ NGUỒN CÓ GIỚI HẠN
 source_files_content = {}
 ui_extensions = ('.astro', '.tsx', '.jsx', '.html', '.svelte', '.vue')
 backend_extensions = ('.ts', '.js', '.py', '.gs')
@@ -159,14 +161,13 @@ try:
                 print(f"⚠️ Bỏ qua block do lỗi phân tách: {ex}")
                 continue
 
-    # XỬ LÝ TRƯỜNG HỢP AI AUDIT THẤY MỌI THỨ ĐÃ CHUẨN (KHÔNG CẦN SỬA FILE NÀO)
     if not docs_to_update:
         if "@@@NO_UPDATES_NEEDED@@@" in cleaned_text or "Audit" in cleaned_text or "Compliant" in cleaned_text:
             print("✅ AI BÁO CÁO: Tất cả tài liệu hiện tại đã khớp 100% với PRODUCT_RULES.md. Không cần cập nhật file.")
             print("\n--- BÁO CÁO KIỂM TRA TỪ AI ---")
             print(cleaned_text)
             print("--------------------------------\n")
-            sys.exit(0) # Thoát thành công (exit code 0)
+            sys.exit(0)
         else:
             print("❌ LỖI: AI không trả về block nội dung hợp lệ nào.")
             print(cleaned_text)
