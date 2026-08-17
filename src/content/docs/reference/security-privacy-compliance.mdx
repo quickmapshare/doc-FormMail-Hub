@@ -68,8 +68,8 @@ FormMail Hub provides built-in tools to help organizations comply with global pr
 
 ### CAN-SPAM Act Compliance
 Every marketing broadcast campaign dispatched via the Core Google Sheets Add-on enforces mandatory CAN-SPAM requirements:
-1. **Mandatory Unsubscribe Tag:** Broadcast dispatches require the presence of the `{Unsubscribe link}` tag in the email body or footer.
-2. **Automated Opt-Out Processing:** Clicking `{Unsubscribe link}` routes the recipient to an instant confirmation endpoint, marking their record as `SUPPRESSED`.
+1. **Mandatory Unsubscribe Link:** Broadcast dispatches automatically include an unsubscribe link in the email body or footer.
+2. **Automated Opt-Out Processing:** Clicking the unsubscribe link routes the recipient to an instant confirmation endpoint, marking their record as `SUPPRESSED`.
 3. **Suppression Enforcement:** Future campaign jobs query the suppression registry prior to dispatch, returning an `OPT_OUT_SKIPPED` log status for unsubscribed recipients.
 
 ### HIPAA & Data Handling Considerations

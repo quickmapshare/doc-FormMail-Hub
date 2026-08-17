@@ -21,7 +21,7 @@ When a Google Form submission triggers an automated email or dynamic broadcast, 
 | `FAILED_SMTP_CONNECT` | Error | Connection to remote SMTP host timed out or port was unreachable. | Retries up to 3 times before terminal fail. | Confirm host IP/domain and verify network firewall permits outbound connection on ports 587 or 465. |
 | `RATE_LIMITED` | Warning | Daily sending quota or provider rate limit reached (e.g., Gmail daily quota). | Pauses dispatch. Queues remaining messages for next reset window. | Switch sending route to Custom SMTP (Amazon SES, SendGrid) or wait for quota reset. |
 | `TEMPLATE_ERROR` | Error | Dynamic tag syntax malformed or unresolvable tag reference. | Dispatch skipped to avoid rendering raw tag errors to end users. | Inspect template syntax; verify tag names match form field question labels. |
-| `OPT_OUT_SKIPPED` | Info | Recipient previously unsubscribed via `{Unsubscribe link}` tag. | Dispatch intentionally bypassed to maintain CAN-SPAM/GDPR compliance. | No action required. Contact is automatically suppressed. |
+| `OPT_OUT_SKIPPED` | Info | Recipient previously unsubscribed via automated unsubscribe link. | Dispatch intentionally bypassed to maintain CAN-SPAM/GDPR compliance. | No action required. Contact is automatically suppressed. |
 
 ---
 
