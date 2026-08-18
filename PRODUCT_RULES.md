@@ -19,7 +19,7 @@
 
 ## Rule Engine & Dynamic Content
 10. Multi-Condition Routing Logic: Rules support evaluating multiple form response fields simultaneously to trigger targeted custom templates and route emails to specific recipients or internal teams.
-11. Dynamic Tags Strict Accuracy: Dynamic template tags are strictly handled by the codebase parser. Only dynamic question field tags (e.g., `{Question Title}`) and `{Form Title}` are valid default tags. Writers MUST NOT invent or assume unverified system tags (such as `{Form Summary}`, `{Response ID}`, `{Submission Date}`, `{Submitter Email}`, etc.).
+11. Dynamic Tags Strict Accuracy: Dynamic template tags are handled by templateParser.js using single-pass scanning. Supported enclosure formats are {Tag}, {{Tag}}, and ${Tag}. The valid built-in system tags are strictly: {Form Name}, {All Fields}, {Linked Form}, and {Unsubscribe Link}, alongside any dynamic form question field title. Writers MUST NOT invent unverified system tags.
 
 ## Feature Boundaries & Anti-Hallucination Rules
 12. Email-Only Scope (NO WEBHOOKS): FormMail Hub operates strictly as an email receiving, processing, and dispatching engine based on admin-defined rules. It DOES NOT support webhooks, HTTP POST forwarding, external API calls, or third-party integrations (such as Slack, Microsoft Teams, Discord, Zapier, CRMs, or custom endpoints).
