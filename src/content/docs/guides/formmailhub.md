@@ -67,9 +67,9 @@ FormMail Hub separates internal administrative alerts from client-facing custom 
 | - Out-of-the-box feature          |                          | - MANDATORY setup & test BEFORE   |
 | - Strictly restricted to default  |                          |   unlocking Templates, Rules,     |
 |   alerts to Admin & Team Members  |                          |   Campaigns, or Analytics         |
-| - Serves as live demo & saves     |                          | - Sends under Admin's identity    |
-|   Admin personal SMTP quota       |                          | - Custom templates & responders   |
-| - Cannot send custom templates    |                          | - Scalable to 10,000+ msgs/day    |
+| - Serves as live demo & saves     |                          | - Feature tabs strictly locked in |
+|   Admin personal SMTP quota       |                          |   UI until Custom SMTP active     |
+| - Cannot send custom templates    |                          | - Custom templates & responders   |
 +-----------------------------------+                          +-----------------------------------+
 ```
 
@@ -92,11 +92,13 @@ Admins **MUST** configure and test custom SMTP settings before unlocking Templat
 Once custom SMTP settings are configured and tested by the Admin to unlock feature tabs:
 
 ### Dynamic Tag Personalization
-Templates parse submission fields into dynamic tags wrapped in curly braces (`{Tag Name}`):
-- `{Question Title}`: Inserts exact answers provided by respondents for a specific form question (e.g., `{First Name}`).
-- `{Form Title}`: The official title of the connected Google Form™.
+Templates parse submission fields into dynamic tags supporting `{Tag}`, `{{Tag}}`, and `${Tag}` enclosure formats.
 
-*Note: Only dynamic question field tags (e.g., `{Question Title}`) and `{Form Title}` are valid default tags.*
+#### Supported Dynamic System Tags
+- **Built-in System Tags:** Strictly `{Form Name}`, `{All Fields}`, `{Linked Form}`, and `{Unsubscribe Link}`.
+- **Dynamic Question Field Tags:** Any exact form question title (e.g., `{First Name}`, `{Email Address}`).
+
+*Note: Dynamic template tags are handled by single-pass scanning. Valid built-in system tags are strictly `{Form Name}`, `{All Fields}`, `{Linked Form}`, and `{Unsubscribe Link}`, alongside dynamic form question field titles.*
 
 ### Multi-Condition Routing Logic
 Rules support evaluating multiple form response fields simultaneously to trigger targeted custom templates and route emails to specific recipients or internal teams based on exact conditions.

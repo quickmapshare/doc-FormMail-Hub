@@ -1,6 +1,6 @@
 ---
 title: Dynamic Tags & HTML Email Template Customization Guide
-description: Master FormMail Hub's template engine, dynamic question placeholders, responsive HTML email design, and custom templates.
+description: Master FormMail Hub's template engine, dynamic question placeholders, supported enclosure formats, responsive HTML email design, and custom templates.
 ---
 
 Standard transactional email triggers often feel generic or rigid. **FormMail Hub's Template & Dynamic Variable Engine** empowers you to create beautifully styled, personalized, and mobile-responsive email notifications and auto-responders that reflect your brand identity.
@@ -11,12 +11,18 @@ By utilizing dynamic placeholders and custom HTML/CSS, you can construct targete
 
 ## 1. Dynamic Tag System Overview
 
-FormMail Hub extracts form responses immediately upon submission, mapping them to dynamic tags wrapped in curly brackets: `{Question Title}`. When an email trigger or broadcast campaign is initiated by the cloud platform engine, these tags are replaced with actual user input or form title metadata.
+FormMail Hub extracts form responses immediately upon submission, mapping them to dynamic tags using single-pass scanning in `templateParser.js`. When an email trigger or broadcast campaign is initiated by the cloud platform engine, these tags are replaced with actual user input or built-in system metadata.
+
+### Supported Enclosure Syntax
+The template parser evaluates tags using three valid enclosure formats:
+- Single Braces: `{Tag}`
+- Double Braces: `{{Tag}}`
+- Variable Expressions: `${Tag}`
 
 ### How Field Mapping Works
-- **Form Question Field Tags:** Any question defined in your Google Forms™ automatically becomes a dynamic tag matching the exact question text (e.g., a question titled `"First Name"` becomes `{First Name}`).
-- **Case Sensitivity:** Tags match form field question labels.
-- **Dynamic Resiliency:** If you rename a form question in Google Forms™, FormMail Hub updates internal mappings.
+- **Form Question Field Tags:** Any question defined in your Google Forms™ automatically becomes a dynamic tag matching the exact question text (e.g., a question titled `"First Name"` can be referenced as `{First Name}`, `{{First Name}}`, or `${First Name}`).
+- **Case Sensitivity:** Tags match form field question labels exactly.
+- **Dynamic Resiliency:** If you rename a form question in Google Forms™, FormMail Hub updates internal mappings accordingly.
 
 ---
 
@@ -24,14 +30,17 @@ FormMail Hub extracts form responses immediately upon submission, mapping them t
 
 Below is the strict verified catalog of dynamic tags supported in FormMail Hub templates:
 
-### Supported Dynamic Tags
+### Verified Dynamic Tags Catalog
 
 | Dynamic Tag | Source Data / Description | Example Output Value |
 | :--- | :--- | :--- |
-| `{Question Title}` | Dynamically retrieves the answer for the specified form field question label. | `Jane` (for field `{First Name}`) |
-| `{Form Title}` | The official title of the connected Google Form™. | `Customer Onboarding Intake` |
+| `{Question Title}` | Dynamically retrieves the response answer for any form field question label. | `Jane` (for question field `{First Name}`) |
+| `{Form Name}` | The official name of the connected Google Form™. | `Customer Onboarding Intake` |
+| `{All Fields}` | Renders a full summary table of all form questions and submitted answers. | *(Formatted table of all responses)* |
+| `{Linked Form}` | Generates the direct URL link to the connected Google Form™. | `https://docs.google.com/forms/...` |
+| `{Unsubscribe Link}` | Generates an automated opt-out / unsubscribe URL for CAN-SPAM / GDPR compliance. | `https://hub.formmailhub.com/unsubscribe/...` |
 
-> **Strict Dynamic Tag Rule:** Dynamic template tags are strictly handled by the codebase parser. Only dynamic question field tags (e.g., `{Question Title}`) and `{Form Title}` are valid default tags. Writers and template authors MUST NOT invent or assume unverified system tags (such as `{Form Summary}`, `{Response ID}`, `{Submission Date}`, `{Submitter Email}`, etc.).
+> **Strict Dynamic Tag Rule:** Dynamic template tags are strictly handled by single-pass scanning supporting `{Tag}`, `{{Tag}}`, and `${Tag}` enclosure formats. The valid built-in system tags are strictly `{Form Name}`, `{All Fields}`, `{Linked Form}`, and `{Unsubscribe Link}`, alongside any dynamic form question field title. Writers and template authors MUST NOT invent or assume unverified system tags (such as `{Form Title}`, `{Form Summary}`, `{Response ID}`, `{Submission Date}`, `{Submitter Email}`, etc.).
 
 > **Custom SMTP Requirement:** Admins MUST configure and test custom SMTP settings before unlocking Templates, Rules, Campaigns, or Analytics. Until custom SMTP is active, these feature tabs remain strictly locked in the UI.
 
@@ -63,7 +72,7 @@ Follow these steps to construct a personalized auto-responder email template:
 4. Set the **Template Name** (e.g., `Client Onboarding Welcome`).
 5. Set the **Email Subject**:
    ```text
-   Welcome to {Form Title}, {First Name}!
+   Welcome to {Form Name}, {First Name}!
    ```
 6. Switch to the **HTML Code Editor** and paste the responsive HTML layout:
 
@@ -87,11 +96,11 @@ Follow these steps to construct a personalized auto-responder email template:
     </div>
     <div class="content">
       <p>Hello <strong>{First Name}</strong>,</p>
-      <p>Thank you for submitting your intake for {Form Title}.</p>
+      <p>Thank you for submitting your intake for {Form Name}.</p>
       <p>Our team is currently reviewing your submission details and will follow up shortly.</p>
     </div>
     <div class="footer">
-      <p>Sent via FormMail Hub.</p>
+      <p>Sent via FormMail Hub. <a href="{Unsubscribe Link}">Unsubscribe</a></p>
     </div>
   </div>
 </body>
@@ -109,7 +118,7 @@ Before deploying a template to live users, verify variable substitution and layo
 
 - **Send Test Submission Email:** Click **Send Test Email** in the template editor to dispatch a sample email populated with test question data.
 - **Mobile Responsiveness Verification:** Open test emails on both mobile devices and desktop clients (Outlook, Gmail, Apple Mail) to check for proper padding and scaling.
-- **Dynamic Tag Audit:** Confirm that dynamic question field tags (e.g., `{First Name}`) and `{Form Title}` resolve correctly.
+- **Dynamic Tag Audit:** Confirm that dynamic question field tags (e.g., `{First Name}`) and system tags (e.g., `{Form Name}`, `{All Fields}`, `{Unsubscribe Link}`) resolve correctly.
 
 ---
 

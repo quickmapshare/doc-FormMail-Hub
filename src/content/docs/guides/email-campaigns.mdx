@@ -64,8 +64,8 @@ To send a proactive campaign to form respondents, the Admin follows this exact s
 
 ## 3. Compliance & Dynamic Tags
 
-- **Dynamic Tag Accuracy:** Dynamic template tags are strictly handled by the codebase parser. Only dynamic question field tags (e.g., `{Question Title}`) and `{Form Title}` are valid default tags.
-- **Opt-Out Handling:** When an opt-out event is processed, the recipient address is flagged and automatically excluded from future campaign dispatches, returning an `OPT_OUT_SKIPPED` log status.
+- **Dynamic Tag Syntax:** Dynamic template tags are handled by single-pass scanning supporting `{Tag}`, `{{Tag}}`, and `${Tag}` enclosure formats. The valid built-in system tags are strictly `{Form Name}`, `{All Fields}`, `{Linked Form}`, and `{Unsubscribe Link}`, alongside any dynamic form question field title.
+- **Opt-Out Handling:** Every marketing campaign includes `{Unsubscribe Link}`. When an opt-out event is processed, the recipient address is flagged and automatically excluded from future campaign dispatches, returning an `OPT_OUT_SKIPPED` log status.
 
 ---
 
