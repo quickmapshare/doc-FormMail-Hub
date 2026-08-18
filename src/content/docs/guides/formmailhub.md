@@ -5,7 +5,7 @@ description: Comprehensive guide for Google Forms email automation, custom SMTP 
 
 Welcome to the official **FormMail Hub** user and administration guide. FormMail Hub transforms standard Google Forms™ into an enterprise-grade customer communications, lead engagement, and email automation platform.
 
-Access the central documentation portal anytime at [https://doc.formmailhub.com/](https://doc.formmailhub.com/).
+To get started immediately, install the add-on from the [Google Workspace Marketplace Listing](https://workspace.google.com/marketplace/app/formmail_hub/409227874327) or test submission workflows on our [Live Demo Form](https://docs.google.com/forms/d/e/1FAIpQLSc2lkYREd5ePz521uYfBDeumOOoPKeBP87i1aSpwokHdFMIHw/viewform).
 
 ---
 
@@ -124,9 +124,12 @@ To send a proactive campaign to form respondents, the Admin follows this exact w
 
 ---
 
-## 6. Audit Logging & Compliance
+## 6. Official Resources, Compliance & Support
 
-- **Audit Diagnostics:** View delivery execution status (`DELIVERED`, `BOUNCED_HARD`, `FAILED_SMTP_AUTH`, `OPT_OUT_SKIPPED`) in real-time diagnostic logs.
+- **App Marketplace:** [Google Workspace Marketplace Listing](https://workspace.google.com/marketplace/app/formmail_hub/409227874327)
+- **Live Demo:** Test workflows on the official [Live Demo Form](https://docs.google.com/forms/d/e/1FAIpQLSc2lkYREd5ePz521uYfBDeumOOoPKeBP87i1aSpwokHdFMIHw/viewform)
+- **Technical Support:** Submit inquiries via [Support & Contact](https://formmail.vietutd.com/contact)
+- **Legal Agreements:** Review our [Privacy Policy](https://formmail.vietutd.com/privacy-policy) and [Terms of Service](https://formmail.vietutd.com/terms-of-service)
 
 ---
 

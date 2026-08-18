@@ -5,6 +5,8 @@ description: Master creating, segmenting, and dispatching bulk email campaigns u
 
 While real-time transactional auto-responders deliver single emails upon form completion, **FormMail Hub's Broadcast Campaign Engine** enables Administrators to send targeted bulk communications to collected respondents.
 
+To practice configuring templates and response rules before launching a campaign, test submissions on our official [Live Demo Form](https://docs.google.com/forms/d/e/1FAIpQLSc2lkYREd5ePz521uYfBDeumOOoPKeBP87i1aSpwokHdFMIHw/viewform) or install the add-on via the [Google Workspace Marketplace Listing](https://workspace.google.com/marketplace/app/formmail_hub/409227874327).
+
 ---
 
 ## 1. Prerequisites & Platform Constraints
@@ -65,7 +67,7 @@ To send a proactive campaign to form respondents, the Admin follows this exact s
 ## 3. Compliance & Dynamic Tags
 
 - **Dynamic Tag Syntax:** Dynamic template tags are handled by single-pass scanning supporting `{Tag}`, `{{Tag}}`, and `${Tag}` enclosure formats. The valid built-in system tags are strictly `{Form Name}`, `{All Fields}`, `{Linked Form}`, and `{Unsubscribe Link}`, alongside any dynamic form question field title.
-- **Opt-Out Handling:** Every marketing campaign includes `{Unsubscribe Link}`. When an opt-out event is processed, the recipient address is flagged and automatically excluded from future campaign dispatches, returning an `OPT_OUT_SKIPPED` log status.
+- **Opt-Out Handling:** Every marketing campaign includes `{Unsubscribe Link}` to maintain compliance with our [Terms of Service](https://formmail.vietutd.com/terms-of-service) and [Privacy Policy](https://formmail.vietutd.com/privacy-policy). When an opt-out event is processed, the recipient address is flagged and automatically excluded from future campaign dispatches, returning an `OPT_OUT_SKIPPED` log status.
 
 ---
 
@@ -76,6 +78,8 @@ Once **Dispatch** is clicked, the Admin can monitor batch processing and analyti
 - **Delivered Count:** Messages accepted by downstream mail servers.
 - **Bounces & Errors:** Tracked via hard (`BOUNCED_HARD`) and soft (`BOUNCED_SOFT`) status codes.
 - **Opt-Out Counts:** Total unsubscribes recorded for the campaign run.
+
+For questions regarding deliverability or campaign limits, reach out via [Support & Contact](https://formmail.vietutd.com/contact).
 
 ---
 

@@ -5,6 +5,8 @@ description: Complete technical reference covering Google Workspace OAuth scopes
 
 This technical reference provides an exhaustive breakdown of the security model, privacy architecture, required OAuth authorization scopes, data retention policies, and regulatory compliance standards across the **FormMail Hub** ecosystem.
 
+For full legal and regulatory details, refer to our official [Privacy Policy](https://formmail.vietutd.com/privacy-policy) and [Terms of Service](https://formmail.vietutd.com/terms-of-service). You can install the application from the [Google Workspace Marketplace Listing](https://workspace.google.com/marketplace/app/formmail_hub/409227874327).
+
 ---
 
 ## 1. Google Workspace OAuth Scopes & Authorization Matrix
@@ -65,12 +67,14 @@ FormMail Hub provides built-in tools to help organizations comply with global pr
 - **Right to Access & Rectification:** Form responses reside entirely in user-owned Google Sheets. Administrators can edit, export, or delete respondent records at any time without third-party intervention.
 - **Right to be Forgotten (Data Erasure):** When a user requests removal, deleting their row from the Google Sheet or adding their address to the **Suppression Registry** (`Settings > Suppression List`) permanently halts all transactional and broadcast communications.
 - **Data Minimization:** Dynamic tags evaluate only the fields explicitly requested in email templates, ignoring non-pertinent submission data.
+- **Privacy Agreement:** View our complete [Privacy Policy](https://formmail.vietutd.com/privacy-policy) for data processor disclosures.
 
 ### CAN-SPAM Act Compliance
 Every marketing broadcast campaign dispatched via the Core Google Sheets Add-on enforces mandatory CAN-SPAM requirements:
-1. **Mandatory Unsubscribe Link:** Broadcast dispatches automatically include an unsubscribe link in the email body or footer.
+1. **Mandatory Unsubscribe Link:** Broadcast dispatches automatically include an unsubscribe link in the email body or footer (`{Unsubscribe Link}`).
 2. **Automated Opt-Out Processing:** Clicking the unsubscribe link routes the recipient to an instant confirmation endpoint, marking their record as `SUPPRESSED`.
 3. **Suppression Enforcement:** Future campaign jobs query the suppression registry prior to dispatch, returning an `OPT_OUT_SKIPPED` log status for unsubscribed recipients.
+4. **Terms of Service:** Campaign practices must adhere to our [Terms of Service](https://formmail.vietutd.com/terms-of-service).
 
 ### HIPAA & Data Handling Considerations
 Because form responses remain inside your Google Workspace environment, organizations with a Google Workspace Business Associate Agreement (BAA) retain HIPAA compliance for stored submission data. When sending Protected Health Information (PHI) via email:
@@ -120,12 +124,12 @@ Google Workspace Super Administrators can manage FormMail Hub deployment central
 ### Domain-Wide Installation Instructions
 1. Log into the **Google Workspace Admin Console** (`admin.google.com`).
 2. Navigate to **Apps** > **Google Workspace Marketplace apps** > **Apps list**.
-3. Search for **FormMail Hub** and select **Domain Install**.
+3. Search for **FormMail Hub** or navigate to the [Google Workspace Marketplace Listing](https://workspace.google.com/marketplace/app/formmail_hub/409227874327) and select **Domain Install**.
 4. Review and grant requested OAuth scopes for all organizational units (OUs) or selected groups.
 5. Once installed, the add-on becomes available in Google Forms and Google Sheets for all authorized domain users without requiring individual OAuth consent prompts.
 
-### Restricting External SMTP Access
-Enterprise security administrators can enforce corporate routing policies by mandating that users connect only verified corporate relays (`smtp.yourdomain.com` or Google Workspace App Passwords) rather than external third-party SMTP servers, maintaining unified DMARC alignment.
+### Technical Support & Compliance Contact
+For enterprise compliance audits or security inquiries, reach out to our team via [Support & Contact](https://formmail.vietutd.com/contact).
 
 ---
 
