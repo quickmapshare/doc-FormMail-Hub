@@ -100,7 +100,7 @@ for s_file in selected_sources:
 
 diff_context = code_diff if code_diff else "NO RECENT CODE DIFF. Focus on sampled source files or published docs audit."
 
-# 4. TẠO PROMPT
+# 4. TẠO PROMPT (ĐÃ BỔ SUNG NGUYÊN TẮC BẮT BUỘC LỒNG LINK GỐC)
 prompt = f"""
 You are an expert technical writer and documentation architect for 'FormMail Hub'.
 
@@ -123,15 +123,21 @@ PRIORITY 1 (NEW FEATURE DISCOVERY):
 - If you find ANY verified, absolute feature logic/rule that is missing from 'PRODUCT RULES', UPDATE `PRODUCT_RULES.md` first.
 - Write or expand the corresponding documentation file in `src/content/docs/guides/` or `src/content/docs/reference/`.
 
-PRIORITY 2 (DOCS AUDIT & CORRECTION):
-- If the source code reveals no new un-documented features, AUDIT the existing published docs in `CURRENT PUBLISHED DOCUMENTATION FILES`.
-- If a published doc violates `PRODUCT RULES` or contains unverified features, REWRITE and REJECT the inaccurate sections to align strictly with `PRODUCT RULES`.
-- IF ALL PUBLISHED DOCS ARE 100% ACCURATE AND NO FILES NEED UPDATING, include the token `@@@NO_UPDATES_NEEDED@@@` in your output.
+PRIORITY 2 (DOCS AUDIT, LINK INTEGRATION & CORRECTION):
+- Audit existing docs in `CURRENT PUBLISHED DOCUMENTATION FILES`.
+- Fix violations of `PRODUCT RULES` and audit OFFICIAL LINKS usage.
+- IF ALL PUBLISHED DOCS ARE 100% ACCURATE AND ALL OFFICIAL LINKS ARE PROPERLY INTEGRATED, include the token `@@@NO_UPDATES_NEEDED@@@` in your output.
 
-STRICT REQUIREMENTS:
+STRICT REQUIREMENTS & LINK EMBEDDING MANDATE:
 1. ALL OUTPUT MUST BE STRICTLY IN ENGLISH.
 2. FRONTMATTER: Docs must have valid YAML (title, description).
-3. DO NOT USE JSON OUTPUT FORMAT! Use the exact custom delimiters shown below when updating files.
+3. MANDATORY OFFICIAL LINK EMBEDDING: You MUST contextually weave the Official Links (Rules 14-18) into generated/updated docs using natural Markdown hyperlinks:
+   - Homepage / Index (`index.mdx` / `index.md`): MUST include a prominent resource grid/footer featuring Marketplace link, Live Demo link, Support, Privacy Policy, and Terms of Service.
+   - Installation / Getting Started Docs: MUST include a direct call-to-action link to the [Google Workspace Marketplace Listing](https://workspace.google.com/marketplace/app/formmail_hub/409227874327).
+   - User Guides & Tutorials: MUST contextually link to the [Live Demo Form](https://docs.google.com/forms/d/e/1FAIpQLSc2lkYREd5ePz521uYfBDeumOOoPKeBP87i1aSpwokHdFMIHw/viewform) for hands-on testing.
+   - Troubleshooting / Contact Docs: MUST direct users to [Support & Contact](https://formmail.vietutd.com/contact).
+   - Legal / Compliance Sections: MUST embed [Privacy Policy](https://formmail.vietutd.com/privacy-policy) and [Terms of Service](https://formmail.vietutd.com/terms-of-service).
+4. DO NOT USE JSON OUTPUT FORMAT! Use the exact custom delimiters shown below when updating files.
 
 FORMAT TEMPLATE TO FOLLOW WHEN UPDATING FILES:
 
@@ -140,13 +146,13 @@ FORMAT TEMPLATE TO FOLLOW WHEN UPDATING FILES:
 (Updated content of PRODUCT_RULES.md if a new truth was found)
 @@@END_FILE
 
-@@@FILE_PATH: src/content/docs/guides/team-management.mdx
+@@@FILE_PATH: src/content/docs/index.mdx
 @@@CONTENT:
 ---
-title: Corrected Guide Title
-description: Accurate description here
+title: Welcome to FormMail Hub
+description: Official Documentation and Setup Guides
 ---
-Your markdown content here...
+Your markdown content with woven official links here...
 @@@END_FILE
 """
 
