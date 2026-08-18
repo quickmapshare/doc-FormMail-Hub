@@ -39,7 +39,7 @@ else:
 8. Custom SMTP Requirement & UI Lock State: Admins MUST configure and test custom SMTP before unlocking Templates, Rules, Campaigns, or Analytics. Until custom SMTP is active, these tabs remain strictly locked in the UI.
 9. Built-in System SMTP Scope: System SMTP is STRICTLY restricted to default-templated submission alerts to Admin & Team Members (for live demo and conserving quota). It CANNOT be used for custom templates or respondent auto-responders.
 10. Multi-Condition Routing Logic: Rules support evaluating multiple form response fields simultaneously to trigger targeted templates and route emails.
-11. Dynamic Tags Strict Accuracy: Only dynamic field tags `{Question Title}` and `{Form Title}` are valid. DO NOT invent `{Form Summary}`, `{Response ID}`, `{Submission Date}`, `{Submitter Email}`.
+11. Dynamic Tags Strict Accuracy: Dynamic template tags are handled by templateParser.js using single-pass scanning. Supported enclosure formats are {Tag}, {{Tag}}, and ${Tag}. The valid built-in system tags are strictly: {Form Name}, {All Fields}, {Linked Form}, and {Unsubscribe Link}, alongside any dynamic form question field title. Writers MUST NOT invent unverified system tags.
 12. Email-Only Scope (NO WEBHOOKS): FormMail Hub DOES NOT support webhooks, HTTP POST calls, or 3rd-party integrations (Slack, Teams, Discord, Zapier).
 13. Strict Code-First Reality: Documentation must ONLY reflect verified code functionality and PRODUCT_RULES.md.
 """
