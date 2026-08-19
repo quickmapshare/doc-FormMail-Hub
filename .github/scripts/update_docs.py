@@ -44,22 +44,26 @@ else:
 
 ## SMTP & Transport Scope
 8. Custom SMTP Requirement & UI Lock State: Admins MUST configure and test custom SMTP settings before unlocking Templates, Rules, Campaigns, or Analytics. Until custom SMTP is active, these feature tabs remain strictly locked in the UI.
-9. Built-in System SMTP Scope: Built-in System SMTP is STRICTLY restricted to sending default-templated submission alerts to the Form Admin and selected Team Members (serving as a live demo and conserving Admin SMTP quota). System SMTP CANNOT be used for custom templates, rule-based notifications, or respondent auto-responders.
+9. Built-in System SMTP & System Notifications Scope: Built-in System SMTP is STRICTLY restricted to sending system alerts (submission notifications, daily activity reports, and SMTP connection error alerts) to the Form Admin and selected Team Members. System SMTP CANNOT be used for custom templates, rule-based notifications, or respondent auto-responders.
 
-## Rule Engine & Dynamic Content
+## Rule Engine, Dynamic Content & Unsubscribe Scope
 10. Multi-Condition Routing Logic: Rules support evaluating multiple form response fields simultaneously to trigger targeted custom templates and route emails to specific recipients or internal teams.
 11. Dynamic Tags Strict Accuracy: Dynamic template tags are handled by templateParser.js using single-pass scanning. Supported enclosure formats are {Tag}, {{Tag}}, and ${Tag}. The valid built-in system tags are strictly: {Form Name}, {All Fields}, {Linked Form}, and {Unsubscribe Link}, alongside any dynamic form question field title. Writers MUST NOT invent unverified system tags.
+12. Unsubscribe Mechanics & Granular Scopes: The system handles unsubscribe requests via Cloud Backend tracking endpoints across 3 strict scopes:
+    - Form-Specific Respondent Unsubscribe: Admins can insert {Unsubscribe Link} into custom email templates (Auto-responders and Campaign emails). Clicking this link unsubscribes the respondent's email address strictly from future emails related to that specific Form.
+    - Form-Specific System Daily Report Unsubscribe: Daily summary report emails sent to Admins/Team Members include an unsubscribe link scoped strictly to that specific Form (stopping daily reports for that form only).
+    - User-Level SMTP Error Alert Unsubscribe: SMTP error alert emails sent to the Admin include an unsubscribe link scoped to the User level (stopping all SMTP connection failure notifications across all forms managed by that user account).
 
 ## Feature Boundaries & Anti-Hallucination Rules
-12. Email-Only Scope (NO WEBHOOKS): FormMail Hub operates strictly as an email receiving, processing, and dispatching engine based on admin-defined rules. It DOES NOT support webhooks, HTTP POST forwarding, external API calls, or third-party integrations (such as Slack, Microsoft Teams, Discord, Zapier, CRMs, or custom endpoints).
-13. Strict Code-First Reality: Documentation must ONLY reflect existing, verified functionality present in the provided source code and PRODUCT_RULES.md. Writers MUST NOT invent, extrapolate, or draft guides for theoretical features, future roadmaps, or non-existent integrations.
+13. Email-Only Scope (NO WEBHOOKS): FormMail Hub operates strictly as an email receiving, processing, and dispatching engine based on admin-defined rules. It DOES NOT support webhooks, HTTP POST forwarding, external API calls, or third-party integrations (such as Slack, Microsoft Teams, Discord, Zapier, CRMs, or custom endpoints).
+14. Strict Code-First Reality: Documentation must ONLY reflect existing, verified functionality present in the provided source code and PRODUCT_RULES.md. Writers MUST NOT invent, extrapolate, or draft guides for theoretical features, future roadmaps, or non-existent integrations.
 
 ## Official Links & Resources
-14. Google Workspace Marketplace Listing: https://workspace.google.com/marketplace/app/formmail_hub/409227874327
-15. Privacy Policy: https://formmail.vietutd.com/privacy-policy
-16. Terms of Service: https://formmail.vietutd.com/terms-of-service
-17. Live Demo Form: https://docs.google.com/forms/d/e/1FAIpQLSc2lkYREd5ePz521uYfBDeumOOoPKeBP87i1aSpwokHdFMIHw/viewform
-18. Support & Contact: https://formmail.vietutd.com/contact
+15. Google Workspace Marketplace Listing: https://workspace.google.com/marketplace/app/formmail_hub/409227874327
+16. Privacy Policy: https://formmail.vietutd.com/privacy-policy
+17. Terms of Service: https://formmail.vietutd.com/terms-of-service
+18. Live Demo Form: https://docs.google.com/forms/d/e/1FAIpQLSc2lkYREd5ePz521uYfBDeumOOoPKeBP87i1aSpwokHdFMIHw/viewform
+19. Support & Contact: https://formmail.vietutd.com/contact
 """
     with open(rules_file, "w", encoding="utf-8") as f:
         f.write(product_rules)
