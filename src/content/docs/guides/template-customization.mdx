@@ -1,6 +1,6 @@
 ---
 title: Dynamic Tags & HTML Email Template Customization Guide
-description: Master FormMail Hub's template engine, dynamic question placeholders, supported enclosure formats, responsive HTML email design, and custom templates.
+description: Master FormMail Hub's template engine, dynamic question placeholders, supported enclosure formats, stateless QR code tickets, responsive HTML email design, and custom templates.
 ---
 
 Standard transactional email triggers often feel generic or rigid. **FormMail Hub's Template & Dynamic Variable Engine** empowers you to create beautifully styled, personalized, and mobile-responsive email notifications and auto-responders that reflect your brand identity.
@@ -39,14 +39,26 @@ Below is the strict verified catalog of dynamic tags supported in FormMail Hub t
 | `{All Fields}` | Renders a full summary table of all form questions and submitted answers. | *(Formatted table of all responses)* |
 | `{Linked Form}` | Generates the direct URL link to the connected Google Form™. | `https://docs.google.com/forms/...` |
 | `{Unsubscribe Link}` | Generates an automated opt-out / unsubscribe URL for CAN-SPAM / GDPR compliance. | `https://hub.formmailhub.com/unsubscribe/...` |
+| `{QR Code}` | Generates a secure, stateless QR code ticket image (signed with HMAC-SHA256) for real-time verification. | `[Embedded QR Ticket Image]` |
 
-> **Strict Dynamic Tag Rule:** Dynamic template tags are strictly handled by single-pass scanning supporting `{Tag}`, `{{Tag}}`, and `${Tag}` enclosure formats. The valid built-in system tags are strictly `{Form Name}`, `{All Fields}`, `{Linked Form}`, and `{Unsubscribe Link}`, alongside any dynamic form question field title. Writers and template authors MUST NOT invent or assume unverified system tags (such as `{Form Title}`, `{Form Summary}`, `{Response ID}`, `{Submission Date}`, `{Submitter Email}`, etc.).
+> **Strict Dynamic Tag Rule:** Dynamic template tags are strictly handled by single-pass scanning supporting `{Tag}`, `{{Tag}}`, and `${Tag}` enclosure formats. The valid built-in system tags are strictly `{Form Name}`, `{All Fields}`, `{Linked Form}`, `{Unsubscribe Link}`, and `{QR Code}`, alongside any dynamic form question field title. Writers and template authors MUST NOT invent or assume unverified system tags (such as `{Form Title}`, `{Form Summary}`, `{Response ID}`, `{Submission Date}`, `{Submitter Email}`, etc.).
 
 > **Custom SMTP Requirement:** Admins MUST configure and test custom SMTP settings before unlocking Templates, Rules, Campaigns, or Analytics. Until custom SMTP is active, these feature tabs remain strictly locked in the UI.
 
 ---
 
-## 3. Visual & HTML Code Editors
+## 3. Stateless QR Code Ticket Mechanics
+
+Admins can insert the `{QR Code}` dynamic tag into custom email templates (usable in both auto-responders and broadcast campaign emails) to automatically issue digital event passes, tickets, or verification vouchers.
+
+### How QR Code Verification Works
+- **Payload & Signing:** The FormMail Hub cloud platform engine generates a secure, stateless QR code ticket embedding submission metadata signed with HMAC-SHA256 encryption.
+- **Verification Endpoint:** Scanning the QR code directs to the `/qr-verify` endpoint.
+- **Real-Time Audit:** The endpoint verifies ticket authenticity, submission timestamp, respondent details, and reference code in real-time without database overhead or external lookups.
+
+---
+
+## 4. Visual & HTML Code Editors
 
 FormMail Hub provides authoring modes for designing email templates:
 
@@ -62,7 +74,7 @@ Built for developers and marketers who require full custom branding, complex tab
 
 ---
 
-## 4. Step-by-Step Guide: Designing an Onboarding Auto-Responder
+## 5. Step-by-Step Guide: Designing an Onboarding Auto-Responder
 
 Follow these steps to construct a personalized auto-responder email template:
 
@@ -98,6 +110,10 @@ Follow these steps to construct a personalized auto-responder email template:
       <p>Hello <strong>{First Name}</strong>,</p>
       <p>Thank you for submitting your intake for {Form Name}.</p>
       <p>Our team is currently reviewing your submission details and will follow up shortly.</p>
+      <div style="text-align: center; margin-top: 20px;">
+        <p><strong>Your Verification Pass:</strong></p>
+        {QR Code}
+      </div>
     </div>
     <div class="footer">
       <p>Sent via FormMail Hub. <a href="{Unsubscribe Link}">Unsubscribe</a></p>
@@ -112,17 +128,17 @@ Follow these steps to construct a personalized auto-responder email template:
 
 ---
 
-## 5. Testing & Verification Workflows
+## 6. Testing & Verification Workflows
 
 Before deploying a template to live users, verify variable substitution and layout rendering:
 
 - **Send Test Submission Email:** Click **Send Test Email** in the template editor to dispatch a sample email populated with test question data.
 - **Mobile Responsiveness Verification:** Open test emails on both mobile devices and desktop clients (Outlook, Gmail, Apple Mail) to check for proper padding and scaling.
-- **Dynamic Tag Audit:** Confirm that dynamic question field tags (e.g., `{First Name}`) and system tags (e.g., `{Form Name}`, `{All Fields}`, `{Unsubscribe Link}`) resolve correctly.
+- **Dynamic Tag Audit:** Confirm that dynamic question field tags (e.g., `{First Name}`) and system tags (e.g., `{Form Name}`, `{All Fields}`, `{Unsubscribe Link}`, `{QR Code}`) resolve correctly.
 
 ---
 
-## 6. Official Resources & Contact
+## 7. Official Resources & Contact
 
 - **Technical Support:** Submit inquiries via [Support & Contact](https://formmail.vietutd.com/contact).
 - **Legal Agreements:** Review our [Privacy Policy](https://formmail.vietutd.com/privacy-policy) and [Terms of Service](https://formmail.vietutd.com/terms-of-service).

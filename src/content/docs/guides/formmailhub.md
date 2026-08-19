@@ -95,10 +95,13 @@ Once custom SMTP settings are configured and tested by the Admin to unlock featu
 Templates parse submission fields into dynamic tags supporting `{Tag}`, `{{Tag}}`, and `${Tag}` enclosure formats.
 
 #### Supported Dynamic System Tags
-- **Built-in System Tags:** Strictly `{Form Name}`, `{All Fields}`, `{Linked Form}`, and `{Unsubscribe Link}`.
+- **Built-in System Tags:** Strictly `{Form Name}`, `{All Fields}`, `{Linked Form}`, `{Unsubscribe Link}`, and `{QR Code}`.
 - **Dynamic Question Field Tags:** Any exact form question title (e.g., `{First Name}`, `{Email Address}`).
 
-*Note: Dynamic template tags are handled by single-pass scanning. Valid built-in system tags are strictly `{Form Name}`, `{All Fields}`, `{Linked Form}`, and `{Unsubscribe Link}`, alongside dynamic form question field titles.*
+*Note: Dynamic template tags are handled by single-pass scanning. Valid built-in system tags are strictly `{Form Name}`, `{All Fields}`, `{Linked Form}`, `{Unsubscribe Link}`, and `{QR Code}`, alongside dynamic form question field titles.*
+
+### Stateless QR Code Tickets
+Admins can insert `{QR Code}` into auto-responders and campaign templates. The cloud platform engine generates a secure, stateless QR code ticket signed with HMAC-SHA256. Scanning the QR code directs to `/qr-verify` for real-time verification of ticket authenticity, submission timestamp, respondent details, and reference code without database overhead.
 
 ### Granular Opt-Out Mechanics
 Unsubscribe links are processed across 3 strict scopes:
