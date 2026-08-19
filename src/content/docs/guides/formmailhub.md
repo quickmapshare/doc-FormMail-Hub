@@ -64,17 +64,17 @@ FormMail Hub separates internal administrative alerts from client-facing custom 
 +-----------------------------------+                          +-----------------------------------+
 |    BUILT-IN SYSTEM SMTP RELAY     |                          | USER-CONFIGURED CUSTOM SMTP       |
 +-----------------------------------+                          +-----------------------------------+
-| - Out-of-the-box feature          |                          | - MANDATORY setup & test BEFORE   |
-| - Strictly restricted to default  |                          |   unlocking Templates, Rules,     |
-|   alerts to Admin & Team Members  |                          |   Campaigns, or Analytics         |
-| - Serves as live demo & saves     |                          | - Feature tabs strictly locked in |
-|   Admin personal SMTP quota       |                          |   UI until Custom SMTP active     |
-| - Cannot send custom templates    |                          | - Custom templates & responders   |
+| - RESTRICTED strictly to system   |                          | - MANDATORY setup & test BEFORE   |
+|   alerts (submission alerts,      |                          |   unlocking Templates, Rules,     |
+|   daily reports, SMTP error alerts)|                          |   Campaigns, or Analytics         |
+|   to Admin & Team Members         |                          | - Feature tabs strictly locked in |
+| - Cannot send custom templates or |                          |   UI until Custom SMTP active     |
+|   respondent auto-responders      |                          | - Custom templates & responders   |
 +-----------------------------------+                          +-----------------------------------+
 ```
 
 ### Built-in System SMTP Scope
-Built-in System SMTP is **STRICTLY** restricted to sending default-templated submission alerts to the Form Admin and selected Team Members (serving as a live demo and conserving Admin SMTP quota). System SMTP **CANNOT** be used for custom templates, rule-based notifications, or respondent auto-responders.
+Built-in System SMTP is **STRICTLY** restricted to sending system alerts (submission notifications, daily activity reports, and SMTP connection error alerts) to the Form Admin and selected Team Members. System SMTP **CANNOT** be used for custom templates, rule-based notifications, or respondent auto-responders.
 
 ### Mandatory Custom SMTP Requirement & UI Lock State
 Admins **MUST** configure and test custom SMTP settings before unlocking Templates, Rules, Campaigns, or Analytics. Until custom SMTP is active, these feature tabs remain strictly locked in the UI.
@@ -99,6 +99,12 @@ Templates parse submission fields into dynamic tags supporting `{Tag}`, `{{Tag}}
 - **Dynamic Question Field Tags:** Any exact form question title (e.g., `{First Name}`, `{Email Address}`).
 
 *Note: Dynamic template tags are handled by single-pass scanning. Valid built-in system tags are strictly `{Form Name}`, `{All Fields}`, `{Linked Form}`, and `{Unsubscribe Link}`, alongside dynamic form question field titles.*
+
+### Granular Opt-Out Mechanics
+Unsubscribe links are processed across 3 strict scopes:
+- **Form-Specific Respondent Unsubscribe:** Unsubscribes respondents strictly from future emails related to that specific Form.
+- **Form-Specific System Daily Report Unsubscribe:** Stops daily summary reports strictly for that specific Form.
+- **User-Level SMTP Error Alert Unsubscribe:** Stops SMTP failure warnings across all forms managed by that user account.
 
 ### Multi-Condition Routing Logic
 Rules support evaluating multiple form response fields simultaneously to trigger targeted custom templates and route emails to specific recipients or internal teams based on exact conditions.

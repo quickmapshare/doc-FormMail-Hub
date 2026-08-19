@@ -67,7 +67,11 @@ To send a proactive campaign to form respondents, the Admin follows this exact s
 ## 3. Compliance & Dynamic Tags
 
 - **Dynamic Tag Syntax:** Dynamic template tags are handled by single-pass scanning supporting `{Tag}`, `{{Tag}}`, and `${Tag}` enclosure formats. The valid built-in system tags are strictly `{Form Name}`, `{All Fields}`, `{Linked Form}`, and `{Unsubscribe Link}`, alongside any dynamic form question field title.
-- **Opt-Out Handling:** Every marketing campaign includes `{Unsubscribe Link}` to maintain compliance with our [Terms of Service](https://formmail.vietutd.com/terms-of-service) and [Privacy Policy](https://formmail.vietutd.com/privacy-policy). When an opt-out event is processed, the recipient address is flagged and automatically excluded from future campaign dispatches, returning an `OPT_OUT_SKIPPED` log status.
+- **Granular Unsubscribe Scopes:** Every marketing campaign includes `{Unsubscribe Link}` to maintain compliance with our [Terms of Service](https://formmail.vietutd.com/terms-of-service) and [Privacy Policy](https://formmail.vietutd.com/privacy-policy). Unsubscribe mechanics operate across 3 strict backend scopes:
+  - **Form-Specific Respondent Unsubscribe:** Clicking `{Unsubscribe Link}` in campaign emails unsubscribes the respondent strictly from future emails related to that specific Form.
+  - **Form-Specific System Daily Report Unsubscribe:** Unsubscribe links in daily reports stop summary emails for that specific Form.
+  - **User-Level SMTP Error Alert Unsubscribe:** Unsubscribe links in SMTP failure alerts stop failure warnings across all forms for that user.
+- **Suppression Enforcement:** When an opt-out event is processed, the recipient address is flagged and automatically excluded from future campaign dispatches, returning an `OPT_OUT_SKIPPED` log status.
 
 ---
 

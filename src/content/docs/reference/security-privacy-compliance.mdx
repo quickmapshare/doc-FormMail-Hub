@@ -59,9 +59,15 @@ FormMail Hub employs a decentralized, zero-third-party database architecture for
 
 ---
 
-## 3. Regulatory Compliance Frameworks
+## 3. Regulatory Compliance Frameworks & Unsubscribe Mechanics
 
 FormMail Hub provides built-in tools to help organizations comply with global privacy laws and email delivery standards.
+
+### Granular Opt-Out Scopes
+Opt-out management operates across 3 strict scopes tracked by our Cloud Backend endpoints:
+1. **Form-Specific Respondent Unsubscribe:** Inserting `{Unsubscribe Link}` in custom email templates (Auto-responders and Campaign emails) allows respondents to unsubscribe strictly from future emails related to that specific Google Form.
+2. **Form-Specific System Daily Report Unsubscribe:** Daily summary report emails sent to Admins/Team Members feature an opt-out link scoped strictly to that specific Form (halting daily summary alerts for that form only).
+3. **User-Level SMTP Error Alert Unsubscribe:** SMTP failure alert notifications sent to the Admin include an unsubscribe link scoped to the User level (stopping connection failure alerts across all forms managed by that user account).
 
 ### GDPR (General Data Protection Regulation) Compliance
 - **Right to Access & Rectification:** Form responses reside entirely in user-owned Google Sheets. Administrators can edit, export, or delete respondent records at any time without third-party intervention.
@@ -75,11 +81,6 @@ Every marketing broadcast campaign dispatched via the Core Google Sheets Add-on 
 2. **Automated Opt-Out Processing:** Clicking the unsubscribe link routes the recipient to an instant confirmation endpoint, marking their record as `SUPPRESSED`.
 3. **Suppression Enforcement:** Future campaign jobs query the suppression registry prior to dispatch, returning an `OPT_OUT_SKIPPED` log status for unsubscribed recipients.
 4. **Terms of Service:** Campaign practices must adhere to our [Terms of Service](https://formmail.vietutd.com/terms-of-service).
-
-### HIPAA & Data Handling Considerations
-Because form responses remain inside your Google Workspace environment, organizations with a Google Workspace Business Associate Agreement (BAA) retain HIPAA compliance for stored submission data. When sending Protected Health Information (PHI) via email:
-- Ensure custom SMTP connections utilize enforced **TLS 1.2+ encryption** (Port 587 or 465).
-- Restrict sensitive medical data fields from being exposed in unencrypted subject lines or unauthorized recipient routing.
 
 ---
 
@@ -111,9 +112,6 @@ As detailed across the product architecture, capabilities are partitioned based 
 | **Audit Log Storage** | Recent Memory Buffer | Full Persistent Spreadsheet Logs |
 | **Subscriber Database Storage Access** | Isolated Trigger Context | Full Spreadsheet Cell Access |
 | **Broadcast Campaign Engine (Bulk Sending)** | ⛔ **DISABLED** | ✅ **FULLY ENABLED** |
-
-### Architectural Security Reason for Campaign Restriction:
-Bulk broadcast dispatches require reading and processing broad tabular datasets across thousands of spreadsheet rows. Google Forms entry points operate under tight execution limits (30-second trigger timeouts) and lack direct cell-vector read authorization. Enforcing bulk campaigns exclusively inside the **FormMail Hub Google Sheets Core Add-on** ensures appropriate dataset authorization, longer background processing windows, and complete audit logging.
 
 ---
 

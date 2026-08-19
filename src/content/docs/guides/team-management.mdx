@@ -5,6 +5,8 @@ description: Guide to managing team members, understanding the Primary Connector
 
 Managing form submission alerts in organizational settings requires delivering notifications to designated team members without exposing system configurations or consuming personal email daily limits.
 
+Get started by installing the add-on from the [Google Workspace Marketplace Listing](https://workspace.google.com/marketplace/app/formmail_hub/409227874327) or testing triggers on our [Live Demo Form](https://docs.google.com/forms/d/e/1FAIpQLSc2lkYREd5ePz521uYfBDeumOOoPKeBP87i1aSpwokHdFMIHw/viewform).
+
 ---
 
 ## 1. Role & Permissions Architecture
@@ -32,8 +34,8 @@ Team members are **ONLY** added so the Admin can select who receives email notif
 
 FormMail Hub handles internal team notifications separately from customer-facing custom email triggers:
 
-### Built-in System SMTP Scope (Out-of-the-Box)
-Built-in System SMTP is **STRICTLY** restricted to sending default-templated submission alerts to the Form Admin and selected Team Members (serving as a live demo and conserving Admin SMTP quota). System SMTP **CANNOT** be used for custom templates, rule-based notifications, or respondent auto-responders.
+### Built-in System SMTP Scope
+Built-in System SMTP is **STRICTLY** restricted to sending system alerts (submission notifications, daily activity reports, and SMTP connection error alerts) to the Form Admin and selected Team Members. System SMTP **CANNOT** be used for custom templates, rule-based notifications, or respondent auto-responders.
 
 ### Custom Team Notification Routing
 If the Admin wishes to send custom templates or rule-based notifications to team members:
@@ -52,6 +54,13 @@ Only the Primary Connector (Admin) can manage the team member roster:
 4. Click **Add Team Member**.
 
 Once added, the team member's address becomes selectable by the Admin for receiving notification alerts upon form submission.
+
+---
+
+## 4. Official Resources & Enterprise Support
+
+- **Help Desk:** Reach our support team via [Support & Contact](https://formmail.vietutd.com/contact).
+- **Compliance & Legal:** View our [Privacy Policy](https://formmail.vietutd.com/privacy-policy) and [Terms of Service](https://formmail.vietutd.com/terms-of-service).
 
 ---
 

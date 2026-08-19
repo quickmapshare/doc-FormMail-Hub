@@ -20,17 +20,18 @@ FormMail Hub employs an intelligent dual-routing dispatch architecture designed 
           |                                                              |
           v                                                              v
 +-----------------------------------+                          +-----------------------------------+
-|      INTERNAL TEAM NOTIFICATIONS  |                          |     RESPONDENT AUTO-RESPONDERS    |
-|       & ADMINISTRATIVE ALERTS     |                          |      & BROADCAST CAMPAIGN ENGINE   |
+|      INTERNAL SYSTEM RELAY        |                          |     RESPONDENT AUTO-RESPONDERS    |
+|   (SYSTEM ALERTS & REPORTS ONLY)  |                          |      & BROADCAST CAMPAIGN ENGINE   |
 +-----------------------------------+                          +-----------------------------------+
 | Routing: System Relay Infrastructure|                          | Routing: User Custom SMTP         |
-| Impact: 0% Personal Quota Used    |                          | (Amazon SES, SendGrid, Mailgun,   |
-| Target: Admins, Reviewers, Teams  |                          |  Google Workspace App Password)   |
+| Scope: Submission Alerts, Daily   |                          | (Amazon SES, SendGrid, Mailgun,   |
+|   Reports, SMTP Connection Errors |                          |  Google Workspace App Password)   |
+| Target: Admins, Reviewers, Teams  |                          | Target: Respondents & Lead Lists  |
 +-----------------------------------+                          +-----------------------------------+
 ```
 
 ### Dual-Routing System Breakdown
-- **Internal System Relay:** FormMail Hub routes administrative alerts, team notifications, and system warnings through dedicated infrastructure. This guarantees **0% consumption** of your personal or organization's daily SMTP quota.
+- **Internal System Relay:** FormMail Hub routes administrative system alerts (submission notifications, daily activity reports, and SMTP connection error alerts) through dedicated infrastructure. This guarantees **0% consumption** of your personal or organization's daily SMTP quota.
 - **Custom SMTP Transport:** Client-facing emails (auto-responders, multi-step triggers, and bulk marketing campaigns) run strictly through your configured SMTP server, granting full ownership over domain reputation, DKIM signing, and daily sending volume.
 
 ---
@@ -135,6 +136,15 @@ FormMail Hub supports secure socket connections across all industry-standard por
 | `452 4.5.3 Too many recipients` | Provider single-transaction recipient limit exceeded. | Enable batch mode in FormMail Hub settings to deliver messages as individual transactions. |
 | `535 5.7.8 Auth Failed` | Google Account password used instead of App Password. | Enable 2FA on Google Account and generate a dedicated 16-character **App Password**. |
 | `SES Sandbox Limit Reached` | AWS SES account restricted to sandbox recipient list. | Submit an AWS SES Production Access request in the AWS SES Console. |
+
+---
+
+## 7. Official Resources & Contact
+
+- **Google Workspace Marketplace:** Install via the [Google Workspace Marketplace Listing](https://workspace.google.com/marketplace/app/formmail_hub/409227874327).
+- **Live Demo Form:** Test submission triggers on our [Live Demo Form](https://docs.google.com/forms/d/e/1FAIpQLSc2lkYREd5ePz521uYfBDeumOOoPKeBP87i1aSpwokHdFMIHw/viewform).
+- **Technical Support:** Request assistance at [Support & Contact](https://formmail.vietutd.com/contact).
+- **Legal Policies:** Review our [Privacy Policy](https://formmail.vietutd.com/privacy-policy) and [Terms of Service](https://formmail.vietutd.com/terms-of-service).
 
 ---
 

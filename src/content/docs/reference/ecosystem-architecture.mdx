@@ -60,19 +60,24 @@ FormMail Hub enforces strict role boundaries:
 +-----------------------------------+                          +-----------------------------------+
 |   BUILT-IN SYSTEM SMTP RELAY      |                          |     USER CUSTOM SMTP TRANSPORT    |
 +-----------------------------------+                          +-----------------------------------+
-| - RESTRICTED strictly to default  |                          | - MANDATORY configuration & test  |
-|   templated submission alerts to  |                          |   before unlocking Templates,     |
-|   Form Admin & Team Members       |                          |   Rules, Campaigns, Analytics     |
-| - Serves as live demo & saves     |                          | - Unlocks UI locked tabs          |
-|   Admin personal SMTP quota       |                          | - Handles custom templates, rules,|
-| - CANNOT send custom templates or |                          |   and respondent auto-responders  |
-|   respondent auto-responders      |                          | - Amazon SES, SendGrid, Gmail, etc|
+| - RESTRICTED strictly to system   |                          | - MANDATORY configuration & test  |
+|   alerts (submission alerts,      |                          |   before unlocking Templates,     |
+|   daily reports, SMTP error alerts)|                          |   Rules, Campaigns, Analytics     |
+|   to Admin & selected Team Members|                          | - Unlocks UI locked tabs          |
+| - CANNOT send custom templates or |                          | - Handles custom templates, rules,|
+|   respondent auto-responders      |                          |   and respondent auto-responders  |
 +-----------------------------------+                          +-----------------------------------+
 ```
 
 ### Transport Scope Rules
 1. **Custom SMTP Requirement & UI Lock State:** Admins **MUST** configure and test custom SMTP settings before unlocking Templates, Rules, Campaigns, or Analytics. Until custom SMTP is active, these feature tabs remain strictly locked in the UI.
-2. **Built-in System SMTP Scope:** Built-in System SMTP is **STRICTLY** restricted to sending default-templated submission alerts to the Form Admin and selected Team Members (serving as a live demo and conserving Admin SMTP quota). System SMTP **CANNOT** be used for custom templates, rule-based notifications, or respondent auto-responders.
+2. **Built-in System SMTP Scope:** Built-in System SMTP is **STRICTLY** restricted to sending system alerts (submission notifications, daily activity reports, and SMTP connection error alerts) to the Form Admin and selected Team Members. System SMTP **CANNOT** be used for custom templates, rule-based notifications, or respondent auto-responders.
+
+### Granular Unsubscribe Scopes
+The platform manages unsubscribe requests across 3 distinct backend scopes:
+- **Form-Specific Respondent Unsubscribe:** Inserting `{Unsubscribe Link}` in custom email templates (Auto-responders and Campaigns) unsubscribes respondents strictly from future emails related to that specific form.
+- **Form-Specific System Daily Report Unsubscribe:** Unsubscribe links in daily summary reports stop report emails strictly for that specific form.
+- **User-Level SMTP Error Alert Unsubscribe:** Unsubscribe links in SMTP failure alerts stop error notification emails across all forms managed by that user account.
 
 ---
 
@@ -80,7 +85,7 @@ FormMail Hub enforces strict role boundaries:
 
 | Feature / Capability | Google Forms Entry Add-ons | Google Sheets Core Add-on | Architectural / Role Ground Truth |
 | :--- | :---: | :---: | :--- |
-| **Built-in System SMTP Alerts** | ✅ Supported | ✅ Supported | Strictly restricted to default submission alerts to Admin & selected Team Members. |
+| **Built-in System SMTP Alerts** | ✅ Supported | ✅ Supported | Strictly restricted to system alerts (submission alerts, daily reports, SMTP error alerts) to Admin & selected Team Members. |
 | **Custom SMTP Requirement & UI Lock** | ✅ Required for Custom | ✅ Required for Custom | **MUST** be configured and tested before unlocking Templates, Rules, Campaigns, or Analytics. |
 | **Team Member Selection** | ✅ Supported | ✅ Supported | Admin selects recipients; Team Members have **NO** edit or config permissions. |
 | **Form Connection Scaling (>20 Forms)** | ❌ Standard Limits | ✅ **ENABLED** | Connecting via Sheets add-on uses 1 connection slot while scaling across multi-tab response sheets. |
@@ -98,6 +103,15 @@ Bulk email marketing dispatches follow a strict execution sequence using the Goo
 4. **Interface Navigation:** Within the FormMail Hub Google Sheets add-on interface on the responses sheet, the Admin switches to the **Campaign** view.
 5. **Campaign Selection:** The Admin selects the synchronized campaign name.
 6. **Dispatch Execution:** The Admin clicks the **'Dispatch'** button to initiate the bulk email dispatch processed by the cloud platform engine.
+
+---
+
+## 6. Official Resources & Platform Hub
+
+- **Marketplace Installation:** Install from the [Google Workspace Marketplace Listing](https://workspace.google.com/marketplace/app/formmail_hub/409227874327).
+- **Interactive Sandbox:** Test live submissions on our [Live Demo Form](https://docs.google.com/forms/d/e/1FAIpQLSc2lkYREd5ePz521uYfBDeumOOoPKeBP87i1aSpwokHdFMIHw/viewform).
+- **Technical Support:** Submit inquiries via [Support & Contact](https://formmail.vietutd.com/contact).
+- **Legal Policies:** Review our [Privacy Policy](https://formmail.vietutd.com/privacy-policy) and [Terms of Service](https://formmail.vietutd.com/terms-of-service).
 
 ---
 

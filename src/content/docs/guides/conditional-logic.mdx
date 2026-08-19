@@ -5,6 +5,8 @@ description: Master multi-condition logic rules, targeted triggers, variable rou
 
 Standard form submit triggers send identical email notifications for every single response. **FormMail Hub Multi-Condition Routing Logic** transforms this static workflow by evaluating multiple form response fields simultaneously to trigger targeted custom templates and route emails to specific recipients or internal teams.
 
+Test conditional workflows using our official [Live Demo Form](https://docs.google.com/forms/d/e/1FAIpQLSc2lkYREd5ePz521uYfBDeumOOoPKeBP87i1aSpwokHdFMIHw/viewform) or install the add-on via the [Google Workspace Marketplace Listing](https://workspace.google.com/marketplace/app/formmail_hub/409227874327).
+
 ---
 
 ## 1. Prerequisites: Custom SMTP Requirement & UI Lock State
@@ -12,7 +14,7 @@ Standard form submit triggers send identical email notifications for every singl
 Before configuring conditional logic rules or custom email templates, the Admin **MUST** complete Custom SMTP setup:
 
 - **Custom SMTP Requirement & UI Lock State:** Admins **MUST** configure and test custom SMTP settings before unlocking Templates, Rules, Campaigns, or Analytics. Until custom SMTP is active, these feature tabs remain strictly locked in the UI.
-- **Built-in System SMTP Scope:** Built-in System SMTP is **STRICTLY** restricted to sending default-templated submission alerts to the Form Admin and selected Team Members (serving as a live demo and conserving Admin SMTP quota). System SMTP **CANNOT** be used for custom templates, rule-based notifications, or respondent auto-responders.
+- **Built-in System SMTP Scope:** Built-in System SMTP is **STRICTLY** restricted to sending system alerts (submission notifications, daily activity reports, and SMTP connection error alerts) to the Form Admin and selected Team Members. System SMTP **CANNOT** be used for custom templates, rule-based notifications, or respondent auto-responders.
 
 ---
 
@@ -75,7 +77,14 @@ Follow these steps to create a conditional email routing rule in FormMail Hub:
 | :--- | :--- | :--- |
 | Feature tabs locked | Custom SMTP not configured or tested. | Admins MUST configure and test custom SMTP under **Settings > SMTP Config** to unlock Rules, Templates, Campaigns, and Analytics. |
 | Rule does not trigger | Value mismatch or trailing spaces. | Ensure target values match form choices exactly, or use `Contains` operator. |
-| System SMTP cannot send rule email | Attempting to use System SMTP for rule notifications. | System SMTP is strictly restricted to default alerts for Admin and Team Members. Use verified Custom SMTP for rules. |
+| System SMTP cannot send rule email | Attempting to use System SMTP for rule notifications. | System SMTP is strictly restricted to sending system alerts (submission notifications, daily reports, SMTP error alerts) to Admin and Team Members. Use verified Custom SMTP for rules. |
+
+---
+
+## 5. Official Resources & Assistance
+
+- **Help Desk:** Contact support via [Support & Contact](https://formmail.vietutd.com/contact).
+- **Compliance & Legal:** Review our [Privacy Policy](https://formmail.vietutd.com/privacy-policy) and [Terms of Service](https://formmail.vietutd.com/terms-of-service).
 
 ---
 
