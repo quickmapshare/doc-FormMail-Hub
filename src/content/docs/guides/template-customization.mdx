@@ -35,13 +35,13 @@ Below is the strict verified catalog of dynamic tags supported in FormMail Hub t
 | Dynamic Tag | Source Data / Description | Example Output Value |
 | :--- | :--- | :--- |
 | `{Question Title}` | Dynamically retrieves the response answer for any form field question label. | `Jane` (for question field `{First Name}`) |
-| `{Form Name}` | The official name of the connected Google Form™. | `Customer Onboarding Intake` |
+| `{Form title}` | The official name of the connected Google Form™. | `Customer Onboarding Intake` |
 | `{All Fields}` | Renders a full summary table of all form questions and submitted answers. | *(Formatted table of all responses)* |
 | `{Linked Form}` | Generates the direct URL link to the connected Google Form™. | `https://docs.google.com/forms/...` |
 | `{Unsubscribe Link}` | Generates an automated opt-out / unsubscribe URL for CAN-SPAM / GDPR compliance. | `https://hub.formmailhub.com/unsubscribe/...` |
 | `{QR Code}` | Generates a secure, stateless QR code ticket image (signed with HMAC-SHA256) for real-time verification. | `[Embedded QR Ticket Image]` |
 
-> **Strict Dynamic Tag Rule:** Dynamic template tags are strictly handled by single-pass scanning supporting `{Tag}`, `{{Tag}}`, and `${Tag}` enclosure formats. The valid built-in system tags are strictly `{Form Name}`, `{All Fields}`, `{Linked Form}`, `{Unsubscribe Link}`, and `{QR Code}`, alongside any dynamic form question field title. Writers and template authors MUST NOT invent or assume unverified system tags (such as `{Form Title}`, `{Form Summary}`, `{Response ID}`, `{Submission Date}`, `{Submitter Email}`, etc.).
+> **Strict Dynamic Tag Rule:** Dynamic template tags are strictly handled by single-pass scanning supporting `{Tag}`, `{{Tag}}`, and `${Tag}` enclosure formats. The valid built-in system tags are strictly `{Form title}`, `{All Fields}`, `{Linked Form}`, `{Unsubscribe Link}`, and `{QR Code}`, alongside any dynamic form question field title. Writers and template authors MUST NOT invent or assume unverified system tags (such as `{Form Summary}`, `{Response ID}`, `{Submission Date}`, `{Submitter Email}`, etc.).
 
 > **Custom SMTP Requirement:** Admins MUST configure and test custom SMTP settings before unlocking Templates, Rules, Campaigns, or Analytics. Until custom SMTP is active, these feature tabs remain strictly locked in the UI.
 
@@ -84,7 +84,7 @@ Follow these steps to construct a personalized auto-responder email template:
 4. Set the **Template Name** (e.g., `Client Onboarding Welcome`).
 5. Set the **Email Subject**:
    ```text
-   Welcome to {Form Name}, {First Name}!
+   Welcome to {Form title}, {First Name}!
    ```
 6. Switch to the **HTML Code Editor** and paste the responsive HTML layout:
 
@@ -108,7 +108,7 @@ Follow these steps to construct a personalized auto-responder email template:
     </div>
     <div class="content">
       <p>Hello <strong>{First Name}</strong>,</p>
-      <p>Thank you for submitting your intake for {Form Name}.</p>
+      <p>Thank you for submitting your intake for {Form title}.</p>
       <p>Our team is currently reviewing your submission details and will follow up shortly.</p>
       <div style="text-align: center; margin-top: 20px;">
         <p><strong>Your Verification Pass:</strong></p>
@@ -134,7 +134,7 @@ Before deploying a template to live users, verify variable substitution and layo
 
 - **Send Test Submission Email:** Click **Send Test Email** in the template editor to dispatch a sample email populated with test question data.
 - **Mobile Responsiveness Verification:** Open test emails on both mobile devices and desktop clients (Outlook, Gmail, Apple Mail) to check for proper padding and scaling.
-- **Dynamic Tag Audit:** Confirm that dynamic question field tags (e.g., `{First Name}`) and system tags (e.g., `{Form Name}`, `{All Fields}`, `{Unsubscribe Link}`, `{QR Code}`) resolve correctly.
+- **Dynamic Tag Audit:** Confirm that dynamic question field tags (e.g., `{First Name}`) and system tags (e.g., `{Form title}`, `{All Fields}`, `{Unsubscribe Link}`, `{QR Code}`) resolve correctly.
 
 ---
 
