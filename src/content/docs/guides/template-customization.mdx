@@ -65,6 +65,9 @@ Admins can combine ticket delivery and staff authorization tags to run event tic
 - **Zero-Login Authentication:** Staff scanner links encode an HMAC-SHA256 signed payload containing form ID, staff email identity, authorized mode (`checkin`, `checkout`, or `both`), and a 24-hour expiration token (`/qr-auth?t=...`).
 - **Instant Device Authorization:** Clicking the link authorizes the staff member's mobile device (setting a secure cookie) for browser-based scanning without password logins.
 
+> **Important: Browser Session Isolation Note**  
+> Because authorization relies on a secure cookie set during link activation, opening the link in one browser (e.g., an in-app email viewer inside Gmail or Outlook) will **NOT** authorize a different browser (e.g., default mobile browser or standalone camera scanner app). Staff **MUST** copy and paste the Auth link directly into the exact browser application used for scanning QR codes.
+
 ---
 
 ## 4. Visual & HTML Code Editors

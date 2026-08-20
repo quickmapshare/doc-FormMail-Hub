@@ -15,7 +15,7 @@ To test this workflow live before setting up your own event, try our interactive
 
 Before designing email templates or configuring staff scanner routing, custom SMTP must be configured and tested.
 
-> **Warning: Custom SMTP Prerequisite & UI Lock State**
+> **Warning: Custom SMTP Prerequisite & UI Lock State**  
 > Admins **MUST** configure and test custom SMTP settings under **Settings > SMTP Config** before unlocking Templates, Rules, Campaigns, or Analytics. Until custom SMTP is active, these feature tabs remain strictly locked in the FormMail Hub user interface. Built-in System SMTP cannot be used for custom templates or respondent ticket auto-responders.
 
 ### Quick Setup Steps for Custom SMTP:
@@ -37,7 +37,7 @@ When an attendee fills out your event registration Google Form™, FormMail Hub 
 
 ### How Stateless QR Tickets Work:
 - **Payload & HMAC Signature:** The FormMail Hub cloud platform engine generates a secure, stateless QR code ticket embedding a payload signed with HMAC-SHA256 containing form ID, respondent details, and a unique reference ID.
-- **Verification Endpoint:** When scanned by any standard camera, the QR code points to the `/qr-verify` endpoint to verify ticket authenticity in real-time.
+- **Verification Endpoint:** When scanned by any standard camera, the QR code points to the `/qr-verify` endpoint to verify ticket authenticity in real-time without database overhead.
 
 ### Sample Attendee Confirmation Template:
 1. Go to **Email Templates** > **+ Create New Template**.
@@ -86,6 +86,9 @@ When sending notification emails to staff, include one of the following dynamic 
 ### C. How Zero-Login Links Work (`/qr-auth?t=...`)
 Each staff link contains an HMAC-SHA256 signed payload encoding form ID, staff email identity, authorized mode (`checkin`, `checkout`, or `both`), and a **24-hour expiration token**. Clicking the link instantly authorizes the staff member's mobile browser (setting a secure cookie) for seamless scanning without requiring password logins.
 
+> **Important: Browser Session Isolation Note**  
+> Because authorization relies on a secure cookie set during link activation, opening the link in one browser (e.g., an in-app email viewer inside Gmail or Outlook) will **NOT** authorize a different browser (e.g., your phone's default Safari/Chrome browser or a standalone QR camera scanner app). Staff **MUST** copy and paste the Auth link directly into the exact browser application used for scanning QR codes.
+
 ---
 
 ## 4. Step 3: Execute Check-in & Check-out Scans
@@ -109,7 +112,7 @@ When an authorized staff member scans an attendee's QR ticket at the door:
                             +-------------------------------------------------+
                             | Automated Dual Real-Time Receipts Dispatched     |
                             | 1. Attendee Status Confirmation Email           |
-                            | 2. Staff Audit Log Email (CC Form Owner)        |
+                            | 2. Staff Activity Log Email (CC Form Owner)        |
                             +-------------------------------------------------+
 ```
 
@@ -143,6 +146,7 @@ Dispatched immediately to the scanning staff member (and automatically CC'd to t
 | :--- | :--- | :--- |
 | **Templates or Rules tabs are locked in UI** | Custom SMTP has not been configured or tested. | Go to **Settings > SMTP Config**, enter custom SMTP credentials, and click **Test Connection** to unlock the UI. |
 | **Scanner links missing from respondent emails** | Intended security behavior. | Scanner links (`{Check-in Scanner}`, `{Full Scanner}`) are populated strictly in staff emails and automatically stripped from respondent emails. |
+| **Staff device shows "Unauthorized" when scanning** | Browser session isolation mismatch. | Opening the Auth link in an in-app email viewer does not set cookies in Safari/Chrome. Copy the Auth link and paste it into the exact browser used for scanning. |
 | **Staff link expired error (`/qr-auth`)** | Expiration of 24-hour token. | Re-send the staff notification email or re-generate the authorization link for the team member. |
 | **Scan rejected with `409 Conflict`** | Duplicate check-in attempt. | The attendee is already marked as `IN`. To re-admit, check out the attendee first or check the activity log. |
 

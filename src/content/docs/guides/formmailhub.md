@@ -116,6 +116,8 @@ When routing notifications to Team Members, the platform generates personalized,
 - **Zero-Login Token:** Link includes an HMAC-SHA256 signed payload encoding form ID, staff email identity, mode (`checkin`, `checkout`, `both`), and a 24-hour expiration token (`/qr-auth?t=...`).
 - **Instant Authorization:** Clicking the link sets a secure cookie on the staff member's device for browser-based scanning without password logins.
 
+> **Browser Session Isolation Note:** Because authorization relies on a secure cookie set during link activation, opening the link in one browser (e.g., in-app email viewer) will NOT authorize a different browser (e.g., default mobile browser or standalone camera scanner). Staff must copy and paste the Auth link directly into the exact browser application used for scanning QR codes.
+
 ### Atomic State Engine & 30-Day Rolling TTL
 When authorized staff scan a QR code, `/api/qr/action` verifies permissions and updates ticket explicit state (`IN` or `OUT`) under Redis key `checkin:{form_id}:{refCode}`. Every state change extends the record's TTL to **30 days (2,592,000 seconds)** without deleting data:
 - **Check-in:** Rejects duplicate scans with a `409 Conflict` status if already checked in (`IN`). Sets status to `IN`, logs check-in operator email and timestamp, and refreshes key TTL to 30 days.

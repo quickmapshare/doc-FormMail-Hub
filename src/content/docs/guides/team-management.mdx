@@ -47,6 +47,9 @@ When routing team notifications, the platform generates personalized, cryptograp
 - **HMAC-SHA256 Signed Payload:** Each authorization link contains an HMAC-SHA256 payload encoding the form ID, staff email identity, authorized action mode (`checkin`, `checkout`, or `both`), and a 24-hour expiration token (`/qr-auth?t=...`).
 - **Zero-Login Device Authorization:** Clicking the link instantly authorizes the staff member's mobile browser (setting a secure cookie) for seamless scanning without requiring password logins.
 
+> **Warning: Browser Session Isolation Note**  
+> Because authorization relies on a secure cookie set during link activation, opening the link in one browser (e.g., an in-app email viewer inside Gmail or Outlook) will **NOT** authorize a different browser (e.g., default mobile browser or standalone camera scanner app). Staff **MUST** copy and paste the Auth link directly into the exact browser application used for scanning QR codes.
+
 ---
 
 ## 3. Atomic Check-in/Check-out State Engine & 30-Day Rolling TTL
