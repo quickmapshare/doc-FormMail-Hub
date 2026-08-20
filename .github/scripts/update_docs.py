@@ -8,7 +8,7 @@ from google import genai
 print("========================================")
 print("🚀 AI MULTI-PAGE DOCS BUILDER & EXPANDER v2.0")
 
-MODEL_NAME = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash") 
+MODEL_NAME = os.environ.get("GEMINI_MODEL", "gemini-3.7-flash") 
 print(f"🤖 Gemini Model Engine: {MODEL_NAME}")
 
 api_key = os.environ.get("GEMINI_API_KEY")
