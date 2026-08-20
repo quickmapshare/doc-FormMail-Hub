@@ -2,13 +2,14 @@ import os
 import sys
 import json
 import glob
+import re
 from google import genai
 
 print("========================================")
-print("🚀 AI MULTI-PAGE DOCS BUILDER & EXPANDER")
+print("🚀 AI MULTI-PAGE DOCS BUILDER & EXPANDER v2.0")
 
-MODEL_NAME = "gemini-3.6-flash" 
-print(f"🤖 Gemini model: {MODEL_NAME}")
+MODEL_NAME = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash") 
+print(f"🤖 Gemini Model Engine: {MODEL_NAME}")
 
 api_key = os.environ.get("GEMINI_API_KEY")
 if not api_key:
@@ -20,14 +21,8 @@ code_diff = os.environ.get("CODE_DIFF", "")
 docs_dir = "src/content/docs"
 rules_file = "PRODUCT_RULES.md"
 
-# 1. ĐỌC HOẶC KHỞI TẠO FILE GROUND TRUTH
-product_rules = ""
-if os.path.exists(rules_file):
-    with open(rules_file, "r", encoding="utf-8") as f:
-        product_rules = f.read()
-else:
-    print(f"⚠️ Chưa tìm thấy {rules_file}, đang khởi tạo...")
-    product_rules = """# PRODUCT RULES & ABSOLUTE TRUTHS (GROUND TRUTH)
+# 1. ĐỌC HOẶC KHỞI TẠO FILE GROUND TRUTH (23 RULES CHUẨN XÁC)
+product_rules = """# PRODUCT RULES & ABSOLUTE TRUTHS (GROUND TRUTH)
 
 ## Core Architecture & Platform Philosophy
 1. Independent Cloud Platform Engine: FormMail Hub operates on a powerful, independent external cloud backend platform specifically built to overcome Google Workspace's native execution limits, quotas, and trigger constraints.
@@ -73,8 +68,9 @@ else:
 22. Live Demo Form: https://docs.google.com/forms/d/e/1FAIpQLSc2lkYREd5ePz521uYfBDeumOOoPKeBP87i1aSpwokHdFMIHw/viewform
 23. Support & Contact: https://formmail.vietutd.com/contact
 """
-    with open(rules_file, "w", encoding="utf-8") as f:
-        f.write(product_rules)
+
+with open(rules_file, "w", encoding="utf-8") as f:
+    f.write(product_rules)
 
 # 2. ĐỌC TÀI LIỆU ĐÃ XUẤT BẢN
 existing_docs = {}
@@ -86,40 +82,42 @@ if os.path.exists(docs_dir):
                 with open(file_path, "r", encoding="utf-8") as f:
                     existing_docs[file_path] = f.read()
 
-# 3. CHIẾN LƯỢC CHỌN MÃ NGUỒN CÓ GIỚI HẠN
+# 3. THUẬT TOÁN QUÉT MÃ NGUỒN THÔNG MINH (SMART TARGETING)
 source_files_content = {}
-ui_extensions = ('.astro', '.tsx', '.jsx', '.html', '.svelte', '.vue')
-backend_extensions = ('.ts', '.js', '.py', '.gs')
+keywords = ['qr', 'checkin', 'checkout', 'template', 'campaign', 'smtp', 'team', 'auth']
 
 all_source_files = []
 for root, dirs, files in os.walk("src"):
     if "content/docs" in root:
         continue
     for file in files:
-        if file.endswith(ui_extensions) or file.endswith(backend_extensions):
+        if file.endswith(('.astro', '.tsx', '.jsx', '.ts', '.js', '.py', '.gs')):
             all_source_files.append(os.path.join(root, file))
 
-ui_sample = [f for f in all_source_files if f.endswith(ui_extensions)][:2]
-backend_sample = [f for f in all_source_files if f.endswith(backend_extensions)][:2]
-selected_sources = ui_sample + backend_sample
+# Ưu tiên các file chứa từ khóa tính năng quan trọng
+priority_sources = [f for f in all_source_files if any(k in f.lower() for k in keywords)]
+other_sources = [f for f in all_source_files if f not in priority_sources]
+
+selected_sources = (priority_sources[:8] + other_sources[:4])
 
 for s_file in selected_sources:
     try:
         with open(s_file, "r", encoding="utf-8") as f:
-            source_files_content[s_file] = f.read()[:3000]
-    except Exception as e:
+            source_files_content[s_file] = f.read()[:4000]
+    except Exception:
         pass
 
-diff_context = code_diff if code_diff else "NO RECENT CODE DIFF. Focus on sampled source files or published docs audit."
+diff_context = code_diff if code_diff else "NO RECENT CODE DIFF."
 
-# 4. TẠO PROMPT (ĐÃ BỔ SUNG NGUYÊN TẮC BẮT BUỘC LỒNG LINK GỐC)
+# 4. PROMPT TIÊN TIẾN - BỔ SUNG CƠ CHẾ EXPANSION & USER ACCESSIBILITY
 prompt = f"""
-You are an expert technical writer and documentation architect for 'FormMail Hub'.
+You are an elite Technical Author & User Experience Strategist for 'FormMail Hub'.
+Your goal is to ensure documentation is not only 100% accurate according to code & ground truths, but also exceptionally accessible, practical, and beginner-friendly for non-technical users.
 
 ABSOLUTE PRODUCT RULES (GROUND TRUTH - NEVER VIOLATE THESE):
 {product_rules}
 
-SAMPLED SOURCE CODE FILES FOR THIS SESSION (UI + BACKEND):
+SAMPLED CODE & API IMPLEMENTATION:
 {json.dumps(source_files_content, indent=2)}
 
 RAW CODE DIFF (IF ANY):
@@ -128,48 +126,44 @@ RAW CODE DIFF (IF ANY):
 CURRENT PUBLISHED DOCUMENTATION FILES:
 {json.dumps(existing_docs, indent=2)}
 
-INSTRUCTIONS & WORKFLOW PRIORITY:
+DOCUMENTATION EXPANSION & ARCHITECTURE INSTRUCTIONS:
 
-PRIORITY 1 (NEW FEATURE DISCOVERY):
-- Examine the SAMPLED SOURCE CODE FILES and RAW CODE DIFF.
-- If you find ANY verified, absolute feature logic/rule that is missing from 'PRODUCT RULES', UPDATE `PRODUCT_RULES.md` first.
-- Write or expand the corresponding documentation file in `src/content/docs/guides/` or `src/content/docs/reference/`.
+TASK 1 (PROACTIVE USER-CENTRIC TUTORIAL & GUIDE CREATION):
+Analyze existing documentation gaps. If key features lack step-by-step end-user guides, CREATE NEW or EXPAND existing guides under `src/content/docs/tutorials/` or `src/content/docs/guides/`. Focus on high-value end-user scenarios such as:
+- **Event Management & QR Ticketing**: Step-by-step setup from embedding {{QR Code}} in attendee tickets to issuing Staff Scanner Links ({{Check-in Scanner}}, {{Check-out Scanner}}, {{Full Scanner}}) and processing live attendance.
+- **Dual Email Attendance Receipts**: Explaining how attendees receive check-in tickets while staff get immediate log audit receipts.
+- **Bulk Email Campaigns**: How to filter form responses in Google Sheets and dispatch mass emails safely using custom SMTP.
+- **SMTP Verification & Troubleshooting**: How to resolve lock states in the UI by properly configuring custom SMTP credentials.
 
-PRIORITY 2 (DOCS AUDIT, LINK INTEGRATION & CORRECTION):
-- Audit existing docs in `CURRENT PUBLISHED DOCUMENTATION FILES`.
-- Fix violations of `PRODUCT RULES` and audit OFFICIAL LINKS usage.
-- IF ALL PUBLISHED DOCS ARE 100% ACCURATE AND ALL OFFICIAL LINKS ARE PROPERLY INTEGRATED, include the token `@@@NO_UPDATES_NEEDED@@@` in your output.
+TASK 2 (USER ACCESSIBILITY & READABILITY STANDARDS):
+Ensure every guide follows these user-friendly formatting principles:
+- **Direct Step-by-Step Instructions**: Use clear numbered lists (1, 2, 3) for setup procedures.
+- **Visual Callout Boxes**: Use standard Markdown callouts (`> **Tip:**`, `> **Warning:**`, `> **Note:**`) to highlight crucial permissions or staff scanner security rules.
+- **Dynamic Tag Snippet Cards**: Display exact dynamic tag names in explicit code blocks (e.g., `{Check-in Scanner}`) so users can copy-paste them easily.
+- **Troubleshooting & FAQs**: Conclude technical guides with a quick diagnostic table or FAQ section addressing common operational mistakes.
 
-STRICT REQUIREMENTS & LINK EMBEDDING MANDATE:
-1. ALL OUTPUT MUST BE STRICTLY IN ENGLISH.
-2. FRONTMATTER: Docs must have valid YAML (title, description).
-3. MANDATORY OFFICIAL LINK EMBEDDING: You MUST contextually weave the Official Links (Rules 14-18) into generated/updated docs using natural Markdown hyperlinks:
-   - Homepage / Index (`index.mdx` / `index.md`): MUST include a prominent resource grid/footer featuring Marketplace link, Live Demo link, Support, Privacy Policy, and Terms of Service.
-   - Installation / Getting Started Docs: MUST include a direct call-to-action link to the [Google Workspace Marketplace Listing](https://workspace.google.com/marketplace/app/formmail_hub/409227874327).
-   - User Guides & Tutorials: MUST contextually link to the [Live Demo Form](https://docs.google.com/forms/d/e/1FAIpQLSc2lkYREd5ePz521uYfBDeumOOoPKeBP87i1aSpwokHdFMIHw/viewform) for hands-on testing.
-   - Troubleshooting / Contact Docs: MUST direct users to [Support & Contact](https://formmail.vietutd.com/contact).
-   - Legal / Compliance Sections: MUST embed [Privacy Policy](https://formmail.vietutd.com/privacy-policy) and [Terms of Service](https://formmail.vietutd.com/terms-of-service).
-4. DO NOT USE JSON OUTPUT FORMAT! Use the exact custom delimiters shown below when updating files.
+TASK 3 (STRICT LINK WEAVING & GROUND TRUTH COMPLIANCE):
+- Contextually weave official links in every created or updated doc:
+  * Google Workspace Marketplace: https://workspace.google.com/marketplace/app/formmail_hub/409227874327
+  * Live Demo Form: https://docs.google.com/forms/d/e/1FAIpQLSc2lkYREd5ePz521uYfBDeumOOoPKeBP87i1aSpwokHdFMIHw/viewform
+  * Support & Contact: https://formmail.vietutd.com/contact
+  * Privacy & Terms: https://formmail.vietutd.com/privacy-policy & https://formmail.vietutd.com/terms-of-service
+- If ALL published docs are already complete, perfectly clear, highly accessible, and 100% compliant with ground truths, return: `@@@NO_UPDATES_NEEDED@@@`.
 
-FORMAT TEMPLATE TO FOLLOW WHEN UPDATING FILES:
+STRICT FORMAT DELIMITERS (DO NOT USE JSON):
 
-@@@FILE_PATH: PRODUCT_RULES.md
-@@@CONTENT:
-(Updated content of PRODUCT_RULES.md if a new truth was found)
-@@@END_FILE
-
-@@@FILE_PATH: src/content/docs/index.mdx
+@@@FILE_PATH: src/content/docs/tutorials/qr-event-checkin-guide.mdx
 @@@CONTENT:
 ---
-title: Welcome to FormMail Hub
-description: Official Documentation and Setup Guides
+title: Complete Guide to Event Check-in & QR Code Ticketing
+description: Learn how to generate automated QR tickets and equip event staff with zero-login scanner links.
 ---
-Your markdown content with woven official links here...
+(Detailed, beautifully formatted guide content here...)
 @@@END_FILE
 """
 
 try:
-    print("⏳ Đang gửi dữ liệu cho AI phân tích...")
+    print("⏳ Đang gửi dữ liệu cho AI phân tích & biên soạn bài viết...")
     response = client.models.generate_content(
         model=MODEL_NAME,
         contents=prompt
@@ -198,11 +192,8 @@ try:
                 continue
 
     if not docs_to_update:
-        if "@@@NO_UPDATES_NEEDED@@@" in cleaned_text or "Audit" in cleaned_text or "Compliant" in cleaned_text:
-            print("✅ AI BÁO CÁO: Tất cả tài liệu hiện tại đã khớp 100% với PRODUCT_RULES.md. Không cần cập nhật file.")
-            print("\n--- BÁO CÁO KIỂM TRA TỪ AI ---")
-            print(cleaned_text)
-            print("--------------------------------\n")
+        if "@@@NO_UPDATES_NEEDED@@@" in cleaned_text:
+            print("✅ AI BÁO CÁO: Tài liệu hiện tại đã đầy đủ, đạt chuẩn tiếp cận người dùng và khớp 100% Ground Truth.")
             sys.exit(0)
         else:
             print("❌ LỖI: AI không trả về block nội dung hợp lệ nào.")
@@ -228,7 +219,7 @@ try:
         with open(target_path, "w", encoding="utf-8") as f:
             f.write(content.strip())
             
-        print(f"✅ Đã cập nhật: {target_path}")
+        print(f"✅ Đã ghi nhận/Mở rộng bài viết: {target_path}")
 
 except Exception as e:
     print(f"❌ LỖI khi thực thi script: {e}")
