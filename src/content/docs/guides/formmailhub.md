@@ -116,10 +116,10 @@ When routing notifications to Team Members, the platform generates personalized,
 - **Zero-Login Token:** Link includes an HMAC-SHA256 signed payload encoding form ID, staff email identity, mode (`checkin`, `checkout`, `both`), and a 24-hour expiration token (`/qr-auth?t=...`).
 - **Instant Authorization:** Clicking the link sets a secure cookie on the staff member's device for browser-based scanning without password logins.
 
-### Atomic State Engine & Redis Locks
-When authorized staff scan a QR code, `/api/qr/action` verifies permissions and executes atomic Check-in or Check-out against Redis key `checkin:{form_id}:{refCode}` (24-hour TTL).
-- **Check-in:** Rejects duplicate scans with a `409 Conflict` status if already checked in.
-- **Check-out:** Validates checked-in status before releasing attendance state.
+### Atomic State Engine & 30-Day Rolling TTL
+When authorized staff scan a QR code, `/api/qr/action` verifies permissions and updates ticket explicit state (`IN` or `OUT`) under Redis key `checkin:{form_id}:{refCode}`. Every state change extends the record's TTL to **30 days (2,592,000 seconds)** without deleting data:
+- **Check-in:** Rejects duplicate scans with a `409 Conflict` status if already checked in (`IN`). Sets status to `IN`, logs check-in operator email and timestamp, and refreshes key TTL to 30 days.
+- **Check-out:** Validates `IN` status before updating status to `OUT`. Logs check-out operator email and timestamp, and refreshes key TTL to 30 days instead of deleting the Redis key.
 
 ### Automated Dual Real-Time Attendance Receipts
 Upon every successful scan, two real-time email receipts are dispatched:

@@ -1,6 +1,6 @@
 ---
 title: Team Member Management, Staff Scanning & Notification Routing Guide
-description: Guide to managing team members, understanding the Primary Connector Admin role, setting up event staff scanners, personalized zero-login scanner authentication, and routing submission alerts in FormMail Hub.
+description: Guide to managing team members, understanding the Primary Connector Admin role, setting up event staff scanners, personalized zero-login scanner authentication, 30-day rolling TTL attendance tracking, and routing submission alerts in FormMail Hub.
 ---
 
 Managing form submission alerts and event attendance in organizational settings requires delivering notifications to designated team members and authorizing staff scanners without exposing system configurations or consuming personal email daily limits.
@@ -41,20 +41,22 @@ When routing team notifications, the platform generates personalized, cryptograp
 - `{Check-out Scanner}`: Authorizes device for check-out scanning (`checkout` mode).
 - `{Full Scanner}`: Authorizes device for both check-in and check-out scanning (`both` mode).
 
+> **Security & Audience Isolation:** Scanner authorization links (`{Check-in Scanner}`, `{Check-out Scanner}`, `{Full Scanner}`) are populated strictly in staff/team member email notifications and automatically stripped from respondent emails to guarantee security isolation.
+
 ### Cryptographic Security & Zero-Login Mechanics
 - **HMAC-SHA256 Signed Payload:** Each authorization link contains an HMAC-SHA256 payload encoding the form ID, staff email identity, authorized action mode (`checkin`, `checkout`, or `both`), and a 24-hour expiration token (`/qr-auth?t=...`).
 - **Zero-Login Device Authorization:** Clicking the link instantly authorizes the staff member's mobile browser (setting a secure cookie) for seamless scanning without requiring password logins.
 
 ---
 
-## 3. Atomic Check-in/Check-out State Engine & Real-Time Receipts
+## 3. Atomic Check-in/Check-out State Engine & 30-Day Rolling TTL
 
 When an authorized staff member scans an attendee's QR code ticket, the FormMail Hub cloud platform engine processes the scan through an atomic state engine.
 
-### Atomic Concurrency Control (Redis Engine)
-- **Scan Endpoint (`/api/qr/action`):** Verifies device permissions and executes atomic Check-in or Check-out against Redis key `checkin:{form_id}:{refCode}` with a 24-hour TTL.
-- **Check-in Enforcement:** Rejects duplicate scans with a `409 Conflict` status if the ticket is already checked in.
-- **Check-out Enforcement:** Validates that the ticket has been checked in before releasing attendance state.
+### Atomic Concurrency Control & 30-Day Rolling TTL (Redis Engine)
+- **Scan Endpoint (`/api/qr/action`):** Verifies device permissions and updates ticket explicit state (`IN` or `OUT`) under Redis key `checkin:{form_id}:{refCode}`. Every state change extends the record's TTL to **30 days (2,592,000 seconds)** without deleting data.
+- **Check-in Enforcement:** Rejects duplicate scans with a `409 Conflict` status if the ticket status is already `IN`. Sets status to `IN`, logs check-in operator email and timestamp, and refreshes key TTL to 30 days.
+- **Check-out Enforcement:** Validates that the ticket is currently in `IN` state before updating status to `OUT`. Logs check-out operator email and timestamp, and refreshes key TTL to 30 days instead of deleting the Redis key.
 
 ### Automated Dual Real-Time Attendance Receipts
 Upon every successful Check-in or Check-out scan, the engine dispatches two independent real-time email notifications:
@@ -93,6 +95,7 @@ Once added, the team member's address becomes selectable by the Admin for receiv
 ## 6. Official Resources & Enterprise Support
 
 - **Help Desk:** Reach our support team via [Support & Contact](https://formmail.vietutd.com/contact).
+- **Marketplace Listing:** Install via [Google Workspace Marketplace](https://workspace.google.com/marketplace/app/formmail_hub/409227874327).
 - **Compliance & Legal:** View our [Privacy Policy](https://formmail.vietutd.com/privacy-policy) and [Terms of Service](https://formmail.vietutd.com/terms-of-service).
 
 ---

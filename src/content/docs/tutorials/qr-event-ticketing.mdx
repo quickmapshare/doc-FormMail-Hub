@@ -1,0 +1,161 @@
+---
+title: Complete Guide to Event Check-in, QR Ticketing & Staff Scanning
+description: Step-by-step tutorial on embedding QR Code tickets in confirmation emails, authorizing staff scanners with zero-login links, tracking attendance with 30-day rolling TTL records, and issuing dual real-time receipts in FormMail Hub.
+---
+
+This step-by-step tutorial guides you through configuring an end-to-end event ticketing, door check-in, and attendance management workflow using **FormMail Hub**. 
+
+You will learn how to automatically issue stateless QR code tickets to attendees, distribute personalized zero-login scanner links to event staff, process atomic check-ins and check-outs, and send dual real-time email receipts for every scan.
+
+To test this workflow live before setting up your own event, try our interactive [Live Demo Form](https://docs.google.com/forms/d/e/1FAIpQLSc2lkYREd5ePz521uYfBDeumOOoPKeBP87i1aSpwokHdFMIHw/viewform) or install the add-on via the [Google Workspace Marketplace Listing](https://workspace.google.com/marketplace/app/formmail_hub/409227874327).
+
+---
+
+## 1. Prerequisites: Custom SMTP Unlock Requirement
+
+Before designing email templates or configuring staff scanner routing, custom SMTP must be configured and tested.
+
+> **Warning: Custom SMTP Prerequisite & UI Lock State**
+> Admins **MUST** configure and test custom SMTP settings under **Settings > SMTP Config** before unlocking Templates, Rules, Campaigns, or Analytics. Until custom SMTP is active, these feature tabs remain strictly locked in the FormMail Hub user interface. Built-in System SMTP cannot be used for custom templates or respondent ticket auto-responders.
+
+### Quick Setup Steps for Custom SMTP:
+1. Open **FormMail Hub** from Google Forms™ or Google Sheets™.
+2. Navigate to **Settings > SMTP Config**.
+3. Input your custom SMTP credentials (e.g., Gmail™ App Password, Amazon SES, SendGrid, Mailgun, or corporate SMTP server).
+4. Click **Test Connection**. Once verified, all locked UI tabs will unlock immediately.
+
+---
+
+## 2. Step 1: Issue Stateless QR Code Tickets to Attendees
+
+When an attendee fills out your event registration Google Form™, FormMail Hub can automatically dispatch a personalized confirmation email containing an embedded, cryptographically secure QR code ticket.
+
+### Dynamic Tag to Use:
+```text
+{QR Code}
+```
+
+### How Stateless QR Tickets Work:
+- **Payload & HMAC Signature:** The FormMail Hub cloud platform engine generates a secure, stateless QR code ticket embedding a payload signed with HMAC-SHA256 containing form ID, respondent details, and a unique reference ID.
+- **Verification Endpoint:** When scanned by any standard camera, the QR code points to the `/qr-verify` endpoint to verify ticket authenticity in real-time.
+
+### Sample Attendee Confirmation Template:
+1. Go to **Email Templates** > **+ Create New Template**.
+2. Title: `Attendee Event Pass`.
+3. Subject: `Your Entry Ticket for {Form title} - {First Name}`.
+4. Body (HTML or Rich Text):
+   ```html
+   <h2>Hello {First Name},</h2>
+   <p>Thank you for registering for <strong>{Form title}</strong>.</p>
+   <p>Please present the QR code ticket below at the entrance for entry verification:</p>
+   
+   <div style="text-align: center; margin: 20px 0;">
+     {QR Code}
+   </div>
+   
+   <p><strong>Reference Code:</strong> {Form title} Ticket</p>
+   <hr />
+   <p><small>If you need to update your registration, contact the organizer. <a href="{Unsubscribe Link}">Unsubscribe</a></small></p>
+   ```
+5. Save the template and attach it to an active **Email Rule** targeting respondents.
+
+---
+
+## 3. Step 2: Add Team Members & Generate Staff Scanner Links
+
+Event staff do not need administrative access or passwords to scan tickets. FormMail Hub uses personalized, zero-login authorization links that convert staff mobile devices into authorized ticket scanners.
+
+### A. Add Staff as Team Members
+1. In the FormMail Hub sidebar, navigate to **Team Members**.
+2. Enter the email address of each staff member (e.g., `staff@yourcompany.com`).
+3. Click **Add Team Member**.
+
+> **Note on Permissions:** Team members are added strictly so the Admin can select who receives email notifications and who is authorized to act as event staff scanners. Team members **DO NOT** have edit or configuration permissions in FormMail Hub.
+
+### B. Dynamic Scanner Tags for Staff Emails
+When sending notification emails to staff, include one of the following dynamic scanner tags in the staff notification template:
+
+| Dynamic Scanner Tag | Authorized Action Mode | Description |
+| :--- | :--- | :--- |
+| `{Check-in Scanner}` | `checkin` | Authorizes the staff device exclusively for check-in scans. |
+| `{Check-out Scanner}` | `checkout` | Authorizes the staff device exclusively for check-out scans. |
+| `{Full Scanner}` | `both` | Authorizes the staff device for both check-in and check-out scanning. |
+
+> **Security Isolation Rule:** Scanner authorization links (`{Check-in Scanner}`, `{Check-out Scanner}`, `{Full Scanner}`) are populated **strictly in staff/team emails** and are automatically stripped from respondent emails to guarantee security isolation.
+
+### C. How Zero-Login Links Work (`/qr-auth?t=...`)
+Each staff link contains an HMAC-SHA256 signed payload encoding form ID, staff email identity, authorized mode (`checkin`, `checkout`, or `both`), and a **24-hour expiration token**. Clicking the link instantly authorizes the staff member's mobile browser (setting a secure cookie) for seamless scanning without requiring password logins.
+
+---
+
+## 4. Step 3: Execute Check-in & Check-out Scans
+
+When an authorized staff member scans an attendee's QR ticket at the door:
+
+```
+[ Staff Member Clicks Scanner Link ] ---> Device Authorized via Secure Cookie
+                                                     |
+                                                     v
+[ Staff Scans Attendee QR Code ] -------> /api/qr/action Verification
+                                                     |
+                                                     v
+                            +-------------------------------------------------+
+                            | Atomic State Update in Redis                    |
+                            | Key: checkin:{form_id}:{refCode}                |
+                            | Extends Record TTL to 30 Days (2,592,000s)      |
+                            +-------------------------------------------------+
+                                                     |
+                                                     v
+                            +-------------------------------------------------+
+                            | Automated Dual Real-Time Receipts Dispatched     |
+                            | 1. Attendee Status Confirmation Email           |
+                            | 2. Staff Audit Log Email (CC Form Owner)        |
+                            +-------------------------------------------------+
+```
+
+### Atomic State Engine & 30-Day Rolling TTL
+When a scan occurs, `/api/qr/action` verifies staff permissions and updates the ticket's explicit state (`IN` or `OUT`) under Redis key `checkin:{form_id}:{refCode}`. Every state change extends the record's TTL to **30 days (2,592,000 seconds)** without deleting data:
+
+- **Check-in Execution:** Rejects duplicate check-ins with a `409 Conflict` status if the ticket status is already `IN`. Sets status to `IN`, logs the check-in operator email and timestamp, and refreshes the key TTL to 30 days.
+- **Check-out Execution:** Validates that the ticket is currently in `IN` state before updating status to `OUT`. Logs check-out operator email and timestamp, and refreshes the key TTL to 30 days instead of deleting the record.
+
+---
+
+## 5. Step 4: Automated Dual Real-Time Attendance Receipts
+
+Every successful check-in or check-out trigger automatically dispatches **two independent real-time email notifications**:
+
+### Receipt 1: Attendee Attendance Email
+Dispatched immediately to the ticket holder confirming their updated attendance status:
+- **Recipient:** The attendee (`{Email Address}`).
+- **Content:** Updated status (`Checked In` or `Checked Out`), Event Name (`{Form title}`), Reference ID, and exact UTC timestamp.
+
+### Receipt 2: Staff Activity Log Email
+Dispatched immediately to the scanning staff member (and automatically CC'd to the Form Owner):
+- **Recipient:** Scanning Staff Member (CC: Form Owner Admin).
+- **Content:** Complete audit trail recording attendee identity, ticket reference code, staff email identity, action mode, and scan timestamp.
+
+---
+
+## 6. Troubleshooting & Operational FAQ
+
+| Problem / Error | Possible Cause | Corrective Action |
+| :--- | :--- | :--- |
+| **Templates or Rules tabs are locked in UI** | Custom SMTP has not been configured or tested. | Go to **Settings > SMTP Config**, enter custom SMTP credentials, and click **Test Connection** to unlock the UI. |
+| **Scanner links missing from respondent emails** | Intended security behavior. | Scanner links (`{Check-in Scanner}`, `{Full Scanner}`) are populated strictly in staff emails and automatically stripped from respondent emails. |
+| **Staff link expired error (`/qr-auth`)** | Expiration of 24-hour token. | Re-send the staff notification email or re-generate the authorization link for the team member. |
+| **Scan rejected with `409 Conflict`** | Duplicate check-in attempt. | The attendee is already marked as `IN`. To re-admit, check out the attendee first or check the activity log. |
+
+---
+
+## 7. Official Resources & Contact
+
+For additional assistance or domain-wide setup, access our official resources:
+- **Google Workspace Marketplace:** [FormMail Hub Listing](https://workspace.google.com/marketplace/app/formmail_hub/409227874327)
+- **Interactive Sandbox:** [Live Demo Form](https://docs.google.com/forms/d/e/1FAIpQLSc2lkYREd5ePz521uYfBDeumOOoPKeBP87i1aSpwokHdFMIHw/viewform)
+- **Technical Support:** [Support & Contact](https://formmail.vietutd.com/contact)
+- **Compliance Policies:** [Privacy Policy](https://formmail.vietutd.com/privacy-policy) | [Terms of Service](https://formmail.vietutd.com/terms-of-service)
+
+---
+
+*Google Forms™ and Google Sheets™ are trademarks of Google LLC.*
