@@ -38,13 +38,13 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           
-          # Add toàn bộ thư mục docs/ để bắt được các file mới AI tạo ra
-          git add src/content/docs/
+          # ĐÃ SỬA: Stage TẤT CẢ các thay đổi (bao gồm cả PRODUCT_RULES.md ở thư mục gốc và thư mục docs/)
+          git add -A
           
           # Kiểm tra nếu có thay đổi thì mới commit
           git diff --quiet && git diff --staged --quiet || git commit -m "docs: AI auto-generated new pages & updates [English]"
           
-          # CẬP NHẬT QUAN TRỌNG: Kéo bản mới nhất trên GitHub về và gộp lại trước khi đẩy lên
+          # Kéo bản mới nhất trên GitHub về và gộp lại (Lúc này working tree đã sạch nên rebase sẽ không bị lỗi nữa)
           git pull --rebase origin main
           
           # 3. Ép push bằng token có quyền write
