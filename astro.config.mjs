@@ -25,6 +25,11 @@ export default defineConfig({
                     // Đã đưa autogenerate vào trong items
                     items: [{ autogenerate: { directory: 'reference' } }],
                 },
+                {
+                    label: 'Tutorials',
+                    // Đã đưa autogenerate vào trong items
+                    items: [{ autogenerate: { directory: 'tutorials' } }],
+                },
             ],
             customCss: ['./src/styles/global.css'],
         }),
