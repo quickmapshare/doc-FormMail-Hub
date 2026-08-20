@@ -94,7 +94,6 @@ for root, dirs, files in os.walk("src"):
         if file.endswith(('.astro', '.tsx', '.jsx', '.ts', '.js', '.py', '.gs')):
             all_source_files.append(os.path.join(root, file))
 
-# Ưu tiên các file chứa từ khóa tính năng quan trọng
 priority_sources = [f for f in all_source_files if any(k in f.lower() for k in keywords)]
 other_sources = [f for f in all_source_files if f not in priority_sources]
 
@@ -109,7 +108,7 @@ for s_file in selected_sources:
 
 diff_context = code_diff if code_diff else "NO RECENT CODE DIFF."
 
-# 4. PROMPT TIÊN TIẾN - BỔ SUNG CƠ CHẾ EXPANSION & USER ACCESSIBILITY
+# 4. PROMPT TIÊN TIẾN - ĐÃ ESCAPE HOÀN TOÀN CÁC DẤU NGOẶC NHỌN LITERAL
 prompt = f"""
 You are an elite Technical Author & User Experience Strategist for 'FormMail Hub'.
 Your goal is to ensure documentation is not only 100% accurate according to code & ground truths, but also exceptionally accessible, practical, and beginner-friendly for non-technical users.
@@ -139,7 +138,7 @@ TASK 2 (USER ACCESSIBILITY & READABILITY STANDARDS):
 Ensure every guide follows these user-friendly formatting principles:
 - **Direct Step-by-Step Instructions**: Use clear numbered lists (1, 2, 3) for setup procedures.
 - **Visual Callout Boxes**: Use standard Markdown callouts (`> **Tip:**`, `> **Warning:**`, `> **Note:**`) to highlight crucial permissions or staff scanner security rules.
-- **Dynamic Tag Snippet Cards**: Display exact dynamic tag names in explicit code blocks (e.g., `{Check-in Scanner}`) so users can copy-paste them easily.
+- **Dynamic Tag Snippet Cards**: Display exact dynamic tag names in explicit code blocks (e.g., `{{Check-in Scanner}}`) so users can copy-paste them easily.
 - **Troubleshooting & FAQs**: Conclude technical guides with a quick diagnostic table or FAQ section addressing common operational mistakes.
 
 TASK 3 (STRICT LINK WEAVING & GROUND TRUTH COMPLIANCE):
