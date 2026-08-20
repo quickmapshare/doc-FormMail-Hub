@@ -1,6 +1,6 @@
 ---
 title: Dynamic Tags & HTML Email Template Customization Guide
-description: Master FormMail Hub's template engine, dynamic question placeholders, supported enclosure formats, stateless QR code tickets, responsive HTML email design, and custom templates.
+description: Master FormMail Hub's template engine, dynamic question placeholders, supported enclosure formats, stateless QR code tickets, staff scanner authorization tags, responsive HTML email design, and custom templates.
 ---
 
 Standard transactional email triggers often feel generic or rigid. **FormMail Hub's Template & Dynamic Variable Engine** empowers you to create beautifully styled, personalized, and mobile-responsive email notifications and auto-responders that reflect your brand identity.
@@ -32,29 +32,38 @@ Below is the strict verified catalog of dynamic tags supported in FormMail Hub t
 
 ### Verified Dynamic Tags Catalog
 
-| Dynamic Tag | Source Data / Description | Example Output Value |
-| :--- | :--- | :--- |
-| `{Question Title}` | Dynamically retrieves the response answer for any form field question label. | `Jane` (for question field `{First Name}`) |
-| `{Form title}` | The official name of the connected Google Form™. | `Customer Onboarding Intake` |
-| `{All Fields}` | Renders a full summary table of all form questions and submitted answers. | *(Formatted table of all responses)* |
-| `{Linked Form}` | Generates the direct URL link to the connected Google Form™. | `https://docs.google.com/forms/...` |
-| `{Unsubscribe Link}` | Generates an automated opt-out / unsubscribe URL for CAN-SPAM / GDPR compliance. | `https://hub.formmailhub.com/unsubscribe/...` |
-| `{QR Code}` | Generates a secure, stateless QR code ticket image (signed with HMAC-SHA256) for real-time verification. | `[Embedded QR Ticket Image]` |
+| Dynamic Tag | Source Data / Description | Example Output Value | Context / Audience Target |
+| :--- | :--- | :--- | :--- |
+| `{Question Title}` | Dynamically retrieves the response answer for any form field question label. | `Jane` (for question field `{First Name}`) | All Templates |
+| `{Form title}` | The official name of the connected Google Form™. | `Customer Onboarding Intake` | All Templates |
+| `{All Fields}` | Renders a full summary table of all form questions and submitted answers. | *(Formatted table of all responses)* | All Templates |
+| `{Linked Form}` | Generates the direct URL link to the connected Google Form™. | `https://docs.google.com/forms/...` | All Templates |
+| `{Unsubscribe Link}` | Generates an automated opt-out / unsubscribe URL for CAN-SPAM / GDPR compliance. | `https://hub.formmailhub.com/unsubscribe/...` | Respondent Templates & Campaigns |
+| `{QR Code}` | Generates a secure, stateless QR code ticket image (signed with HMAC-SHA256) for real-time verification. | `[Embedded QR Ticket Image]` | Respondent Auto-responders & Campaigns |
+| `{Check-in Scanner}` | Generates a personalized, HMAC-SHA256 signed zero-login link for staff check-in scanning (`checkin` mode). | `https://hub.formmailhub.com/qr-auth?t=...` | Staff / Team Emails Only |
+| `{Check-out Scanner}` | Generates a personalized, HMAC-SHA256 signed zero-login link for staff check-out scanning (`checkout` mode). | `https://hub.formmailhub.com/qr-auth?t=...` | Staff / Team Emails Only |
+| `{Full Scanner}` | Generates a personalized, HMAC-SHA256 signed zero-login link for staff dual scanning (`both` mode). | `https://hub.formmailhub.com/qr-auth?t=...` | Staff / Team Emails Only |
 
-> **Strict Dynamic Tag Rule:** Dynamic template tags are strictly handled by single-pass scanning supporting `{Tag}`, `{{Tag}}`, and `${Tag}` enclosure formats. The valid built-in system tags are strictly `{Form title}`, `{All Fields}`, `{Linked Form}`, `{Unsubscribe Link}`, and `{QR Code}`, alongside any dynamic form question field title. Writers and template authors MUST NOT invent or assume unverified system tags (such as `{Form Summary}`, `{Response ID}`, `{Submission Date}`, `{Submitter Email}`, etc.).
+> **Strict Dynamic Tag Rule:** Dynamic template tags are strictly handled by single-pass scanning supporting `{Tag}`, `{{Tag}}`, and `${Tag}` enclosure formats. The valid built-in system tags are strictly `{Form title}`, `{All Fields}`, `{Linked Form}`, `{Unsubscribe Link}`, `{QR Code}`, `{Check-in Scanner}`, `{Check-out Scanner}`, and `{Full Scanner}`, alongside any dynamic form question field title. Writers and template authors MUST NOT invent or assume unverified system tags.
+
+> **Security & Audience Isolation:** Scanner authorization tags (`{Check-in Scanner}`, `{Check-out Scanner}`, and `{Full Scanner}`) are populated strictly in staff/team member email notifications. To guarantee security isolation, scanner links are automatically stripped from all respondent-facing emails.
 
 > **Custom SMTP Requirement:** Admins MUST configure and test custom SMTP settings before unlocking Templates, Rules, Campaigns, or Analytics. Until custom SMTP is active, these feature tabs remain strictly locked in the UI.
 
 ---
 
-## 3. Stateless QR Code Ticket Mechanics
+## 3. Stateless QR Code Ticket & Staff Scanner Mechanics
 
-Admins can insert the `{QR Code}` dynamic tag into custom email templates (usable in both auto-responders and broadcast campaign emails) to automatically issue digital event passes, tickets, or verification vouchers.
+Admins can combine ticket delivery and staff authorization tags to run event ticketing and check-in workflows.
 
-### How QR Code Verification Works
+### A. Stateless QR Code Tickets (`{QR Code}`)
 - **Payload & Signing:** The FormMail Hub cloud platform engine generates a secure, stateless QR code ticket embedding submission metadata signed with HMAC-SHA256 encryption.
 - **Verification Endpoint:** Scanning the QR code directs to the `/qr-verify` endpoint.
 - **Real-Time Audit:** The endpoint verifies ticket authenticity, submission timestamp, respondent details, and reference code in real-time without database overhead or external lookups.
+
+### B. Personalized Staff Scanner Links (`{Check-in Scanner}`, `{Check-out Scanner}`, `{Full Scanner}`)
+- **Zero-Login Authentication:** Staff scanner links encode an HMAC-SHA256 signed payload containing form ID, staff email identity, authorized mode (`checkin`, `checkout`, or `both`), and a 24-hour expiration token (`/qr-auth?t=...`).
+- **Instant Device Authorization:** Clicking the link authorizes the staff member's mobile device (setting a secure cookie) for browser-based scanning without password logins.
 
 ---
 
