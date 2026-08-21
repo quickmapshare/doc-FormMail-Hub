@@ -28,18 +28,19 @@
 15. Automated Dual Real-Time Attendance Receipts: Upon every successful Check-in or Check-out event, the engine dispatches two independent, real-time email notifications:
     - Attendee Attendance Email: Dispatched to the ticket holder confirming their updated status (Checked In / Checked Out), complete with Event Name, Reference ID, and UTC timestamp.
     - Staff Activity Log Email: Dispatched directly to the scanning Staff member (and CC'd to the Form Owner) recording an audit trail containing attendee identity, ticket reference code, staff email identity, and scan timestamp.
-16. Unsubscribe Mechanics & Granular Scopes: The system handles unsubscribe requests via Cloud Backend tracking endpoints across 3 strict scopes:
+16. Internal Office Attendance & Dual-Role Peer Model: Office or organizational personnel can operate simultaneously as both Respondents and Authorized Scanners. By adding all personnel as Team Members (granting them personalized Auth links such as {Full Scanner}) AND having them register via the registration Form (receiving individual {QR Code} tickets), staff members authorize their own mobile browser devices. Upon entering or leaving the office, staff scan their own QR code ticket (or a peer's QR code) to execute Check-In/Check-Out. This dynamically updates their Redis presence state (IN / OUT), enabling colleagues and managers to view real-time presence/absence status for seamless workplace collaboration without requiring specialized biometric hardware or dedicated terminal equipment.
+17. Unsubscribe Mechanics & Granular Scopes: The system handles unsubscribe requests via Cloud Backend tracking endpoints across 3 strict scopes:
     - Form-Specific Respondent Unsubscribe: Admins can insert {Unsubscribe Link} into custom email templates (Auto-responders and Campaign emails). Clicking this link unsubscribes the respondent's email address strictly from future emails related to that specific Form.
     - Form-Specific System Daily Report Unsubscribe: Daily summary report emails sent to Admins/Team Members include an unsubscribe link scoped strictly to that specific Form (stopping daily reports for that form only).
     - User-Level SMTP Error Alert Unsubscribe: SMTP error alert emails sent to the Admin include an unsubscribe link scoped to the User level (stopping all SMTP connection failure notifications across all forms managed by that user account).
 
 ## Feature Boundaries & Anti-Hallucination Rules
-17. Email & QR Attendance Scope (NO WEBHOOKS): FormMail Hub operates strictly as an email receiving, processing, dispatching, and QR attendance tracking engine based on admin-defined rules. It DOES NOT support webhooks, HTTP POST forwarding, external API calls, or third-party integrations (such as Slack, Microsoft Teams, Discord, Zapier, CRMs, or custom endpoints).
-18. Strict Code-First Reality: Documentation must ONLY reflect existing, verified functionality present in the provided source code and PRODUCT_RULES.md. Writers MUST NOT invent, extrapolate, or draft guides for theoretical features, future roadmaps, or non-existent integrations.
+18. Email & QR Attendance Scope (NO WEBHOOKS): FormMail Hub operates strictly as an email receiving, processing, dispatching, and QR attendance tracking engine based on admin-defined rules. It DOES NOT support webhooks, HTTP POST forwarding, external API calls, or third-party integrations (such as Slack, Microsoft Teams, Discord, Zapier, CRMs, or custom endpoints).
+19. Strict Code-First Reality: Documentation must ONLY reflect existing, verified functionality present in the provided source code and PRODUCT_RULES.md. Writers MUST NOT invent, extrapolate, or draft guides for theoretical features, future roadmaps, or non-existent integrations.
 
 ## Official Links & Resources
-19. Google Workspace Marketplace Listing: https://workspace.google.com/marketplace/app/formmail_hub/409227874327
-20. Privacy Policy: https://formmail.vietutd.com/privacy-policy
-21. Terms of Service: https://formmail.vietutd.com/terms-of-service
-22. Live Demo Form: https://docs.google.com/forms/d/e/1FAIpQLSc2lkYREd5ePz521uYfBDeumOOoPKeBP87i1aSpwokHdFMIHw/viewform
-23. Support & Contact: https://formmail.vietutd.com/contact
+20. Google Workspace Marketplace Listing: https://workspace.google.com/marketplace/app/formmail_hub/409227874327
+21. Privacy Policy: https://formmail.vietutd.com/privacy-policy
+22. Terms of Service: https://formmail.vietutd.com/terms-of-service
+23. Live Demo Form: https://docs.google.com/forms/d/e/1FAIpQLSc2lkYREd5ePz521uYfBDeumOOoPKeBP87i1aSpwokHdFMIHw/viewform
+24. Support & Contact: https://formmail.vietutd.com/contact
