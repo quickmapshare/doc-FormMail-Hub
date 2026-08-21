@@ -1,6 +1,6 @@
 ---
-title: FormMail Hub - Google Forms Email Automation & Marketing
-description: Transform Google Forms™ into a powerful customer outreach, lead engagement, and automated communication hub.
+title: FormMail Hub - Google Forms Email Automation & QR Attendance Platform
+description: Enterprise-grade cloud notification, bulk marketing campaign, and QR code ticket attendance platform for Google Forms™ and Google Sheets™.
 template: splash
 hero:
   title: |
@@ -11,89 +11,168 @@ hero:
         from-accent-700 to-accent-400
         dark:from-accent-500 dark:to-accent-200"
     >
-      Google Forms™
+      Google Forms™ & Sheets™
     </span>
-  tagline: Complete Email Marketing & Automated Notifications for Google Forms™.
+  tagline: Powerful external cloud engine for automated emails, custom SMTP delivery, zero-login QR attendance check-in, and bulk broadcast campaigns.
   image:
     html: <img src="/logo.png" alt="FormMail Hub Logo" class="mx-auto h-32 w-auto" />
   actions:
-    - text: User Guide
+    - text: Complete User Guide
       link: /guides/formmailhub/
       icon: right-arrow
       variant: primary
+    - text: Event Ticketing Tutorial
+      link: /tutorials/qr-event-ticketing/
+      icon: rocket
+      variant: secondary
     - text: Install Add-on
       link: https://workspace.google.com/marketplace/app/formmail_hub/409227874327
       icon: external
-      variant: secondary
+      variant: minimal
 ---
 
-import { Card, CardGrid } from '@astrojs/starlight/components';
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
 
-
-
-## Key Features at a Glance
+## Platform Architecture & Capabilities
 
 <CardGrid stagger>
-	<Card title="Instant Admin & Team Alerts" icon="rocket">
-		Receive real-time email notifications delivered immediately to form admins and team members upon every submission.
+	<Card title="Independent Cloud Engine" icon="rocket">
+		Operates on a dedicated, external high-performance cloud backend built to overcome Google Workspace execution time limits, sending quotas, and trigger constraints.
 	</Card>
-	<Card title="Professional Templates & Routing" icon="document">
-		Utilize polished templates and smart logic rules to send targeted emails based on specific response combinations.
+	<Card title="Zero-Login QR Scanner & Attendance" icon="approve-check">
+		Generate stateless HMAC-SHA256 `{QR Code}` tickets and send personalized staff authorization links (`{Full Scanner}`) for camera or manual zero-login browser scanning.
 	</Card>
-	<Card title="Auto-Responders & Campaigns" icon="email">
-		Automatically trigger instant confirmation emails or launch proactive bulk email broadcasts to your collected leads list.
+	<Card title="Dual Real-Time Attendance Receipts" icon="email">
+		Every check-in and check-out event dispatches an instant status confirmation email to the attendee and an activity log email to the staff member (CC'd to Form Admin).
 	</Card>
-	<Card title="Bypass Daily Limits (Custom SMTP)" icon="setting">
-		Connect custom SMTP (Gmail™, Amazon SES, SendGrid). Send up to 500 emails/day with free Gmail™ SMTP or scale to 10,000+ with Amazon SES.
+	<Card title="Full-Featured Sheets Campaign Hub" icon="document">
+		Connect via the Google Sheets™ add-on using 1 connection slot to manage multi-tab forms, filter rows, and dispatch targeted bulk email campaigns.
 	</Card>
-	<Card title="Preserve Personal SMTP Quota" icon="shield">
-		Uses dedicated system delivery for internal team notifications, saving 100% of your personal SMTP quota for client communications.
+	<Card title="Custom SMTP & UI Protection" icon="setting">
+		Connect Gmail™ App Passwords, Amazon SES, SendGrid, or Mailgun. Unlocks full template, routing, and campaign capabilities once tested and verified.
 	</Card>
-	<Card title="Analytics & Compliance Ready" icon="open-book">
-		Personalize emails with dynamic `{tags}`, ensure compliance with automated unsubscribe links, and track live delivery performance.
+	<Card title="Multi-Condition Logic & Privacy" icon="shield">
+		Evaluate multiple response fields simultaneously, enforce audience security isolation, and manage 3 granular unsubscribe scopes for full compliance.
 	</Card>
 </CardGrid>
 
-## Custom SMTP Setup & Quota Optimization
+---
 
-Standard Google Forms™ email triggers rely on your default Google Workspace daily sending quotas, which can severely limit outreach for high-volume forms. FormMail Hub resolves this constraint by enabling custom **SMTP integration**, providing complete control over email delivery, sender identity, and daily volume capacity.
+## Core Ecosystem Workflows
 
-### High-Volume Email Delivery Solutions
+Explore step-by-step guides and tutorials tailored to your organizational use case:
 
-Connecting your own SMTP server allows you to send thousands of automated auto-responders daily without encountering standard Google Workspace limits:
+<CardGrid>
+	<LinkCard
+		title="QR Event Check-in & Ticketing"
+		description="Deploy stateless QR tickets, zero-login staff scanner links, camera-free verification, and live attendance badges."
+		href="/tutorials/qr-event-ticketing/"
+	/>
+	<LinkCard
+		title="Employee Self-Service Clock-In"
+		description="Set up internal staff attendance tracking where employees scan their personal QR badge using authorized devices."
+		href="/tutorials/employee-self-service-attendance/"
+	/>
+	<LinkCard
+		title="Broadcast Campaigns & Marketing"
+		description="Filter Google Sheets response data and launch synchronized bulk email marketing campaigns."
+		href="/guides/email-campaigns/"
+	/>
+	<LinkCard
+		title="Custom SMTP & Quota Scaling"
+		description="Configure Google App Passwords, Amazon SES, or SendGrid to bypass Workspace sending limits and unlock UI tabs."
+		href="/guides/smtp-setup/"
+	/>
+</CardGrid>
 
-- **Free Gmail™ SMTP Integration:** Increase standard sending capacity up to **500 custom emails per day** using your own Gmail™ credentials.
-- **Transactional Email Providers (Amazon SES, SendGrid, Mailgun):** Scale seamless transactional email delivery up to **10,000+ emails per day** with enterprise-grade deliverability and domain verification.
-- **Custom Domain Branding:** Send emails directly from your corporate email domain (e.g., `support@yourcompany.com`) rather than default Google Apps scripts addresses.
+---
 
-### Intelligent Dual-Routing Architecture
+## Architectural Breakdown: 4 Ingestion Bridges & 1 Cloud Platform
 
-To maximize your sending quota efficiency, FormMail Hub separates internal operations from external client communication:
+FormMail Hub decouples event capture in Google Workspace from backend delivery and state execution:
 
-1. **Internal Notification Routing:** Form Mail Hub handles team and administrator submission alerts through a dedicated delivery infrastructure. This ensures zero consumption of your personal or business SMTP daily quota.
-2. **Client Auto-Responder Routing:** Customer-facing confirmation emails and auto-responder sequences run strictly through your configured SMTP server, guaranteeing 100% of your allocated quota goes directly to client engagement.
+```
++-----------------------------------------------------------------------------------+
+|                        DATA INGESTION BRIDGES (GOOGLE ADD-ONS)                     |
+|  +---------------------------+  +-------------------+  +-----------------------+  |
+|  | Form Confirmation Emails  |  |   Form to Email   |  | Form Notifications    |  |
+|  |     (Forms Add-on)        |  |  (Forms Add-on)   |  |    SMTP (Forms)       |  |
+|  +---------------------------+  +-------------------+  +-----------------------+  |
+|  +-----------------------------------------------------------------------------+  |
+|  |                 FormMail Hub for Google Sheets™ (Add-on)                    |  |
+|  |                (Primary Management Client / Campaign Launchpad)            |  |
+|  +-----------------------------------------------------------------------------+  |
++------------------------------------------+----------------------------------------+
+                                           | Pushes Submission Events & Config Data
+                                           v
++-----------------------------------------------------------------------------------+
+|                   INDEPENDENT CLOUD PLATFORM ENGINE (EXTERNAL)                    |
+|       (High-Performance Event Processing, Rule Evaluation & SMTP Engine)          |
++-----------------------------------------------------------------------------------+
+```
+
+### 1. Ingestion Bridges & Scaling
+- **3 Google Forms Entry Add-ons:** *Form Confirmation Emails*, *Form to Email*, and *Form Notifications SMTP* act strictly as data ingestion bridges pushing submission events to the cloud platform engine.
+- **1 Google Sheets Management Client:** The *FormMail Hub* Google Sheets add-on acts as the primary full-featured management client. A single spreadsheet can host multiple Form Responses tabs, consuming only **1 connection slot** while providing the interface to launch bulk email **Campaigns**.
+
+### 2. Dual Delivery Routing Architecture
+- **Built-in System SMTP:** Strictly restricted to sending internal system alerts (submission notifications, daily activity reports, and SMTP connection error alerts) to the Form Admin and selected Team Members without consuming your personal SMTP quota.
+- **Custom SMTP Relay:** Mandatory for custom email templates, conditional rules, respondent auto-responders, and bulk campaigns. Admins **MUST** configure and test custom SMTP to unlock the UI tabs (*Templates*, *Rules*, *Campaigns*, and *Analytics*).
+
+### 3. Stateful QR Attendance Engine
+- **Atomic Concurrency & 30-Day Rolling TTL:** Scans are processed under Redis key `checkin:{form_id}:{refCode}`, rejecting duplicate check-ins (`409 Conflict`) if already `IN`, and refreshing TTL to 30 days on every state transition.
+- **Camera & Camera-Free Verification:** Staff can scan visual QR codes with their authorized mobile camera or click direct manual verification links (`/qr-verify?t=...`) inside notification emails.
+
+---
+
+## Verified Dynamic Tags Reference
+
+Dynamic tags use single-pass scanning supporting `{Tag}`, `{{Tag}}`, and `${Tag}` enclosure formats:
+
+| Dynamic Tag | Purpose & Output | Audience Scope |
+| :--- | :--- | :--- |
+| `{Question Title}` | Dynamically retrieves the submitted response for any form question field title. | All Templates |
+| `{Form title}` | The official title of the connected Google Form™. | All Templates |
+| `{All Fields}` | Formatted summary table of all form questions and submitted answers. | All Templates |
+| `{Linked Form}` | Direct URL link to the live Google Form™. | All Templates |
+| `{Unsubscribe Link}` | Form-specific automated opt-out link for compliance. | Respondent & Campaign Emails |
+| `{QR Code}` | Stateless QR code ticket image (HMAC-SHA256 signed) + manual verification link (`/qr-verify?t=...`). | Respondent Tickets & Staff Alerts |
+| `{Check-in Scanner}` | Personalized, HMAC-SHA256 signed zero-login staff link (`checkin` mode). | Staff / Team Emails Only |
+| `{Check-out Scanner}` | Personalized, HMAC-SHA256 signed zero-login staff link (`checkout` mode). | Staff / Team Emails Only |
+| `{Full Scanner}` | Personalized, HMAC-SHA256 signed zero-login staff link (`both` mode). | Staff / Team Emails Only |
+
+> **Security Isolation:** Scanner authorization tags (`{Check-in Scanner}`, `{Check-out Scanner}`, `{Full Scanner}`) are populated strictly in staff/team emails and automatically stripped from respondent emails.
+
+---
+
+## Granular Opt-Out & Compliance Scopes
+
+FormMail Hub manages unsubscribes across 3 strict scopes:
+1. **Form-Specific Respondent Unsubscribe:** Clicking `{Unsubscribe Link}` in custom templates or campaigns unsubscribes the respondent strictly from future emails related to that specific Form.
+2. **Form-Specific System Daily Report Unsubscribe:** Unsubscribes Admins or Team Members from daily summary reports for that specific Form only.
+3. **User-Level SMTP Error Alert Unsubscribe:** Stops SMTP failure notification emails across all forms managed by that user account.
 
 ---
 
 ## Official Platform Resources & Support Hub
 
-Explore our official resources to test, deploy, and manage FormMail Hub across your organization:
+Explore our official resources to deploy, configure, and manage FormMail Hub across your organization:
 
 <CardGrid>
 	<Card title="Google Workspace Marketplace" icon="add-document">
-		Install the official add-on directly into Google Forms™ and Google Sheets™ via the [Google Workspace Marketplace Listing](https://workspace.google.com/marketplace/app/formmail_hub/409227874327).
+		Install the official add-on directly into Google Forms™ and Google Sheets™ via the [Marketplace Listing](https://workspace.google.com/marketplace/app/formmail_hub/409227874327).
 	</Card>
 	<Card title="Interactive Live Demo" icon="laptop">
-		Experience automated submit triggers and email notifications firsthand using our interactive [Live Demo Form](https://docs.google.com/forms/d/e/1FAIpQLSc2lkYREd5ePz521uYfBDeumOOoPKeBP87i1aSpwokHdFMIHw/viewform).
+		Experience automated triggers and QR ticketing firsthand using our interactive [Live Demo Form](https://docs.google.com/forms/d/e/1FAIpQLSc2lkYREd5ePz521uYfBDeumOOoPKeBP87i1aSpwokHdFMIHw/viewform).
 	</Card>
-	<Card title="Support & Contact" icon="information">
-		Need assistance with SMTP configuration or custom routing? Reach out to our technical team via [Support & Contact](https://formmail.vietutd.com/contact).
+	<Card title="Technical Support Desk" icon="information">
+		Need assistance with custom SMTP or attendance tracking? Contact our engineering team via [Support & Contact](https://formmail.vietutd.com/contact).
 	</Card>
-	<Card title="Legal & Compliance" icon="shield">
-		Review our enterprise security model in the [Privacy Policy](https://formmail.vietutd.com/privacy-policy) and [Terms of Service](https://formmail.vietutd.com/terms-of-service).
+	<Card title="Security & Compliance" icon="shield">
+		Review our security architecture and terms in the [Privacy Policy](https://formmail.vietutd.com/privacy-policy) and [Terms of Service](https://formmail.vietutd.com/terms-of-service).
 	</Card>
 </CardGrid>
 
 ---
 
-*Google Forms™ and Gmail™ are trademarks of Google LLC.*
+*Google Forms™, Google Sheets™, and Gmail™ are trademarks of Google LLC.*
