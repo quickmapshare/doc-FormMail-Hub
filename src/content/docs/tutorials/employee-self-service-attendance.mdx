@@ -1,0 +1,280 @@
+---
+title: Employee Self-Service Attendance & QR Clock-In Guide
+description: Learn how to set up an internal employee attendance and clock-in/clock-out system by combining Team Member scanner authorization with individual respondent QR tickets in FormMail Hub.
+---
+
+This step-by-step tutorial guides Administrators through configuring an internal **Employee Self-Service Attendance & Clock-In System** using **FormMail Hub**.
+
+By combining Team Member authorization with respondent QR code passes, organizations can empower employees to check themselves in and out on arrival or departure. The platform handles state changes in real-time, sending instant digital attendance receipts to the employee while generating audit log emails for management—all without requiring passwords or third-party hardware.
+
+To test form submission triggers before setting up your employee tracking system, explore our interactive [Live Demo Form](https://docs.google.com/forms/d/e/1FAIpQLSc2lkYREd5ePz521uYfBDeumOOoPKeBP87i1aSpwokHdFMIHw/viewform) or install the add-on directly via the [Google Workspace Marketplace Listing](https://workspace.google.com/marketplace/app/formmail_hub/409227874327).
+
+---
+
+## 1. How the Internal Self-Service Attendance Model Works
+
+The internal self-service attendance workflow operates on a dual-role pattern:
+
+```
++-----------------------------------------------------------------------------------+
+|                            ADMINISTRATION & INITIAL SETUP                          |
+|  1. Admin configures and tests Custom SMTP to unlock feature tabs                 |
+|  2. Admin adds employees as Team Members (generating {Full Scanner} links)         |
+|  3. Employees complete the registration Form to receive individual {QR Code} passes|
++-----------------------------------------------------------------------------------+
+                                          |
+                                          v
++-----------------------------------------------------------------------------------+
+|                        EMPLOYEE DEVICE AUTHORIZATION                              |
+|  Employee opens {Full Scanner} authorization link in mobile browser              |
+|  -> Sets secure 24-hour cookie on device (/qr-auth?t=...)                         |
++-----------------------------------------------------------------------------------+
+                                          |
+                                          v
++-----------------------------------------------------------------------------------+
+|                      SELF-SERVICE SCAN & ATOMIC STATE ENGINE                      |
+|  Employee scans their own {QR Code} ticket using their authorized browser         |
+|  -> Engine updates Redis state key: checkin:{form_id}:{refCode}                   |
+|  -> Sets status to IN or OUT and extends TTL to 30 days (2,592,000s)              |
++-----------------------------------------------------------------------------------+
+                                          |
+                                          v
++-----------------------------------------------------------------------------------+
+|                    AUTOMATED DUAL REAL-TIME RECEIPT DISPATCH                      |
+|  Receipt 1: Instant attendance confirmation email sent to Employee                |
+|  Receipt 2: Activity audit log email sent to Employee & CC'd to Form Admin        |
++-----------------------------------------------------------------------------------+
+```
+
+### Key Workflow Components:
+1. **Dual Role Assignment:** Every employee acts as both a **Team Member** (authorized scanner operator) and a **Form Respondent** (individual pass holder).
+2. **Zero-Login Authentication:** Employees authorize their mobile devices using cryptographically signed authorization links (`{Full Scanner}`).
+3. **Stateless Ticket Verification:** Each employee receives a secure `{QR Code}` ticket signed with HMAC-SHA256 containing their identity and reference code.
+4. **Stateful Attendance Tracking:** Scans update explicit ticket state (`IN` or `OUT`) in Redis with automatic 30-day rolling TTL retention.
+5. **Dual Audit Email Receipts:** Every scan immediately triggers confirmation receipts for both the employee and management.
+
+---
+
+## 2. Prerequisites: Custom SMTP Configuration & UI Unlock
+
+Before designing templates or generating scanner authorization links, custom SMTP must be configured and verified.
+
+> **Warning: Custom SMTP Prerequisite & UI Lock State**  
+> Admins **MUST** configure and test custom SMTP settings under **Settings > SMTP Config** before unlocking Templates, Rules, Campaigns, or Analytics. Until custom SMTP is active, these feature tabs remain strictly locked in the FormMail Hub user interface. Built-in System SMTP is strictly restricted to administrative system alerts and cannot be used for dynamic employee email templates.
+
+### Quick Custom SMTP Setup Steps:
+1. Open **FormMail Hub** from Google Forms™ or Google Sheets™.
+2. Navigate to **Settings > SMTP Config**.
+3. Choose your provider (e.g., **Gmail™ App Password**, **Amazon SES**, **SendGrid**, **Mailgun**, or custom corporate SMTP).
+4. Enter your connection credentials and click **Test Connection**.
+5. Once verified with a success response, all feature tabs unlock immediately.
+
+---
+
+## 3. Step 1: Add Employees as Team Members
+
+To grant employees scanning authority, the Primary Connector (Form Admin) must add each employee to the team member roster.
+
+> **Note on Permissions:** Only the **first user among the form's editors who connects that form to FormMail Hub** is granted exclusive rights to configure settings, templates, rules, and triggers. Team members are added strictly so the Admin can select who receives submission alerts and who is authorized to act as staff scanners. Team members **DO NOT** have edit or configuration permissions.
+
+### Admin Setup Steps:
+1. In the FormMail Hub sidebar, navigate to **Team Members**.
+2. Enter the employee's work email address (e.g., `alex.smith@yourcompany.com`).
+3. Click **Add Team Member**.
+4. Repeat for all employees participating in self-service attendance tracking.
+
+---
+
+## 4. Step 2: Create the Employee Registration & Pass Template
+
+Next, create an email template that delivers the individual `{QR Code}` ticket pass to employees when they complete or are enrolled in the attendance form.
+
+### Dynamic Tag Snippet Cards
+
+Use these explicit dynamic tags in your employee ticket template:
+
+```text
+{QR Code}
+```
+*Generates a secure, stateless QR code ticket pass signed with HMAC-SHA256.*
+
+```text
+{Form title}
+```
+*Displays the name of your company attendance form (e.g., "Daily Shift Clock-In").*
+
+```text
+{Unsubscribe Link}
+```
+*Provides a form-specific opt-out link for compliance.*
+
+### Sample Employee Pass Email Template:
+1. Navigate to **Email Templates** > **+ Create New Template**.
+2. Set **Template Name**: `Employee Attendance Badge Pass`.
+3. Set **Subject Line**: `Your Digital Attendance Pass - {Form title}`.
+4. Paste the following HTML layout into the template editor:
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: Arial, sans-serif; background-color: #f4f6f9; color: #1e293b; padding: 20px; }
+    .card { max-width: 500px; margin: 0 auto; background: #ffffff; border-radius: 8px; padding: 24px; border: 1px solid #cbd5e1; }
+    .header { text-align: center; border-bottom: 2px solid #2563eb; padding-bottom: 12px; margin-bottom: 20px; }
+    .qr-container { text-align: center; background: #f8fafc; padding: 20px; border-radius: 6px; margin: 16px 0; }
+    .footer { text-align: center; font-size: 11px; color: #64748b; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="header">
+      <h2 style="color: #1e40af; margin: 0;">Employee Digital Pass</h2>
+      <p style="margin: 4px 0 0 0; font-size: 14px; color: #475569;">{Form title}</p>
+    </div>
+    <p>Hello <strong>{First Name}</strong>,</p>
+    <p>Below is your permanent digital attendance pass. Keep this email easily accessible on your mobile phone for daily clock-in and clock-out scanning.</p>
+    
+    <div class="qr-container">
+      {QR Code}
+      <p style="font-size: 12px; color: #64748b; margin-top: 8px;">Employee ID / Ref Pass: {Form title}</p>
+    </div>
+
+    <p style="font-size: 13px; color: #334155;">To clock in or clock out, scan this QR code using your authorized mobile browser scanner.</p>
+    
+    <div class="footer">
+      <p>Company Internal Attendance System | Powered by FormMail Hub</p>
+      <p><a href="{Unsubscribe Link}">Unsubscribe from notifications</a></p>
+    </div>
+  </div>
+</body>
+</html>
+```
+
+5. Click **Save Template**.
+6. Create an **Email Rule** that triggers this template automatically when an employee registers or submits the form.
+
+---
+
+## 5. Step 3: Issue Scanner Authorization Links to Employees
+
+To allow employees to scan their own QR passes, you must send them a personalized staff scanner authorization link.
+
+### Scanner Authorization Tag Reference
+
+| Dynamic Tag | Mode | Functionality |
+| :--- | :--- | :--- |
+| `{Check-in Scanner}` | `checkin` | Authorizes device exclusively for arrival clock-in scans. |
+| `{Check-out Scanner}` | `checkout` | Authorizes device exclusively for departure clock-out scans. |
+| `{Full Scanner}` | `both` | **Recommended for Employees:** Authorizes device for both clock-in and clock-out scanning. |
+
+> **Security & Audience Isolation Rule:** Scanner authorization tags (`{Check-in Scanner}`, `{Check-out Scanner}`, `{Full Scanner}`) are populated **strictly in team member email notifications**. To guarantee security isolation, scanner links are automatically stripped from standard respondent emails.
+
+### Staff Authorization Notification Template:
+1. Create a internal team notification template titled `Employee Scanner Link Dispatch`.
+2. Subject: `ACTION REQUIRED: Authorize Your Attendance Scanner Device`.
+3. Body Content:
+
+```text
+Hello {First Name},
+
+To enable self-service attendance scanning on your mobile phone, click your personalized zero-login authorization link below:
+
+{Full Scanner}
+
+IMPORTANT INSTRUCTIONS:
+1. Open or copy this link directly in the exact mobile browser app (e.g., Chrome or Safari) you will use to scan your QR badge.
+2. Authorization sets a secure browser cookie valid for 24 hours.
+3. Once authorized, bookmark the scanning page for daily access.
+```
+
+> **Warning: Browser Session Isolation Note**  
+> Because scanner authorization relies on a secure cookie set during link activation (`/qr-auth?t=...`), opening the link inside an in-app email previewer (such as Gmail's or Outlook's built-in webview) will **NOT** authorize external browsers (such as default Safari, mobile Chrome, or a standalone camera app). Employees **MUST** copy and paste the Auth link directly into the exact browser application used for scanning QR codes.
+
+---
+
+## 6. Step 4: Self-Service Clock-In & Clock-Out Workflow
+
+Once an employee activates their authorization link on their mobile device browser, they can complete clock-in and clock-out actions seamlessly:
+
+```
+[ Employee Arrival ]
+         |
+         v
+Employee opens authorized mobile browser (/qr-verify interface)
+         |
+         v
+Employee points phone camera at their digital {QR Code} badge
+         |
+         v
+System verifies signature & displays Live Attendance Status Badge:
+   - ⚪ Status: Not Checked-In Yet  (Initial)
+   - 🟢 Status: Checked-In         (Active Shift)
+   - 🚪 Status: Checked-Out        (Shift Completed)
+         |
+         v
+Employee taps 'Check-In' or 'Check-Out' button
+         |
+         v
+Backend processing via /api/qr/action:
+   - Validates HMAC-SHA256 payload & scanner permissions
+   - Updates state in Redis key checkin:{form_id}:{refCode}
+   - Extends record TTL to 30 days (2,592,000 seconds)
+         |
+         v
+Automated Dual Real-Time Email Receipts Dispatched (Rule 15)
+```
+
+### Atomic State Engine Rules & Concurrency Control
+When an employee scans their pass, the backend (`/api/qr/action`) enforces atomic state transitions:
+
+- **Clock-In Transition:** 
+  - Validates current state. If the status is already `IN`, the system rejects duplicate clock-ins with a `409 Conflict` status code and alerts the user on screen.
+  - If valid, sets status to `IN`, records the operator email and UTC timestamp, and refreshes the Redis key TTL to **30 days (2,592,000 seconds)**.
+- **Clock-Out Transition:**
+  - Validates that the ticket is currently in `IN` state. If the status is not `IN`, clock-out is denied.
+  - Updates status to `OUT`, records the operator email and UTC timestamp, and refreshes the Redis key TTL to **30 days** without deleting the historical record.
+
+---
+
+## 7. Step 5: Automated Dual Real-Time Receipts (Rule 15)
+
+Upon every successful self-service clock-in or clock-out event, FormMail Hub instantly dispatches two independent real-time email notifications:
+
+### Receipt 1: Employee Attendance Receipt
+Dispatched immediately to the employee (`{Email Address}`):
+- **Subject:** `Attendance Confirmation: {Form title}`
+- **Payload:** Updated status (`Checked In` or `Checked Out`), Event/Form Name, Reference Pass ID, and exact timestamp.
+
+### Receipt 2: Management Audit Log Email
+Dispatched immediately to the employee's scanner identity and **CC'd directly to the Form Admin**:
+- **Recipient:** Scanning Employee (CC: Primary Connector / Form Admin).
+- **Payload:** Complete audit trail recording employee identity, ticket reference code, operator identity, action mode (`checkin`/`checkout`), and scan timestamp.
+
+---
+
+## 8. Troubleshooting & Operational FAQ
+
+| Symptom / Error | Root Cause | Technical Remediation |
+| :--- | :--- | :--- |
+| **Feature tabs locked in UI** | Custom SMTP not configured or connection test failed. | Navigate to **Settings > SMTP Config**, enter custom SMTP credentials (e.g., Gmail App Password or SES), and click **Test Connection**. |
+| **Scanner tag appears blank in email** | Scanner tags included in respondent emails instead of team emails. | `{Check-in Scanner}`, `{Check-out Scanner}`, and `{Full Scanner}` tags are populated **strictly in team member notifications** and stripped from respondent emails for security isolation. |
+| **"Unauthorized Device" error on scan** | Browser session isolation mismatch. | Opening the Auth link in an in-app email previewer sets the cookie in the previewer, not the default browser. Copy the Auth link directly into Safari or Chrome. |
+| **Duplicate scan rejected (`409 Conflict`)** | Employee attempted to clock in while already marked `IN`. | The employee is already clocked in (`🟢 Status: Checked-In`). To clock out, select the **Check-Out** action button on screen. |
+| **Scanner link expired** | 24-hour authorization token elapsed. | Re-send the scanner authorization email to generate a fresh 24-hour `/qr-auth?t=...` link for the employee. |
+
+---
+
+## 9. Official Platform Resources & Support
+
+For additional guidance on central deployments or enterprise domain configuration, access our official resources:
+
+- **Google Workspace Marketplace Listing:** [Install FormMail Hub](https://workspace.google.com/marketplace/app/formmail_hub/409227874327)
+- **Interactive Live Demo:** [Test Live Submission Triggers](https://docs.google.com/forms/d/e/1FAIpQLSc2lkYREd5ePz521uYfBDeumOOoPKeBP87i1aSpwokHdFMIHw/viewform)
+- **Technical Support & Help Desk:** [Contact Support](https://formmail.vietutd.com/contact)
+- **Enterprise Legal Policies:** Review our [Privacy Policy](https://formmail.vietutd.com/privacy-policy) and [Terms of Service](https://formmail.vietutd.com/terms-of-service)
+
+---
+
+*Google Forms™, Google Sheets™, Google Workspace™, and Gmail™ are trademarks of Google LLC.*
