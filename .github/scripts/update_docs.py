@@ -6,7 +6,7 @@ import re
 from google import genai
 
 print("========================================")
-print("🚀 AI MULTI-PAGE DOCS BUILDER & EXPANDER v2.0")
+print("🚀 AI MULTI-PAGE DOCS BUILDER & EXPANDER v2.5 (WITH CREATIVE HOMEPAGE ENGINE)")
 
 MODEL_NAME = os.environ.get("GEMINI_MODEL", "gemini-3.7-flash") 
 print(f"🤖 Gemini Model Engine: {MODEL_NAME}")
@@ -83,7 +83,7 @@ if os.path.exists(docs_dir):
                 with open(file_path, "r", encoding="utf-8") as f:
                     existing_docs[file_path] = f.read()
 
-# 3. THUẬT TOÁN QUÉT MÃ NGUỒN THÔNG MINH (SMART TARGETING)
+# 3. THUẬT TOÁN QUÉT MÃ NGUỒN THÔNG MINH
 source_files_content = {}
 keywords = ['qr', 'checkin', 'checkout', 'template', 'campaign', 'smtp', 'team', 'auth']
 
@@ -109,10 +109,10 @@ for s_file in selected_sources:
 
 diff_context = code_diff if code_diff else "NO RECENT CODE DIFF."
 
-# 4. PROMPT TIÊN TIẾN - ĐÃ ESCAPE HOÀN TOÀN CÁC DẤU NGOẶC NHỌN LITERAL
+# 4. PROMPT CẬP NHẬT TRANG CHỦ SÁNG TẠO VÀ BÁM SÁT 24 RULES
 prompt = f"""
 You are an elite Technical Author & User Experience Strategist for 'FormMail Hub'.
-Your goal is to ensure documentation is not only 100% accurate according to code & ground truths, but also exceptionally accessible, practical, and beginner-friendly for non-technical users.
+Your goal is to maintain the documentation suite, ensuring it is 100% compliant with Ground Truths while delivering an engaging, professional, and accessible experience for non-technical users.
 
 ABSOLUTE PRODUCT RULES (GROUND TRUTH - NEVER VIOLATE THESE):
 {product_rules}
@@ -126,44 +126,69 @@ RAW CODE DIFF (IF ANY):
 CURRENT PUBLISHED DOCUMENTATION FILES:
 {json.dumps(existing_docs, indent=2)}
 
-DOCUMENTATION EXPANSION & ARCHITECTURE INSTRUCTIONS:
+DOCUMENTATION EXPANSION & HOMEPAGE ARCHITECTURE INSTRUCTIONS:
+
+TASK 0 (MANDATORY CREATIVE HOMEPAGE MAINTENANCE - `src/content/docs/index.mdx`):
+- YOU MUST ALWAYS UPDATE or REVIEW `src/content/docs/index.mdx` to reflect the latest platform capabilities according to the 24 Ground Truths.
+- **Creative & Visual Structure**: Make the homepage modern, clean, and inspiring. Use Starlight / MDX components if applicable (or standard MDX elements: Hero section, Card / CardGrid components, callouts, and key feature highlights).
+- **Core Narrative**: Highlight FormMail Hub's architecture—Independent Cloud Platform Engine bypassing Google limits, 4 Google Ingestion Bridges (3 Forms Add-ons + 1 Sheets Client), Zero-Login QR Scanner Auth, Dual Attendance Receipts, Bulk Campaign Engine, Custom SMTP, and Unsubscribe Scopes.
+- **Quick Links**: Provide clear entry points/cards leading to tutorials (`/tutorials/qr-event-checkin-guide`, `/guides/smtp-setup`, `/guides/campaigns`, etc.) and official links (Marketplace, Demo Form, Support).
 
 TASK 1 (PROACTIVE USER-CENTRIC TUTORIAL & GUIDE CREATION):
-Analyze existing documentation gaps. If key features lack step-by-step end-user guides, CREATE NEW or EXPAND existing guides under `src/content/docs/tutorials/` or `src/content/docs/guides/`. Focus on high-value end-user scenarios such as:
-- **Event Management & QR Ticketing**: Step-by-step setup from embedding {{QR Code}} in attendee tickets to issuing Staff Scanner Links ({{Check-in Scanner}}, {{Check-out Scanner}}, {{Full Scanner}}) and processing live attendance.
-- **Dual Email Attendance Receipts**: Explaining how attendees receive check-in tickets while staff get immediate log audit receipts.
-- **Bulk Email Campaigns**: How to filter form responses in Google Sheets and dispatch mass emails safely using custom SMTP.
-- **SMTP Verification & Troubleshooting**: How to resolve lock states in the UI by properly configuring custom SMTP credentials.
+Analyze documentation gaps. Create or expand guides under `src/content/docs/tutorials/` or `src/content/docs/guides/` for key user workflows (QR Ticketing, Attendance receipts, Campaigns, SMTP setup).
 
 TASK 2 (USER ACCESSIBILITY & READABILITY STANDARDS):
-Ensure every guide follows these user-friendly formatting principles:
-- **Direct Step-by-Step Instructions**: Use clear numbered lists (1, 2, 3) for setup procedures.
-- **Visual Callout Boxes**: Use standard Markdown callouts (`> **Tip:**`, `> **Warning:**`, `> **Note:**`) to highlight crucial permissions or staff scanner security rules.
-- **Dynamic Tag Snippet Cards**: Display exact dynamic tag names in explicit code blocks (e.g., `{{Check-in Scanner}}`) so users can copy-paste them easily.
-- **Troubleshooting & FAQs**: Conclude technical guides with a quick diagnostic table or FAQ section addressing common operational mistakes.
+Use step-by-step numbered steps, standard Markdown callouts (`> **Tip:**`, `> **Warning:**`), code cards for tags (e.g. `{{Check-in Scanner}}`), and FAQs/Troubleshooting tables.
 
 TASK 3 (STRICT LINK WEAVING & GROUND TRUTH COMPLIANCE):
-- Contextually weave official links in every created or updated doc:
-  * Google Workspace Marketplace: https://workspace.google.com/marketplace/app/formmail_hub/409227874327
-  * Live Demo Form: https://docs.google.com/forms/d/e/1FAIpQLSc2lkYREd5ePz521uYfBDeumOOoPKeBP87i1aSpwokHdFMIHw/viewform
-  * Support & Contact: https://formmail.vietutd.com/contact
-  * Privacy & Terms: https://formmail.vietutd.com/privacy-policy & https://formmail.vietutd.com/terms-of-service
-- If ALL published docs are already complete, perfectly clear, highly accessible, and 100% compliant with ground truths, return: `@@@NO_UPDATES_NEEDED@@@`.
+- Contextually weave official links in created/updated docs (Marketplace, Demo Form, Support, Privacy, Terms).
+- If ALL docs including `src/content/docs/index.mdx` are completely up-to-date, visually appealing, creative, and 100% aligned with ground truths, return: `@@@NO_UPDATES_NEEDED@@@`.
 
 STRICT FORMAT DELIMITERS (DO NOT USE JSON):
 
-@@@FILE_PATH: src/content/docs/tutorials/qr-event-checkin-guide.mdx
+@@@FILE_PATH: src/content/docs/index.mdx
 @@@CONTENT:
 ---
-title: Complete Guide to Event Check-in & QR Code Ticketing
-description: Learn how to generate automated QR tickets and equip event staff with zero-login scanner links.
+title: FormMail Hub Documentation & Knowledge Base
+description: The complete guide to automated email notifications, QR ticket attendance tracking, and bulk campaigns for Google Forms & Sheets.
+template: splash
+hero:
+  tagline: Enterprise-grade cloud notification & attendance engine for Google Forms & Sheets.
+  actions:
+    - text: Get Started
+      link: /tutorials/qr-event-checkin-guide/
+      icon: right-arrow
+    - text: Try Live Demo
+      link: https://docs.google.com/forms/d/e/1FAIpQLSc2lkYREd5ePz521uYfBDeumOOoPKeBP87i1aSpwokHdFMIHw/viewform
+      icon: external
+      variant: minimal
 ---
-(Detailed, beautifully formatted guide content here...)
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## Key Ecosystem Features
+
+<CardGrid stack>
+  <Card title="Independent Cloud Engine" icon="rocket">
+    Bypasses native Google Workspace execution limits and trigger constraints with real-time external queue processing.
+  </Card>
+  <Card title="Zero-Login QR Scanner" icon="approve-check">
+    Equip staff with HMAC-SHA256 signed links ({'{Check-in Scanner}'}) for instant camera or manual browser check-ins without login friction.
+  </Card>
+  <Card title="Dual Real-Time Receipts" icon="email">
+    Automatically dispatches status confirmation emails to attendees and detailed audit logs to event staff upon every check-in/out.
+  </Card>
+  <Card title="Google Sheets Campaign Hub" icon="document">
+    Launch targeted bulk email campaigns directly from your responses sheet using customizable filters and templates.
+  </Card>
+</CardGrid>
+
+(Additional rich markdown content, guides index, and official links...)
 @@@END_FILE
 """
 
 try:
-    print("⏳ Đang gửi dữ liệu cho AI phân tích & biên soạn bài viết...")
+    print("⏳ Đang gửi dữ liệu cho AI phân tích, thiết kế Trang Chủ & hoàn thiện bài viết...")
     response = client.models.generate_content(
         model=MODEL_NAME,
         contents=prompt
@@ -193,7 +218,7 @@ try:
 
     if not docs_to_update:
         if "@@@NO_UPDATES_NEEDED@@@" in cleaned_text:
-            print("✅ AI BÁO CÁO: Tài liệu hiện tại đã đầy đủ, đạt chuẩn tiếp cận người dùng và khớp 100% Ground Truth.")
+            print("✅ AI BÁO CÁO: Trang chủ và toàn bộ tài liệu đã đạt chuẩn sáng tạo, trực quan và khớp 100% Ground Truth.")
             sys.exit(0)
         else:
             print("❌ LỖI: AI không trả về block nội dung hợp lệ nào.")
@@ -219,7 +244,7 @@ try:
         with open(target_path, "w", encoding="utf-8") as f:
             f.write(content.strip())
             
-        print(f"✅ Đã ghi nhận/Mở rộng bài viết: {target_path}")
+        print(f"✅ Đã ghi nhận/Cập nhật file: {target_path}")
 
 except Exception as e:
     print(f"❌ LỖI khi thực thi script: {e}")
