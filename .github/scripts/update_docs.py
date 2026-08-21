@@ -164,7 +164,7 @@ hero:
       variant: minimal
 ---
 
-import { Card, CardGrid } from '@astrojs/starlight/components';
+import {{ Card, CardGrid }} from '@astrojs/starlight/components';
 
 ## Key Ecosystem Features
 
@@ -173,7 +173,7 @@ import { Card, CardGrid } from '@astrojs/starlight/components';
     Bypasses native Google Workspace execution limits and trigger constraints with real-time external queue processing.
   </Card>
   <Card title="Zero-Login QR Scanner" icon="approve-check">
-    Equip staff with HMAC-SHA256 signed links ({'{Check-in Scanner}'}) for instant camera or manual browser check-ins without login friction.
+    Equip staff with HMAC-SHA256 signed links ({{Check-in Scanner}}) for instant camera or manual browser check-ins without login friction.
   </Card>
   <Card title="Dual Real-Time Receipts" icon="email">
     Automatically dispatches status confirmation emails to attendees and detailed audit logs to event staff upon every check-in/out.
