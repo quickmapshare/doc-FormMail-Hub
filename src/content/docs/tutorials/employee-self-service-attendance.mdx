@@ -19,8 +19,9 @@ The internal self-service attendance workflow operates on a dual-role pattern:
 +-----------------------------------------------------------------------------------+
 |                            ADMINISTRATION & INITIAL SETUP                          |
 |  1. Admin configures and tests Custom SMTP to unlock feature tabs                 |
-|  2. Admin adds employees as Team Members (generating {Full Scanner} links)         |
-|  3. Employees complete the registration Form to receive individual {QR Code} passes|
+|  2. Admin enables "Limit to 1 response" in Google Forms Settings (if 1 pass/user)  |
+|  3. Admin adds employees as Team Members (generating {Full Scanner} links)         |
+|  4. Employees complete the registration Form to receive individual {QR Code} passes|
 +-----------------------------------------------------------------------------------+
                                           |
                                           v
@@ -48,10 +49,11 @@ The internal self-service attendance workflow operates on a dual-role pattern:
 
 ### Key Workflow Components:
 1. **Dual Role Assignment:** Every employee acts as both a **Team Member** (authorized scanner operator) and a **Form Respondent** (individual pass holder).
-2. **Zero-Login Authentication:** Employees authorize their mobile devices using cryptographically signed authorization links (`{Full Scanner}`).
-3. **Stateless Ticket Verification:** Each employee receives a secure `{QR Code}` ticket signed with HMAC-SHA256 containing their identity and reference code.
-4. **Stateful Attendance Tracking:** Scans update explicit ticket state (`IN` or `OUT`) in Redis with automatic 30-day rolling TTL retention.
-5. **Dual Audit Email Receipts:** Every scan immediately triggers confirmation receipts for both the employee and management.
+2. **Single Ticket Enforcement:** Native single-pass restrictions per respondent are enforced directly at the form entry point by enabling **"Limit to 1 response"** in Google Forms Settings.
+3. **Zero-Login Authentication:** Employees authorize their mobile devices using cryptographically signed authorization links (`{Full Scanner}`).
+4. **Stateless Ticket Verification:** Each employee receives a secure `{QR Code}` ticket signed with HMAC-SHA256 containing their identity and reference code (`refCode`).
+5. **Stateful Attendance Tracking:** Scans update explicit ticket state (`IN` or `OUT`) under Redis key `checkin:{form_id}:{refCode}` with automatic 30-day rolling TTL retention.
+6. **Dual Audit Email Receipts:** Every scan immediately triggers confirmation receipts for both the employee and management (Rule 15).
 
 ---
 
@@ -71,13 +73,20 @@ Before designing templates or generating scanner authorization links, custom SMT
 
 ---
 
-## 3. Step 1: Add Employees as Team Members
+## 3. Step 1: Add Employees as Team Members & Enforce Single Ticket Limit
 
-To grant employees scanning authority, the Primary Connector (Form Admin) must add each employee to the team member roster.
+To grant employees scanning authority and prevent duplicate registration tickets:
 
 > **Note on Permissions:** Only the **first user among the form's editors who connects that form to FormMail Hub** is granted exclusive rights to configure settings, templates, rules, and triggers. Team members are added strictly so the Admin can select who receives submission alerts and who is authorized to act as staff scanners. Team members **DO NOT** have edit or configuration permissions.
 
-### Admin Setup Steps:
+### Form Configuration (Single Pass Restriction):
+If you want to ensure each employee receives strictly **one digital attendance ticket**:
+1. Open your Google Form in edit mode.
+2. Go to **Settings > Responses**.
+3. Toggle ON **"Limit to 1 response"** (requires respondents to sign in to Google).
+4. Save settings.
+
+### Adding Team Members in FormMail Hub:
 1. In the FormMail Hub sidebar, navigate to **Team Members**.
 2. Enter the employee's work email address (e.g., `alex.smith@yourcompany.com`).
 3. Click **Add Team Member**.
@@ -96,7 +105,7 @@ Use these explicit dynamic tags in your employee ticket template:
 ```text
 {QR Code}
 ```
-*Generates a secure, stateless QR code ticket pass signed with HMAC-SHA256.*
+*Generates a secure, stateless QR code ticket pass signed with HMAC-SHA256 containing reference ID.*
 
 ```text
 {Form title}
@@ -133,12 +142,12 @@ Use these explicit dynamic tags in your employee ticket template:
       <h2 style="color: #1e40af; margin: 0;">Employee Digital Pass</h2>
       <p style="margin: 4px 0 0 0; font-size: 14px; color: #475569;">{Form title}</p>
     </div>
-    <p>Hello <strong>{First Name}</strong>,</p>
+    <p>Hello,</p>
     <p>Below is your permanent digital attendance pass. Keep this email easily accessible on your mobile phone for daily clock-in and clock-out scanning.</p>
     
     <div class="qr-container">
       {QR Code}
-      <p style="font-size: 12px; color: #64748b; margin-top: 8px;">Employee ID / Ref Pass: {Form title}</p>
+      <p style="font-size: 12px; color: #64748b; margin-top: 8px;">Attendance Ticket: {Form title}</p>
     </div>
 
     <p style="font-size: 13px; color: #334155;">To clock in or clock out, scan this QR code using your authorized mobile browser scanner.</p>
@@ -172,12 +181,12 @@ To allow employees to scan their own QR passes, you must send them a personalize
 > **Security & Audience Isolation Rule:** Scanner authorization tags (`{Check-in Scanner}`, `{Check-out Scanner}`, `{Full Scanner}`) are populated **strictly in team member email notifications**. To guarantee security isolation, scanner links are automatically stripped from standard respondent emails.
 
 ### Staff Authorization Notification Template:
-1. Create a internal team notification template titled `Employee Scanner Link Dispatch`.
+1. Create an internal team notification template titled `Employee Scanner Link Dispatch`.
 2. Subject: `ACTION REQUIRED: Authorize Your Attendance Scanner Device`.
 3. Body Content:
 
 ```text
-Hello {First Name},
+Hello,
 
 To enable self-service attendance scanning on your mobile phone, click your personalized zero-login authorization link below:
 
@@ -227,7 +236,7 @@ Automated Dual Real-Time Email Receipts Dispatched (Rule 15)
 ```
 
 ### Atomic State Engine Rules & Concurrency Control
-When an employee scans their pass, the backend (`/api/qr/action`) enforces atomic state transitions:
+When an employee scans their pass, the backend (`/api/qr/action`) enforces atomic state transitions under Redis key `checkin:{form_id}:{refCode}`:
 
 - **Clock-In Transition:** 
   - Validates current state. If the status is already `IN`, the system rejects duplicate clock-ins with a `409 Conflict` status code and alerts the user on screen.
@@ -243,14 +252,14 @@ When an employee scans their pass, the backend (`/api/qr/action`) enforces atomi
 Upon every successful self-service clock-in or clock-out event, FormMail Hub instantly dispatches two independent real-time email notifications:
 
 ### Receipt 1: Employee Attendance Receipt
-Dispatched immediately to the employee (`{Email Address}`):
+Dispatched immediately to the employee:
 - **Subject:** `Attendance Confirmation: {Form title}`
-- **Payload:** Updated status (`Checked In` or `Checked Out`), Event/Form Name, Reference Pass ID, and exact timestamp.
+- **Payload:** Updated status (`Checked In` or `Checked Out`), Event/Form Name, Reference Pass ID (`refCode`), and exact UTC timestamp.
 
 ### Receipt 2: Management Audit Log Email
 Dispatched immediately to the employee's scanner identity and **CC'd directly to the Form Admin**:
 - **Recipient:** Scanning Employee (CC: Primary Connector / Form Admin).
-- **Payload:** Complete audit trail recording employee identity, ticket reference code, operator identity, action mode (`checkin`/`checkout`), and scan timestamp.
+- **Payload:** Complete audit trail recording employee identity, ticket reference code (`refCode`), operator identity, action mode (`checkin`/`checkout`), and scan timestamp.
 
 ---
 
@@ -259,6 +268,7 @@ Dispatched immediately to the employee's scanner identity and **CC'd directly to
 | Symptom / Error | Root Cause | Technical Remediation |
 | :--- | :--- | :--- |
 | **Feature tabs locked in UI** | Custom SMTP not configured or connection test failed. | Navigate to **Settings > SMTP Config**, enter custom SMTP credentials (e.g., Gmail App Password or SES), and click **Test Connection**. |
+| **Employee generated multiple tickets** | "Limit to 1 response" is disabled in Google Form Settings. | In Google Forms Settings > Responses, turn on **"Limit to 1 response"**. The backend engine tracks each ticket's canonical state under `checkin:{form_id}:{refCode}`. |
 | **Scanner tag appears blank in email** | Scanner tags included in respondent emails instead of team emails. | `{Check-in Scanner}`, `{Check-out Scanner}`, and `{Full Scanner}` tags are populated **strictly in team member notifications** and stripped from respondent emails for security isolation. |
 | **"Unauthorized Device" error on scan** | Browser session isolation mismatch. | Opening the Auth link in an in-app email previewer sets the cookie in the previewer, not the default browser. Copy the Auth link directly into Safari or Chrome. |
 | **Duplicate scan rejected (`409 Conflict`)** | Employee attempted to clock in while already marked `IN`. | The employee is already clocked in (`🟢 Status: Checked-In`). To clock out, select the **Check-Out** action button on screen. |
