@@ -1,6 +1,6 @@
 ---
 title: Dynamic Tags & HTML Email Template Customization Guide
-description: Master FormMail Hub's template engine, dynamic question placeholders, supported enclosure formats, stateless QR code tickets, staff scanner authorization tags, responsive HTML email design, and custom templates.
+description: Master FormMail Hub's template engine, dynamic question placeholders, supported enclosure formats, stateless QR code tickets, camera-free staff verification, staff scanner authorization tags, responsive HTML email design, and custom templates.
 ---
 
 Standard transactional email triggers often feel generic or rigid. **FormMail Hub's Template & Dynamic Variable Engine** empowers you to create beautifully styled, personalized, and mobile-responsive email notifications and auto-responders that reflect your brand identity.
@@ -39,7 +39,7 @@ Below is the strict verified catalog of dynamic tags supported in FormMail Hub t
 | `{All Fields}` | Renders a full summary table of all form questions and submitted answers. | *(Formatted table of all responses)* | All Templates |
 | `{Linked Form}` | Generates the direct URL link to the connected Google Form™. | `https://docs.google.com/forms/...` | All Templates |
 | `{Unsubscribe Link}` | Generates an automated opt-out / unsubscribe URL for CAN-SPAM / GDPR compliance. | `https://hub.formmailhub.com/unsubscribe/...` | Respondent Templates & Campaigns |
-| `{QR Code}` | Generates a secure, stateless QR code ticket image (signed with HMAC-SHA256) for real-time verification. | `[Embedded QR Ticket Image]` | Respondent Auto-responders & Campaigns |
+| `{QR Code}` | Generates a secure, stateless QR code ticket image (signed with HMAC-SHA256) along with a direct manual verification URL (`/qr-verify?t=...`). | `[Embedded QR Ticket Image + Manual Link]` | Respondent Auto-responders, Campaigns & Staff Notifications |
 | `{Check-in Scanner}` | Generates a personalized, HMAC-SHA256 signed zero-login link for staff check-in scanning (`checkin` mode). | `https://hub.formmailhub.com/qr-auth?t=...` | Staff / Team Emails Only |
 | `{Check-out Scanner}` | Generates a personalized, HMAC-SHA256 signed zero-login link for staff check-out scanning (`checkout` mode). | `https://hub.formmailhub.com/qr-auth?t=...` | Staff / Team Emails Only |
 | `{Full Scanner}` | Generates a personalized, HMAC-SHA256 signed zero-login link for staff dual scanning (`both` mode). | `https://hub.formmailhub.com/qr-auth?t=...` | Staff / Team Emails Only |
@@ -54,12 +54,14 @@ Below is the strict verified catalog of dynamic tags supported in FormMail Hub t
 
 ## 3. Stateless QR Code Ticket & Staff Scanner Mechanics
 
-Admins can combine ticket delivery and staff authorization tags to run event ticketing and check-in workflows.
+Admins can combine ticket delivery and staff authorization tags to run event ticketing, check-in, and employee attendance workflows.
 
-### A. Stateless QR Code Tickets (`{QR Code}`)
+### A. Stateless QR Code Tickets & Camera-Free Staff Verification (`{QR Code}`)
 - **Payload & Signing:** The FormMail Hub cloud platform engine generates a secure, stateless QR code ticket embedding submission metadata signed with HMAC-SHA256 encryption.
-- **Verification Endpoint:** Scanning the QR code directs to the `/qr-verify` endpoint.
-- **Real-Time Audit:** The endpoint verifies ticket authenticity, submission timestamp, respondent details, and reference code in real-time without database overhead or external lookups.
+- **Embedded Visual Code & Direct Link:** The `{QR Code}` dynamic tag renders a visual QR code image alongside a direct manual verification URL (`/qr-verify?t=...`).
+- **Dual Audience Usage:** This dynamic block is populated in both respondent tickets and staff/team member notification emails.
+- **Camera-Free Staff Verification:** Authorized staff members can perform attendee check-in either by scanning the visual QR code with their authorized device camera or by clicking the manual verification link directly inside their notification email without requiring a camera scanner.
+- **Real-Time Audit:** The `/qr-verify` endpoint verifies ticket authenticity, submission timestamp, respondent details, and reference code in real-time without database overhead or external lookups.
 
 ### B. Personalized Staff Scanner Links (`{Check-in Scanner}`, `{Check-out Scanner}`, `{Full Scanner}`)
 - **Zero-Login Authentication:** Staff scanner links encode an HMAC-SHA256 signed payload containing form ID, staff email identity, authorized mode (`checkin`, `checkout`, or `both`), and a 24-hour expiration token (`/qr-auth?t=...`).
@@ -153,6 +155,8 @@ Before deploying a template to live users, verify variable substitution and layo
 ## 7. Official Resources & Contact
 
 - **Technical Support:** Submit inquiries via [Support & Contact](https://formmail.vietutd.com/contact).
+- **Marketplace Listing:** Install the official add-on from the [Google Workspace Marketplace Listing](https://workspace.google.com/marketplace/app/formmail_hub/409227874327).
+- **Interactive Sandbox:** Try our [Live Demo Form](https://docs.google.com/forms/d/e/1FAIpQLSc2lkYREd5ePz521uYfBDeumOOoPKeBP87i1aSpwokHdFMIHw/viewform).
 - **Legal Agreements:** Review our [Privacy Policy](https://formmail.vietutd.com/privacy-policy) and [Terms of Service](https://formmail.vietutd.com/terms-of-service).
 
 ---
