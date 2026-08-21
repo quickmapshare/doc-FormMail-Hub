@@ -30,6 +30,9 @@ Before designing email templates or configuring staff scanner routing, custom SM
 
 When an attendee fills out your event registration Google Form™, FormMail Hub can automatically dispatch a personalized confirmation email containing an embedded, cryptographically secure QR code ticket pass.
 
+### Single-Ticket Restriction (Optional)
+If your event requires restricting each respondent to a single ticket, enable **"Limit to 1 response"** in your Google Forms™ Settings. The FormMail Hub backend engine maintains `checkin:{form_id}:{refCode}` as the canonical source of truth for each generated ticket.
+
 ### Dynamic Tag to Use:
 ```text
 {QR Code}
