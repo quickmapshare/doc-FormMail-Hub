@@ -111,10 +111,11 @@ FormMail Hub includes an integrated QR ticketing and attendance tracking system.
 ### Stateless QR Code Tickets
 Admins can insert `{QR Code}` into auto-responders and campaign templates. The cloud platform engine generates a secure, stateless QR code ticket signed with HMAC-SHA256. Scanning the QR code directs to `/qr-verify` for real-time verification of ticket authenticity, submission timestamp, respondent details, and reference code without database overhead.
 
-### Personalized Staff Scanner Links
+### Personalized Staff Scanner Links & Live Status Screen
 When routing notifications to Team Members, the platform generates personalized, cryptographically signed Authorization Links (`{Check-in Scanner}`, `{Check-out Scanner}`, `{Full Scanner}`).
 - **Zero-Login Token:** Link includes an HMAC-SHA256 signed payload encoding form ID, staff email identity, mode (`checkin`, `checkout`, `both`), and a 24-hour expiration token (`/qr-auth?t=...`).
 - **Instant Authorization:** Clicking the link sets a secure cookie on the staff member's device for browser-based scanning without password logins.
+- **Live Attendance Status Badge (`/qr-verify`):** Upon scanning, staff are shown a dynamic status badge (`🟢 Status: Checked-In`, `🚪 Status: Checked-Out`, or `⚪ Status: Not Checked-In Yet`) with timestamps automatically converted to the device's local timezone. Clicking Check-In or Check-Out updates the status badge state immediately on screen.
 
 > **Browser Session Isolation Note:** Because authorization relies on a secure cookie set during link activation, opening the link in one browser (e.g., in-app email viewer) will NOT authorize a different browser (e.g., default mobile browser or standalone camera scanner). Staff must copy and paste the Auth link directly into the exact browser application used for scanning QR codes.
 
