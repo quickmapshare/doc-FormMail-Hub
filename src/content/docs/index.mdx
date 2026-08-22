@@ -21,8 +21,8 @@ hero:
       link: /guides/formmailhub/
       icon: right-arrow
       variant: primary
-    - text: Event Ticketing Tutorial
-      link: /tutorials/qr-event-ticketing/
+    - text: Office PC Kiosk Tutorial
+      link: /tutorials/office-pc-kiosk-attendance/
       icon: rocket
       variant: secondary
     - text: Install Add-on
@@ -40,7 +40,7 @@ import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
 		Operates on a dedicated, external high-performance cloud backend built to overcome Google Workspace execution time limits, sending quotas, and trigger constraints.
 	</Card>
 	<Card title="Zero-Login QR Scanner & Attendance" icon="approve-check">
-		Generate stateless HMAC-SHA256 `{QR Code}` tickets and send personalized staff authorization links (`{Full Scanner}`) for camera or manual zero-login browser scanning.
+		Generate stateless HMAC-SHA256 `{QR Code}` tickets and direct `{Verify Link}` tags alongside personalized staff authorization links (`{Full Scanner}`) for camera or camera-free browser check-in.
 	</Card>
 	<Card title="Dual Real-Time Attendance Receipts" icon="email">
 		Every check-in and check-out event dispatches an instant status confirmation email to the attendee and an activity log email to the staff member (CC'd to Form Admin).
@@ -64,6 +64,11 @@ Explore step-by-step guides and tutorials tailored to your organizational use ca
 
 <CardGrid>
 	<LinkCard
+		title="Office PC Kiosk & Self-Attendance"
+		description="Set up an automated office desktop attendance station or direct self-service check-in with camera & camera-free links."
+		href="/tutorials/office-pc-kiosk-attendance/"
+	/>
+	<LinkCard
 		title="QR Event Check-in & Ticketing"
 		description="Deploy stateless QR tickets, zero-login staff scanner links, camera-free verification, and live attendance badges."
 		href="/tutorials/qr-event-ticketing/"
@@ -82,6 +87,11 @@ Explore step-by-step guides and tutorials tailored to your organizational use ca
 		title="Custom SMTP & Quota Scaling"
 		description="Configure Google App Passwords, Amazon SES, or SendGrid to bypass Workspace sending limits and unlock UI tabs."
 		href="/guides/smtp-setup/"
+	/>
+	<LinkCard
+		title="Dynamic Templates & Variable Tags"
+		description="Design responsive HTML emails with single-pass tags, QR ticket passes, and direct verification links."
+		href="/guides/template-customization/"
 	/>
 </CardGrid>
 
@@ -120,8 +130,8 @@ FormMail Hub decouples event capture in Google Workspace from backend delivery a
 - **Custom SMTP Relay:** Mandatory for custom email templates, conditional rules, respondent auto-responders, and bulk campaigns. Admins **MUST** configure and test custom SMTP to unlock the UI tabs (*Templates*, *Rules*, *Campaigns*, and *Analytics*).
 
 ### 3. Stateful QR Attendance Engine
-- **Atomic Concurrency & 30-Day Rolling TTL:** Scans are processed under Redis key `checkin:{form_id}:{refCode}`, rejecting duplicate check-ins (`409 Conflict`) if already `IN`, and refreshing TTL to 30 days on every state transition.
-- **Camera & Camera-Free Verification:** Staff can scan visual QR codes with their authorized mobile camera or click direct manual verification links (`/qr-verify?t=...`) inside notification emails.
+- **Atomic Concurrency & 30-Day Rolling TTL:** Scans and verification clicks are processed under Redis key `checkin:{form_id}:{refCode}`, rejecting duplicate check-ins (`409 Conflict`) if already `IN`, and refreshing TTL to 30 days on every state transition.
+- **Camera & Camera-Free Verification:** Staff can scan visual QR codes with their authorized mobile camera or click direct manual verification links (`{Verify Link}` / `/qr-verify?t=...`) inside notification emails.
 
 ---
 
@@ -137,6 +147,7 @@ Dynamic tags use single-pass scanning supporting `{Tag}`, `{{Tag}}`, and `${Tag}
 | `{Linked Form}` | Direct URL link to the live Google Form™. | All Templates |
 | `{Unsubscribe Link}` | Form-specific automated opt-out link for compliance. | Respondent & Campaign Emails |
 | `{QR Code}` | Stateless QR code ticket image (HMAC-SHA256 signed) + manual verification link (`/qr-verify?t=...`). | Respondent Tickets & Staff Alerts |
+| `{Verify Link}` | Direct clickable verification URL (`/qr-verify?t=...`) for instant camera-free verification on PC/mobile. | Respondent Tickets & Staff Alerts |
 | `{Check-in Scanner}` | Personalized, HMAC-SHA256 signed zero-login staff link (`checkin` mode). | Staff / Team Emails Only |
 | `{Check-out Scanner}` | Personalized, HMAC-SHA256 signed zero-login staff link (`checkout` mode). | Staff / Team Emails Only |
 | `{Full Scanner}` | Personalized, HMAC-SHA256 signed zero-login staff link (`both` mode). | Staff / Team Emails Only |

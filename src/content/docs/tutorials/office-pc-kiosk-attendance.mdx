@@ -1,0 +1,189 @@
+---
+title: Office PC Kiosk & Automated Self-Attendance Setup Guide
+description: Step-by-step guide to converting an office desktop PC into an automated attendance kiosk or setting up direct self-service check-in with camera & camera-free links in FormMail Hub.
+---
+
+This step-by-step tutorial guides Administrators through setting up an **Office PC Kiosk Attendance Station** or enabling **Direct Self-Service Check-In** for employees using **FormMail Hub**.
+
+By combining Google Forms registration, Custom SMTP delivery, stateless QR passes with direct verification links (`{Verify Link}`), and browser-based staff authorization cookies, you can turn any office PC or front-desk workstation into an automated clock-in/out station—without purchasing proprietary hardware or installing separate software.
+
+To test form submission triggers before rolling out your office station, explore our interactive [Live Demo Form](https://docs.google.com/forms/d/e/1FAIpQLSc2lkYREd5ePz521uYfBDeumOOoPKeBP87i1aSpwokHdFMIHw/viewform) or install the add-on directly via the [Google Workspace Marketplace Listing](https://workspace.google.com/marketplace/app/formmail_hub/409227874327).
+
+---
+
+## 1. System Overview: Office PC Kiosk Architecture
+
+The Office PC Kiosk model enables frictionless attendance logging with real-time audit protection:
+
+```
++-----------------------------------------------------------------------------------+
+|                            ADMIN SETUP & CONFIGURATION                            |
+|  1. Admin sets Google Form "Limit to 1 response" (1 ticket per employee)          |
+|  2. Admin configures & tests Custom SMTP to unlock Templates & Rules tabs         |
+|  3. Admin adds office PC manager/kiosk email to Team Members                      |
+|  4. Admin builds template containing {QR Code} and direct {Verify Link} tags      |
++-----------------------------------------------------------------------------------+
+                                          |
+                                          v
++-----------------------------------------------------------------------------------+
+|                        OFFICE PC KIOSK BROWSER AUTHORIZATION                      |
+|  1. Admin opens dedicated browser (e.g. Google Chrome) on office PC               |
+|  2. Admin pastes authorized {Full Scanner} or {Check-in Scanner} Auth Link        |
+|  3. Sets HMAC-SHA256 signed authorization cookie (/qr-auth?t=...) on browser       |
+|  4. Bookmarks the scanning endpoint (/qr-verify) on the browser toolbar           |
++-----------------------------------------------------------------------------------+
+                                          |
+                                          v
++-----------------------------------------------------------------------------------+
+|                        DAILY ATTENDANCE LOGGING OPTIONS                           |
+|                                                                                   |
+|   [ Option A: Office PC Camera / Barcode ]       [ Option B: Email Direct Link ]  |
+|   Employee presents {QR Code} ticket to         Employee clicks {Verify Link} in  |
+|   the office PC webcam or barcode scanner       their confirmation email          |
+|                   \                                     /                         |
+|                    \                                   /                          |
+|                     v                                 v                           |
+|            +---------------------------------------------------+                  |
+|            | Backend State Engine Processed (/api/qr/action)   |                  |
+|            | Status set to IN or OUT; TTL refreshed to 30 days |                  |
+|            +---------------------------------------------------+                  |
++-----------------------------------------------------------------------------------+
+                                          |
+                                          v
++-----------------------------------------------------------------------------------+
+|                    AUTOMATED DUAL REAL-TIME RECEIPT DISPATCH                      |
+|  Receipt 1: Instant confirmation email sent to Employee (UTC timestamp & ref ID)  |
+|  Receipt 2: Audit log email sent to Kiosk Operator and CC'd to Form Admin         |
++-----------------------------------------------------------------------------------+
+```
+
+---
+
+## 2. Step-by-Step Implementation Guide
+
+### Step 1: Configure Google Form Settings & Initial Registration
+1. Open Google Forms™ and create your employee attendance or intake form.
+2. Navigate to **Settings > Responses** and toggle ON **"Limit to 1 response"** (this ensures each employee holds a unique, single reference ticket code).
+3. Connect the form to FormMail Hub via the Google Forms™ entry add-on or Google Sheets™ add-on.
+
+### Step 2: Configure Custom SMTP & Team Authorization
+1. In the FormMail Hub UI, navigate to **Settings > SMTP Config**.
+2. Input your Custom SMTP credentials (e.g., **Gmail™ App Password**, **Amazon SES**, **SendGrid**, or corporate relay) and click **Test Connection**.
+   > **Important Rule:** Admins **MUST** configure and test custom SMTP settings before unlocking Templates, Rules, Campaigns, or Analytics. Until custom SMTP is active, these feature tabs remain strictly locked in the UI.
+3. In the **Team Members** section, add the email address for the manager, supervisor, or office kiosk operator account.
+4. FormMail Hub generates signed Authorization Links (`{Check-in Scanner}`, `{Check-out Scanner}`, or `{Full Scanner}`) for authorized staff members.
+
+### Step 3: Design Email Template with QR Ticket & Direct Verification Link
+1. Go to **Templates** > **+ Create New Template**.
+2. Set up an Auto-responder template and insert the dynamic ticket tags:
+   - `{QR Code}`: Renders the visual QR badge for scanning via webcam/scanner device.
+   - `{Verify Link}`: Renders a direct clickable verification link (`/qr-verify?t=...`) for instant camera-free self-check-in on PC or mobile browsers.
+   - `{Form title}`: Displays the official form title.
+   - `{Unsubscribe Link}`: Provides the form-specific opt-out link.
+
+#### Sample Ticket Pass Template (HTML)
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: Arial, sans-serif; background-color: #f8fafc; color: #1e293b; padding: 20px; }
+    .card { max-width: 520px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 24px; }
+    .header { text-align: center; border-bottom: 2px solid #2563eb; padding-bottom: 12px; margin-bottom: 20px; }
+    .badge-box { text-align: center; background: #f1f5f9; padding: 20px; border-radius: 6px; margin: 16px 0; }
+    .verify-btn { display: inline-block; background-color: #2563eb; color: #ffffff; padding: 10px 20px; text-decoration: none; border-radius: 4px; font-weight: bold; margin-top: 10px; }
+    .footer { text-align: center; font-size: 11px; color: #64748b; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="header">
+      <h2 style="margin: 0; color: #1e40af;">Official Attendance Ticket</h2>
+      <p style="margin: 4px 0 0 0; color: #64748b; font-size: 13px;">{Form title}</p>
+    </div>
+    
+    <p>Hello,</p>
+    <p>Here is your digital check-in badge for attendance logging at the office kiosk:</p>
+    
+    <div class="badge-box">
+      {QR Code}
+      <p style="font-size: 12px; color: #475569; margin: 8px 0 4px 0;">Or click below for instant verification:</p>
+      <p><a href="{Verify Link}" class="verify-btn">Direct Verification Link</a></p>
+    </div>
+
+    <p style="font-size: 13px; color: #475569;">Present this QR code at the Office PC Kiosk camera, or tap the button above when working on an authorized device.</p>
+    
+    <div class="footer">
+      <p>Sent via FormMail Hub • <a href="{Unsubscribe Link}">Unsubscribe</a></p>
+    </div>
+  </div>
+</body>
+</html>
+```
+
+3. Go to **Rules** > Create an Auto-responder Rule triggered on form submission to automatically dispatch this ticket to registering employees using your verified Custom SMTP route.
+
+### Step 4: Authorize & Setup the Office PC Kiosk Browser
+1. On the dedicated office desktop PC, open the designated browser (e.g., Google Chrome).
+2. Copy and paste the authorized `{Full Scanner}` (or `{Check-in Scanner}`) Auth Link generated for the team member into this browser address bar and press Enter.
+   > **Browser Session Isolation Note:** Authorization relies on an HMAC-SHA256 signed cookie set during link activation (`/qr-auth?t=...`). Opening the link in one browser (e.g., in an email client) will **NOT** authorize a different browser. You **MUST** paste the Auth link directly into the exact browser application that will be used for scanning.
+3. Bookmark the scanning endpoint page (`/qr-verify`) on the browser's bookmark toolbar or set it as the default homepage.
+
+### Step 5: Daily Attendance Execution Workflow
+
+Employees have two convenient options to complete daily check-in and check-out:
+
+#### Option A: QR Scan via Office PC Camera or Barcode Reader
+1. Arriving employee presents their printed or mobile `{QR Code}` ticket to the office PC webcam or USB 2D barcode scanner.
+2. The authorized browser processes the scan at `/api/qr/action`.
+3. The live status badge updates instantly on screen (`🟢 Status: Checked-In` or `🚪 Status: Checked-Out`).
+4. Redis key `checkin:{form_id}:{refCode}` updates state to `IN` (or `OUT` upon departure) and refreshes TTL to **30 days (2,592,000 seconds)**.
+
+#### Option B: Direct Self-Service Verification Link via Email
+1. Employee opens their registration confirmation email on their PC or phone.
+2. Employee clicks the `{Verify Link}` dynamic link.
+3. The system executes the state transition (`IN` / `OUT`) based on current status and context.
+
+### Step 6: Automated Dual Audit Receipts
+Upon every successful scan or manual verification:
+1. **Employee Attendance Receipt:** Sent immediately to the employee confirming their status change (`Checked In` / `Checked Out`) with form title, ticket reference code, and UTC timestamp.
+2. **Admin & Operator Audit Trail:** Dispatched immediately to the scanning operator / Team Member and **CC'd to the Form Admin** for compliance monitoring.
+
+---
+
+## 3. Atomic State Concurrency & 30-Day TTL Rules
+
+The attendance backend guarantees data integrity through strict state transition checks:
+
+| Action | Current Ticket State | Engine Behavior | Key TTL Result |
+| :--- | :--- | :--- | :--- |
+| **Check-in** | `OUT` or Not Scanned | Updates status to `IN`, logs operator email & timestamp. | Refreshes to 30 Days (2,592,000s) |
+| **Check-in** | `IN` | **Rejected with `409 Conflict`** (prevents duplicate clock-ins). | Unchanged (keeps existing state) |
+| **Check-out** | `IN` | Validates active status, updates status to `OUT`, logs operator & timestamp. | Refreshes to 30 Days (2,592,000s) |
+| **Check-out** | `OUT` or Not Scanned | Denied (ticket must be checked in first). | Unchanged |
+
+---
+
+## 4. Troubleshooting & Operational FAQ
+
+| Issue / Symptom | Root Cause | Solution |
+| :--- | :--- | :--- |
+| **"Feature Locked" message in sidebar** | Custom SMTP not yet tested or verified. | Admins MUST configure and test Custom SMTP under **Settings > SMTP Config** to unlock Templates, Rules, Campaigns, and Analytics. |
+| **Office PC shows "Unauthorized Scanner"** | Auth cookie missing on this browser instance. | Copy the `{Full Scanner}` link from the team email and paste it directly into the office PC's browser address bar. |
+| **Employee registered multiple times** | "Limit to 1 response" disabled in Google Forms. | Turn ON "Limit to 1 response" in Google Forms Settings > Responses. The backend uses `checkin:{form_id}:{refCode}` as the canonical source of truth. |
+| **Duplicate check-in rejected (`409 Conflict`)** | Employee already clocked in. | The system detected status `IN`. If the employee is departing, select the **Check-Out** button. |
+| **`{Verify Link}` tag renders plain text or missing** | Malformed tag syntax. | Use standard enclosure formats: `{Verify Link}`, `{{Verify Link}}`, or `${Verify Link}`. |
+
+---
+
+## 5. Official Resources & Compliance
+
+- **Install Add-on:** [Google Workspace Marketplace Listing](https://workspace.google.com/marketplace/app/formmail_hub/409227874327)
+- **Interactive Sandbox:** [Live Demo Form](https://docs.google.com/forms/d/e/1FAIpQLSc2lkYREd5ePz521uYfBDeumOOoPKeBP87i1aSpwokHdFMIHw/viewform)
+- **Support Desk:** [Support & Contact](https://formmail.vietutd.com/contact)
+- **Privacy & Security:** [Privacy Policy](https://formmail.vietutd.com/privacy-policy) | [Terms of Service](https://formmail.vietutd.com/terms-of-service)
+
+---
+
+*Google Forms™, Google Sheets™, and Gmail™ are trademarks of Google LLC.*

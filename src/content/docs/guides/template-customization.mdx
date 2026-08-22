@@ -40,11 +40,12 @@ Below is the strict verified catalog of dynamic tags supported in FormMail Hub t
 | `{Linked Form}` | Generates the direct URL link to the connected Google Form™. | `https://docs.google.com/forms/...` | All Templates |
 | `{Unsubscribe Link}` | Generates an automated opt-out / unsubscribe URL for CAN-SPAM / GDPR compliance. | `https://hub.formmailhub.com/unsubscribe/...` | Respondent Templates & Campaigns |
 | `{QR Code}` | Generates a secure, stateless QR code ticket image (signed with HMAC-SHA256) along with a direct manual verification URL (`/qr-verify?t=...`). | `[Embedded QR Ticket Image + Manual Link]` | Respondent Auto-responders, Campaigns & Staff Notifications |
+| `{Verify Link}` | Generates a direct clickable manual verification URL (`/qr-verify?t=...`) for instant camera-free check-in. | `https://hub.formmailhub.com/qr-verify?t=...` | Respondent Tickets & Staff Alerts |
 | `{Check-in Scanner}` | Generates a personalized, HMAC-SHA256 signed zero-login link for staff check-in scanning (`checkin` mode). | `https://hub.formmailhub.com/qr-auth?t=...` | Staff / Team Emails Only |
 | `{Check-out Scanner}` | Generates a personalized, HMAC-SHA256 signed zero-login link for staff check-out scanning (`checkout` mode). | `https://hub.formmailhub.com/qr-auth?t=...` | Staff / Team Emails Only |
 | `{Full Scanner}` | Generates a personalized, HMAC-SHA256 signed zero-login link for staff dual scanning (`both` mode). | `https://hub.formmailhub.com/qr-auth?t=...` | Staff / Team Emails Only |
 
-> **Strict Dynamic Tag Rule:** Dynamic template tags are strictly handled by single-pass scanning supporting `{Tag}`, `{{Tag}}`, and `${Tag}` enclosure formats. The valid built-in system tags are strictly `{Form title}`, `{All Fields}`, `{Linked Form}`, `{Unsubscribe Link}`, `{QR Code}`, `{Check-in Scanner}`, `{Check-out Scanner}`, and `{Full Scanner}`, alongside any dynamic form question field title. Writers and template authors MUST NOT invent or assume unverified system tags.
+> **Strict Dynamic Tag Rule:** Dynamic template tags are strictly handled by single-pass scanning supporting `{Tag}`, `{{Tag}}`, and `${Tag}` enclosure formats. The valid built-in system tags are strictly `{Form title}`, `{All Fields}`, `{Linked Form}`, `{Unsubscribe Link}`, `{QR Code}`, `{Verify Link}`, `{Check-in Scanner}`, `{Check-out Scanner}`, and `{Full Scanner}`, alongside any dynamic form question field title. Writers and template authors MUST NOT invent or assume unverified system tags.
 
 > **Security & Audience Isolation:** Scanner authorization tags (`{Check-in Scanner}`, `{Check-out Scanner}`, and `{Full Scanner}`) are populated strictly in staff/team member email notifications. To guarantee security isolation, scanner links are automatically stripped from all respondent-facing emails.
 
@@ -56,11 +57,11 @@ Below is the strict verified catalog of dynamic tags supported in FormMail Hub t
 
 Admins can combine ticket delivery and staff authorization tags to run event ticketing, check-in, and employee attendance workflows.
 
-### A. Stateless QR Code Tickets & Camera-Free Staff Verification (`{QR Code}`)
+### A. Stateless QR Code Tickets & Camera-Free Staff Verification (`{QR Code}` & `{Verify Link}`)
 - **Payload & Signing:** The FormMail Hub cloud platform engine generates a secure, stateless QR code ticket embedding submission metadata signed with HMAC-SHA256 encryption.
-- **Embedded Visual Code & Direct Link:** The `{QR Code}` dynamic tag renders a visual QR code image alongside a direct manual verification URL (`/qr-verify?t=...`).
-- **Dual Audience Usage:** This dynamic block is populated in both respondent tickets and staff/team member notification emails.
-- **Camera-Free Staff Verification:** Authorized staff members can perform attendee check-in either by scanning the visual QR code with their authorized device camera or by clicking the manual verification link directly inside their notification email without requiring a camera scanner.
+- **Embedded Visual Code & Direct Link:** The `{QR Code}` dynamic tag renders a visual QR code image alongside a direct manual verification URL (`/qr-verify?t=...`), while `{Verify Link}` renders a standalone clickable URL.
+- **Dual Audience Usage:** These dynamic tags can be populated in both respondent tickets and staff/team member notification emails.
+- **Camera-Free Staff Verification:** Authorized staff members can perform attendee check-in either by scanning the visual QR code with their authorized device camera or by clicking the manual verification link (`{Verify Link}`) directly inside their notification email without requiring a camera scanner.
 - **Real-Time Audit:** The `/qr-verify` endpoint verifies ticket authenticity, submission timestamp, respondent details, and reference code in real-time without database overhead or external lookups.
 
 ### B. Personalized Staff Scanner Links (`{Check-in Scanner}`, `{Check-out Scanner}`, `{Full Scanner}`)
@@ -127,6 +128,7 @@ Follow these steps to construct a personalized auto-responder email template:
       <div style="text-align: center; margin-top: 20px;">
         <p><strong>Your Verification Pass:</strong></p>
         {QR Code}
+        <p style="margin-top: 10px;"><a href="{Verify Link}">Manual Verification Link</a></p>
       </div>
     </div>
     <div class="footer">
@@ -148,7 +150,7 @@ Before deploying a template to live users, verify variable substitution and layo
 
 - **Send Test Submission Email:** Click **Send Test Email** in the template editor to dispatch a sample email populated with test question data.
 - **Mobile Responsiveness Verification:** Open test emails on both mobile devices and desktop clients (Outlook, Gmail, Apple Mail) to check for proper padding and scaling.
-- **Dynamic Tag Audit:** Confirm that dynamic question field tags (e.g., `{First Name}`) and system tags (e.g., `{Form title}`, `{All Fields}`, `{Unsubscribe Link}`, `{QR Code}`) resolve correctly.
+- **Dynamic Tag Audit:** Confirm that dynamic question field tags (e.g., `{First Name}`) and system tags (e.g., `{Form title}`, `{All Fields}`, `{Unsubscribe Link}`, `{QR Code}`, `{Verify Link}`) resolve correctly.
 
 ---
 

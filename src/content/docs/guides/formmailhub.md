@@ -56,7 +56,7 @@ FormMail Hub separates internal administrative alerts from client-facing custom 
 ```
 +-----------------------------------------------------------------------------------+
 |                        FORMMAIL HUB DELIVERY INFRASTRUCTURE                       |
-+-----------------------------------------------------------------------------------+
++-----------------------------------------------------------------------------------+\
                                   |                      |
           +-----------------------+                      +-----------------------+
           |                                                              |
@@ -95,7 +95,7 @@ Once custom SMTP settings are configured and tested by the Admin to unlock featu
 Templates parse submission fields into dynamic tags supporting `{Tag}`, `{{Tag}}`, and `${Tag}` enclosure formats using single-pass scanning in `templateParser.js`.
 
 #### Supported System & Field Tags
-- **Valid Built-in System Tags:** Strictly `{Form title}`, `{All Fields}`, `{Linked Form}`, `{Unsubscribe Link}`, `{QR Code}`, `{Check-in Scanner}`, `{Check-out Scanner}`, and `{Full Scanner}`.
+- **Valid Built-in System Tags:** Strictly `{Form title}`, `{All Fields}`, `{Linked Form}`, `{Unsubscribe Link}`, `{QR Code}`, `{Verify Link}`, `{Check-in Scanner}`, `{Check-out Scanner}`, and `{Full Scanner}`.
 - **Dynamic Question Field Tags:** Any exact form question title (e.g., `{First Name}`, `{Email Address}`).
 - **Security Isolation:** Scanner authorization tags (`{Check-in Scanner}`, `{Check-out Scanner}`, `{Full Scanner}`) are populated strictly in staff/team emails and automatically stripped from respondent emails.
 
@@ -108,8 +108,8 @@ Rules support evaluating multiple form response fields simultaneously to trigger
 
 FormMail Hub includes an integrated QR ticketing and attendance tracking system.
 
-### Stateless QR Code Tickets
-Admins can insert `{QR Code}` into auto-responders and campaign templates. The cloud platform engine generates a secure, stateless QR code ticket signed with HMAC-SHA256. Scanning the QR code directs to `/qr-verify` for real-time verification of ticket authenticity, submission timestamp, respondent details, and reference code without database overhead.
+### Stateless QR Code Tickets & Camera-Free Verification
+Admins can insert `{QR Code}` or `{Verify Link}` into auto-responders and campaign templates. The cloud platform engine generates a secure, stateless QR code ticket signed with HMAC-SHA256. Scanning the QR code or clicking the verification link directs to `/qr-verify` for real-time verification of ticket authenticity, submission timestamp, respondent details, and reference code without database overhead.
 
 ### Personalized Staff Scanner Links & Live Status Screen
 When routing notifications to Team Members, the platform generates personalized, cryptographically signed Authorization Links (`{Check-in Scanner}`, `{Check-out Scanner}`, `{Full Scanner}`).
@@ -120,7 +120,7 @@ When routing notifications to Team Members, the platform generates personalized,
 > **Browser Session Isolation Note:** Because authorization relies on a secure cookie set during link activation, opening the link in one browser (e.g., in-app email viewer) will NOT authorize a different browser (e.g., default mobile browser or standalone camera scanner). Staff must copy and paste the Auth link directly into the exact browser application used for scanning QR codes.
 
 ### Atomic State Engine & 30-Day Rolling TTL
-When authorized staff scan a QR code, `/api/qr/action` verifies permissions and updates ticket explicit state (`IN` or `OUT`) under Redis key `checkin:{form_id}:{refCode}`. Every state change extends the record's TTL to **30 days (2,592,000 seconds)** without deleting data:
+When authorized staff scan a QR code or access the verification link, `/api/qr/action` verifies permissions and updates ticket explicit state (`IN` or `OUT`) under Redis key `checkin:{form_id}:{refCode}`. Every state change extends the record's TTL to **30 days (2,592,000 seconds)** without deleting data:
 - **Check-in:** Rejects duplicate scans with a `409 Conflict` status if already checked in (`IN`). Sets status to `IN`, logs check-in operator email and timestamp, and refreshes key TTL to 30 days.
 - **Check-out:** Validates `IN` status before updating status to `OUT`. Logs check-out operator email and timestamp, and refreshes key TTL to 30 days instead of deleting the Redis key.
 
