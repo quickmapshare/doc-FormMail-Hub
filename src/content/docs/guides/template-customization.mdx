@@ -41,9 +41,9 @@ Below is the strict verified catalog of dynamic tags supported in FormMail Hub t
 | `{Unsubscribe Link}` | Generates an automated opt-out / unsubscribe URL for CAN-SPAM / GDPR compliance. | `https://hub.formmailhub.com/unsubscribe/...` | Respondent Templates & Campaigns |
 | `{QR Code}` | Generates a secure, stateless QR code ticket image (signed with HMAC-SHA256) along with a direct manual verification URL (`/qr-verify?t=...`). | `[Embedded QR Ticket Image + Manual Link]` | Respondent Auto-responders, Campaigns & Staff Notifications |
 | `{Verify Link}` | Generates a direct clickable manual verification URL (`/qr-verify?t=...`) for instant camera-free check-in. | `https://hub.formmailhub.com/qr-verify?t=...` | Respondent Tickets & Staff Alerts |
-| `{Check-in Scanner}` | Generates a personalized, HMAC-SHA256 signed zero-login link for staff check-in scanning (`checkin` mode). | `https://hub.formmailhub.com/qr-auth?t=...` | Staff / Team Emails Only |
-| `{Check-out Scanner}` | Generates a personalized, HMAC-SHA256 signed zero-login link for staff check-out scanning (`checkout` mode). | `https://hub.formmailhub.com/qr-auth?t=...` | Staff / Team Emails Only |
-| `{Full Scanner}` | Generates a personalized, HMAC-SHA256 signed zero-login link for staff dual scanning (`both` mode). | `https://hub.formmailhub.com/qr-auth?t=...` | Staff / Team Emails Only |
+| `{Check-in Scanner}` | Generates a personalized, HMAC-SHA256 signed zero-login link for staff check-in scanning (`checkin` mode, 7-day validity). | `https://hub.formmailhub.com/qr-auth?t=...` | Staff / Team Emails Only |
+| `{Check-out Scanner}` | Generates a personalized, HMAC-SHA256 signed zero-login link for staff check-out scanning (`checkout` mode, 7-day validity). | `https://hub.formmailhub.com/qr-auth?t=...` | Staff / Team Emails Only |
+| `{Full Scanner}` | Generates a personalized, HMAC-SHA256 signed zero-login link for staff dual scanning (`both` mode, 7-day validity). | `https://hub.formmailhub.com/qr-auth?t=...` | Staff / Team Emails Only |
 
 > **Strict Dynamic Tag Rule:** Dynamic template tags are strictly handled by single-pass scanning supporting `{Tag}`, `{{Tag}}`, and `${Tag}` enclosure formats. The valid built-in system tags are strictly `{Form title}`, `{All Fields}`, `{Linked Form}`, `{Unsubscribe Link}`, `{QR Code}`, `{Verify Link}`, `{Check-in Scanner}`, `{Check-out Scanner}`, and `{Full Scanner}`, alongside any dynamic form question field title. Writers and template authors MUST NOT invent or assume unverified system tags.
 
@@ -65,8 +65,8 @@ Admins can combine ticket delivery and staff authorization tags to run event tic
 - **Real-Time Audit:** The `/qr-verify` endpoint verifies ticket authenticity, submission timestamp, respondent details, and reference code in real-time without database overhead or external lookups.
 
 ### B. Personalized Staff Scanner Links (`{Check-in Scanner}`, `{Check-out Scanner}`, `{Full Scanner}`)
-- **Zero-Login Authentication:** Staff scanner links encode an HMAC-SHA256 signed payload containing form ID, staff email identity, authorized mode (`checkin`, `checkout`, or `both`), and a 24-hour expiration token (`/qr-auth?t=...`).
-- **Instant Device Authorization:** Clicking the link authorizes the staff member's mobile device (setting a secure cookie) for browser-based scanning without password logins.
+- **Zero-Login Authentication:** Staff scanner links encode an HMAC-SHA256 signed payload containing form ID, staff email identity, authorized mode (`checkin`, `checkout`, or `both`), and a **7-day expiration token** (`/qr-auth?t=...`).
+- **Instant Device Authorization:** Clicking the link authorizes the staff member's mobile or desktop browser (setting a secure cookie valid for **7 days**) for browser-based scanning without password logins.
 
 > **Important: Browser Session Isolation Note**  
 > Because authorization relies on a secure cookie set during link activation, opening the link in one browser (e.g., an in-app email viewer inside Gmail or Outlook) will **NOT** authorize a different browser (e.g., default mobile browser or standalone camera scanner app). Staff **MUST** copy and paste the Auth link directly into the exact browser application used for scanning QR codes.
@@ -109,11 +109,11 @@ Follow these steps to construct a personalized auto-responder email template:
 <head>
   <meta charset="utf-8">
   <style>
-    body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f8fafc; color: #334155; margin: 0; padding: 20px; }
-    .card { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 8px; border: 1px solid #e2e8f0; overflow: hidden; }
-    .header { background-color: #2563eb; color: #ffffff; padding: 24px; text-align: center; }
-    .content { padding: 32px; }
-    .footer { background-color: #f1f5f9; padding: 16px; text-align: center; font-size: 12px; color: #64748b; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f8fafc; color: #334155; margin: 0; padding: 20px; }\
+    .card { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 8px; border: 1px solid #e2e8f0; overflow: hidden; }\
+    .header { background-color: #2563eb; color: #ffffff; padding: 24px; text-align: center; }\
+    .content { padding: 32px; }\
+    .footer { background-color: #f1f5f9; padding: 16px; text-align: center; font-size: 12px; color: #64748b; }\
   </style>
 </head>
 <body>

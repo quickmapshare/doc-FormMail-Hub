@@ -56,14 +56,14 @@ FormMail Hub separates internal administrative alerts from client-facing custom 
 ```
 +-----------------------------------------------------------------------------------+
 |                        FORMMAIL HUB DELIVERY INFRASTRUCTURE                       |
-+-----------------------------------------------------------------------------------+\
++-----------------------------------------------------------------------------------+
                                   |                      |
           +-----------------------+                      +-----------------------+
           |                                                              |
           v                                                              v
 +-----------------------------------+                          +-----------------------------------+
 |    BUILT-IN SYSTEM SMTP RELAY     |                          | USER-CONFIGURED CUSTOM SMTP       |
-+-----------------------------------+                          +-----------------------------------+
++-----------------------------------+                          +-----------------------------------+\
 | - RESTRICTED strictly to system   |                          | - MANDATORY setup & test BEFORE   |
 |   alerts (submission alerts,      |                          |   unlocking Templates, Rules,     |
 |   daily reports, SMTP error alerts)|                          |   Campaigns, or Analytics         |
@@ -113,8 +113,8 @@ Admins can insert `{QR Code}` or `{Verify Link}` into auto-responders and campai
 
 ### Personalized Staff Scanner Links & Live Status Screen
 When routing notifications to Team Members, the platform generates personalized, cryptographically signed Authorization Links (`{Check-in Scanner}`, `{Check-out Scanner}`, `{Full Scanner}`).
-- **Zero-Login Token:** Link includes an HMAC-SHA256 signed payload encoding form ID, staff email identity, mode (`checkin`, `checkout`, `both`), and a 24-hour expiration token (`/qr-auth?t=...`).
-- **Instant Authorization:** Clicking the link sets a secure cookie on the staff member's device for browser-based scanning without password logins.
+- **Zero-Login Token:** Link includes an HMAC-SHA256 signed payload encoding form ID, staff email identity, mode (`checkin`, `checkout`, `both`), and a **7-day expiration token** (`/qr-auth?t=...`).
+- **Instant Authorization:** Clicking the link sets a secure cookie on the staff member's device valid for **7 days** for browser-based scanning without password logins.
 - **Live Attendance Status Badge (`/qr-verify`):** Upon scanning, staff are shown a dynamic status badge (`🟢 Status: Checked-In`, `🚪 Status: Checked-Out`, or `⚪ Status: Not Checked-In Yet`) with timestamps automatically converted to the device's local timezone. Clicking Check-In or Check-Out updates the status badge state immediately on screen.
 
 > **Browser Session Isolation Note:** Because authorization relies on a secure cookie set during link activation, opening the link in one browser (e.g., in-app email viewer) will NOT authorize a different browser (e.g., default mobile browser or standalone camera scanner). Staff must copy and paste the Auth link directly into the exact browser application used for scanning QR codes.

@@ -28,7 +28,7 @@ The internal self-service attendance workflow operates on a dual-role pattern:
 +-----------------------------------------------------------------------------------+
 |                        EMPLOYEE DEVICE AUTHORIZATION                              |
 |  Employee opens {Full Scanner} authorization link in mobile browser              |
-|  -> Sets secure 24-hour cookie on device (/qr-auth?t=...)                         |
+|  -> Sets secure 7-day cookie on device (/qr-auth?t=...)                           |
 +-----------------------------------------------------------------------------------+
                                           |
                                           v
@@ -50,7 +50,7 @@ The internal self-service attendance workflow operates on a dual-role pattern:
 ### Key Workflow Components:
 1. **Dual Role Assignment:** Every employee acts as both a **Team Member** (authorized scanner operator) and a **Form Respondent** (individual pass holder).
 2. **Single Ticket Enforcement:** Native single-pass restrictions per respondent are enforced directly at the form entry point by enabling **"Limit to 1 response"** in Google Forms Settings.
-3. **Zero-Login Authentication:** Employees authorize their mobile devices using cryptographically signed authorization links (`{Full Scanner}`).
+3. **Zero-Login Authentication:** Employees authorize their mobile devices using cryptographically signed authorization links (`{Full Scanner}`) valid for 7 days.
 4. **Stateless Ticket Verification:** Each employee receives a secure `{QR Code}` ticket signed with HMAC-SHA256 containing their identity and reference code (`refCode`).
 5. **Stateful Attendance Tracking:** Scans update explicit ticket state (`IN` or `OUT`) under Redis key `checkin:{form_id}:{refCode}` with automatic 30-day rolling TTL retention.
 6. **Dual Audit Email Receipts:** Every scan immediately triggers confirmation receipts for both the employee and management (Rule 15).
@@ -174,9 +174,9 @@ To allow employees to scan their own QR passes, you must send them a personalize
 
 | Dynamic Tag | Mode | Functionality |
 | :--- | :--- | :--- |
-| `{Check-in Scanner}` | `checkin` | Authorizes device exclusively for arrival clock-in scans. |
-| `{Check-out Scanner}` | `checkout` | Authorizes device exclusively for departure clock-out scans. |
-| `{Full Scanner}` | `both` | **Recommended for Employees:** Authorizes device for both clock-in and clock-out scanning. |
+| `{Check-in Scanner}` | `checkin` | Authorizes device exclusively for arrival clock-in scans (7-day cookie). |
+| `{Check-out Scanner}` | `checkout` | Authorizes device exclusively for departure clock-out scans (7-day cookie). |
+| `{Full Scanner}` | `both` | **Recommended for Employees:** Authorizes device for both clock-in and clock-out scanning (7-day cookie). |
 
 > **Security & Audience Isolation Rule:** Scanner authorization tags (`{Check-in Scanner}`, `{Check-out Scanner}`, `{Full Scanner}`) are populated **strictly in team member email notifications**. To guarantee security isolation, scanner links are automatically stripped from standard respondent emails.
 
@@ -194,7 +194,7 @@ To enable self-service attendance scanning on your mobile phone, click your pers
 
 IMPORTANT INSTRUCTIONS:
 1. Open or copy this link directly in the exact mobile browser app (e.g., Chrome or Safari) you will use to scan your QR badge.
-2. Authorization sets a secure browser cookie valid for 24 hours.
+2. Authorization sets a secure browser cookie valid for 7 days.
 3. Once authorized, bookmark the scanning page for daily access.
 ```
 
@@ -268,11 +268,11 @@ Dispatched immediately to the employee's scanner identity and **CC'd directly to
 | Symptom / Error | Root Cause | Technical Remediation |
 | :--- | :--- | :--- |
 | **Feature tabs locked in UI** | Custom SMTP not configured or connection test failed. | Navigate to **Settings > SMTP Config**, enter custom SMTP credentials (e.g., Gmail App Password or SES), and click **Test Connection**. |
-| **Employee generated multiple tickets** | "Limit to 1 response" is disabled in Google Form Settings. | In Google Forms Settings > Responses, turn on **"Limit to 1 response"**. The backend engine tracks each ticket's canonical state under `checkin:{form_id}:{refCode}`. |
+| **Employee generated multiple tickets** | "Limit to 1 response" is disabled in Google Form Settings. | In Google Forms Settings > Responses, turn on **\"Limit to 1 response\"**. The backend engine tracks each ticket's canonical state under `checkin:{form_id}:{refCode}`. |
 | **Scanner tag appears blank in email** | Scanner tags included in respondent emails instead of team emails. | `{Check-in Scanner}`, `{Check-out Scanner}`, and `{Full Scanner}` tags are populated **strictly in team member notifications** and stripped from respondent emails for security isolation. |
-| **"Unauthorized Device" error on scan** | Browser session isolation mismatch. | Opening the Auth link in an in-app email previewer sets the cookie in the previewer, not the default browser. Copy the Auth link directly into Safari or Chrome. |
+| **\"Unauthorized Device\" error on scan** | Browser session isolation mismatch. | Opening the Auth link in an in-app email previewer sets the cookie in the previewer, not the default browser. Copy the Auth link directly into Safari or Chrome. |
 | **Duplicate scan rejected (`409 Conflict`)** | Employee attempted to clock in while already marked `IN`. | The employee is already clocked in (`🟢 Status: Checked-In`). To clock out, select the **Check-Out** action button on screen. |
-| **Scanner link expired** | 24-hour authorization token elapsed. | Re-send the scanner authorization email to generate a fresh 24-hour `/qr-auth?t=...` link for the employee. |
+| **Scanner link expired** | 7-day authorization token elapsed. | Re-send the scanner authorization email to generate a fresh 7-day `/qr-auth?t=...` link for the employee. |
 
 ---
 
