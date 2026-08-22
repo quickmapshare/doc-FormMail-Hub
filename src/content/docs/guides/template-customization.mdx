@@ -40,14 +40,14 @@ Below is the strict verified catalog of dynamic tags supported in FormMail Hub t
 | `{Linked Form}` | Generates the direct URL link to the connected Google Form™. | `https://docs.google.com/forms/...` | All Templates |
 | `{Unsubscribe Link}` | Generates an automated opt-out / unsubscribe URL for CAN-SPAM / GDPR compliance. | `https://hub.formmailhub.com/unsubscribe/...` | Respondent Templates & Campaigns |
 | `{QR Code}` | Generates a secure, stateless QR code ticket image (signed with HMAC-SHA256) along with a direct manual verification URL (`/qr-verify?t=...`). | `[Embedded QR Ticket Image + Manual Link]` | Respondent Auto-responders, Campaigns & Staff Notifications |
-| `{Verify Link}` | Generates a direct clickable manual verification URL (`/qr-verify?t=...`) for instant camera-free check-in. | `https://hub.formmailhub.com/qr-verify?t=...` | Respondent Tickets & Staff Alerts |
+| `{Verify Link}` | Generates a direct clickable manual verification URL (`/qr-verify?t=...`) for instant camera-free check-in. | `https://hub.formmailhub.com/qr-verify?t=...` | Respondent Tickets, Self-Attendance & Staff Alerts |
 | `{Check-in Scanner}` | Generates a personalized, HMAC-SHA256 signed zero-login link for staff check-in scanning (`checkin` mode, 7-day validity). | `https://hub.formmailhub.com/qr-auth?t=...` | Staff / Team Emails Only |
 | `{Check-out Scanner}` | Generates a personalized, HMAC-SHA256 signed zero-login link for staff check-out scanning (`checkout` mode, 7-day validity). | `https://hub.formmailhub.com/qr-auth?t=...` | Staff / Team Emails Only |
-| `{Full Scanner}` | Generates a personalized, HMAC-SHA256 signed zero-login link for staff dual scanning (`both` mode, 7-day validity). | `https://hub.formmailhub.com/qr-auth?t=...` | Staff / Team Emails Only |
+| `{Full Scanner}` | Generates a personalized, HMAC-SHA256 signed zero-login link for dual scanning / browser authorization (`both` mode, 7-day validity). | `https://hub.formmailhub.com/qr-auth?t=...` | Staff Emails & Submitter Self-Attendance |
 
 > **Strict Dynamic Tag Rule:** Dynamic template tags are strictly handled by single-pass scanning supporting `{Tag}`, `{{Tag}}`, and `${Tag}` enclosure formats. The valid built-in system tags are strictly `{Form title}`, `{All Fields}`, `{Linked Form}`, `{Unsubscribe Link}`, `{QR Code}`, `{Verify Link}`, `{Check-in Scanner}`, `{Check-out Scanner}`, and `{Full Scanner}`, alongside any dynamic form question field title. Writers and template authors MUST NOT invent or assume unverified system tags.
 
-> **Security & Audience Isolation:** Scanner authorization tags (`{Check-in Scanner}`, `{Check-out Scanner}`, and `{Full Scanner}`) are populated strictly in staff/team member email notifications. To guarantee security isolation, scanner links are automatically stripped from all respondent-facing emails.
+> **Audience Targeting & Self-Attendance Scope:** Scanner authorization tags (`{Check-in Scanner}`, `{Check-out Scanner}`, `{Full Scanner}`) are routed to Staff/Team Members for event verification. For internal automated employee self-attendance (Rule 16), `{Full Scanner}` followed by `{Verify Link}` can be included in auto-responder templates sent directly to form submitters, allowing employees to authorize their office PC browser without manual team member pre-registration.
 
 > **Custom SMTP Requirement:** Admins MUST configure and test custom SMTP settings before unlocking Templates, Rules, Campaigns, or Analytics. Until custom SMTP is active, these feature tabs remain strictly locked in the UI.
 
@@ -57,19 +57,19 @@ Below is the strict verified catalog of dynamic tags supported in FormMail Hub t
 
 Admins can combine ticket delivery and staff authorization tags to run event ticketing, check-in, and employee attendance workflows.
 
-### A. Stateless QR Code Tickets & Camera-Free Staff Verification (`{QR Code}` & `{Verify Link}`)
+### A. Stateless QR Code Tickets & Camera-Free Verification (`{QR Code}` & `{Verify Link}`)
 - **Payload & Signing:** The FormMail Hub cloud platform engine generates a secure, stateless QR code ticket embedding submission metadata signed with HMAC-SHA256 encryption.
 - **Embedded Visual Code & Direct Link:** The `{QR Code}` dynamic tag renders a visual QR code image alongside a direct manual verification URL (`/qr-verify?t=...`), while `{Verify Link}` renders a standalone clickable URL.
 - **Dual Audience Usage:** These dynamic tags can be populated in both respondent tickets and staff/team member notification emails.
-- **Camera-Free Staff Verification:** Authorized staff members can perform attendee check-in either by scanning the visual QR code with their authorized device camera or by clicking the manual verification link (`{Verify Link}`) directly inside their notification email without requiring a camera scanner.
+- **Camera-Free Verification:** Authorized users or staff members can perform attendee check-in either by scanning the visual QR code with their authorized device camera or by clicking the manual verification link (`{Verify Link}`) directly inside their notification email without requiring a camera scanner.
 - **Real-Time Audit:** The `/qr-verify` endpoint verifies ticket authenticity, submission timestamp, respondent details, and reference code in real-time without database overhead or external lookups.
 
-### B. Personalized Staff Scanner Links (`{Check-in Scanner}`, `{Check-out Scanner}`, `{Full Scanner}`)
-- **Zero-Login Authentication:** Staff scanner links encode an HMAC-SHA256 signed payload containing form ID, staff email identity, authorized mode (`checkin`, `checkout`, or `both`), and a **7-day expiration token** (`/qr-auth?t=...`).
-- **Instant Device Authorization:** Clicking the link authorizes the staff member's mobile or desktop browser (setting a secure cookie valid for **7 days**) for browser-based scanning without password logins.
+### B. Personalized Scanner & Device Authorization Links (`{Check-in Scanner}`, `{Check-out Scanner}`, `{Full Scanner}`)
+- **Zero-Login Authentication:** Scanner links encode an HMAC-SHA256 signed payload containing form ID, user email identity, authorized mode (`checkin`, `checkout`, or `both`), and a **7-day expiration token** (`/qr-auth?t=...`).
+- **Instant Device Authorization:** Clicking the link authorizes the user's mobile or desktop browser (setting a secure cookie valid for **7 days**) for browser-based scanning or click-to-verify attendance without password logins.
 
 > **Important: Browser Session Isolation Note**  
-> Because authorization relies on a secure cookie set during link activation, opening the link in one browser (e.g., an in-app email viewer inside Gmail or Outlook) will **NOT** authorize a different browser (e.g., default mobile browser or standalone camera scanner app). Staff **MUST** copy and paste the Auth link directly into the exact browser application used for scanning QR codes.
+> Because authorization relies on a secure cookie set during link activation, opening the link in one browser (e.g., an in-app email viewer inside Gmail or Outlook) will **NOT** authorize a different browser (e.g., default mobile browser or standalone camera scanner app). Users **MUST** copy and paste the Auth link directly into the exact browser application used for daily verification.
 
 ---
 
@@ -109,11 +109,11 @@ Follow these steps to construct a personalized auto-responder email template:
 <head>
   <meta charset="utf-8">
   <style>
-    body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f8fafc; color: #334155; margin: 0; padding: 20px; }\
-    .card { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 8px; border: 1px solid #e2e8f0; overflow: hidden; }\
-    .header { background-color: #2563eb; color: #ffffff; padding: 24px; text-align: center; }\
-    .content { padding: 32px; }\
-    .footer { background-color: #f1f5f9; padding: 16px; text-align: center; font-size: 12px; color: #64748b; }\
+    body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f8fafc; color: #334155; margin: 0; padding: 20px; }
+    .card { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 8px; border: 1px solid #e2e8f0; overflow: hidden; }
+    .header { background-color: #2563eb; color: #ffffff; padding: 24px; text-align: center; }
+    .content { padding: 32px; }
+    .footer { background-color: #f1f5f9; padding: 16px; text-align: center; font-size: 12px; color: #64748b; }
   </style>
 </head>
 <body>

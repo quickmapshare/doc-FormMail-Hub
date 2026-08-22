@@ -37,13 +37,13 @@ import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
 
 <CardGrid stagger>
 	<Card title="Independent Cloud Engine" icon="rocket">
-		Operates on a dedicated, external high-performance cloud backend built to overcome Google Workspace execution time limits, sending quotas, and trigger constraints.
+		Operates on a dedicated, external high-performance cloud backend platform built to overcome Google Workspace execution time limits, sending quotas, and trigger constraints.
 	</Card>
 	<Card title="Zero-Login QR Scanner & Attendance" icon="approve-check">
-		Generate stateless HMAC-SHA256 `{QR Code}` tickets and direct `{Verify Link}` tags alongside 7-day signed staff authorization links (`{Full Scanner}`) for camera or camera-free browser check-in.
+		Generate stateless HMAC-SHA256 `{QR Code}` tickets and direct `{Verify Link}` tags alongside 7-day signed device authorization links (`{Full Scanner}`) for camera or camera-free browser check-in.
 	</Card>
 	<Card title="Dual Real-Time Attendance Receipts" icon="email">
-		Every check-in and check-out event dispatches an instant status confirmation email to the attendee and an activity log email to the staff member (CC'd to Form Admin).
+		Every check-in and check-out event dispatches an instant status confirmation email to the attendee and an activity audit log email to the staff member/user (CC'd to Form Admin).
 	</Card>
 	<Card title="Full-Featured Sheets Campaign Hub" icon="document">
 		Connect via the Google Sheets™ add-on using 1 connection slot to manage multi-tab forms, filter rows, and dispatch targeted bulk email campaigns.
@@ -65,7 +65,7 @@ Explore step-by-step guides and tutorials tailored to your organizational use ca
 <CardGrid>
 	<LinkCard
 		title="Office PC Kiosk & Self-Attendance"
-		description="Set up an automated office desktop attendance station or direct self-service check-in with camera & camera-free links."
+		description="Set up an automated office desktop attendance station or direct self-service check-in with click-to-verify links."
 		href="/tutorials/office-pc-kiosk-attendance/"
 	/>
 	<LinkCard
@@ -132,7 +132,7 @@ FormMail Hub decouples event capture in Google Workspace from backend delivery a
 ### 3. Stateful QR Attendance Engine
 - **Atomic Concurrency & 30-Day Rolling TTL:** Scans and verification clicks are processed under Redis key `checkin:{form_id}:{refCode}`, rejecting duplicate check-ins (`409 Conflict`) if already `IN`, and refreshing TTL to 30 days on every state transition.
 - **Camera & Camera-Free Verification:** Staff can scan visual QR codes with their authorized mobile camera or click direct manual verification links (`{Verify Link}` / `/qr-verify?t=...`) inside notification emails.
-- **7-Day Staff Authorization:** Personalized staff scanner links set a 7-day cryptographically signed authorization cookie on the staff browser.
+- **7-Day Browser Authorization:** Personalized scanner links set a 7-day cryptographically signed authorization cookie (`scan_perms`) on the user's browser.
 
 ---
 
@@ -144,23 +144,21 @@ Dynamic tags use single-pass scanning supporting `{Tag}`, `{{Tag}}`, and `${Tag}
 | :--- | :--- | :--- |
 | `{Question Title}` | Dynamically retrieves the submitted response for any form question field title. | All Templates |
 | `{Form title}` | The official title of the connected Google Form™. | All Templates |
-| `{All Fields}` | Formatted summary table of all form questions and submitted answers. | All Templates |
-| `{Linked Form}` | Direct URL link to the live Google Form™. | All Templates |
-| `{Unsubscribe Link}` | Form-specific automated opt-out link for compliance. | Respondent & Campaign Emails |
-| `{QR Code}` | Stateless QR code ticket image (HMAC-SHA256 signed) + manual verification link (`/qr-verify?t=...`). | Respondent Tickets & Staff Alerts |
-| `{Verify Link}` | Direct clickable verification URL (`/qr-verify?t=...`) for instant camera-free verification on PC/mobile. | Respondent Tickets & Staff Alerts |
+| `{All fields}` | Formatted summary table of all form questions and submitted answers. | All Templates |
+| `{Linked form}` | Direct URL link to the live Google Form™. | All Templates |
+| `{Unsubscribe link}` | Form-specific automated opt-out link for compliance. | Respondent & Campaign Emails |
+| `{QR Code}` | Stateless QR code ticket image (HMAC-SHA256 signed) + manual verification link (`/qr-verify?t=...`). | Respondent Tickets, Self-Attendance & Staff Alerts |
+| `{Verify Link}` | Direct clickable verification URL (`/qr-verify?t=...`) for instant camera-free verification on PC/mobile. | Respondent Tickets, Self-Attendance & Staff Alerts |
 | `{Check-in Scanner}` | Personalized, HMAC-SHA256 signed zero-login staff link (`checkin` mode, 7-day validity). | Staff / Team Emails Only |
 | `{Check-out Scanner}` | Personalized, HMAC-SHA256 signed zero-login staff link (`checkout` mode, 7-day validity). | Staff / Team Emails Only |
-| `{Full Scanner}` | Personalized, HMAC-SHA256 signed zero-login staff link (`both` mode, 7-day validity). | Staff / Team Emails Only |
-
-> **Security Isolation:** Scanner authorization tags (`{Check-in Scanner}`, `{Check-out Scanner}`, `{Full Scanner}`) are populated strictly in staff/team emails and automatically stripped from respondent emails.
+| `{Full Scanner}` | Personalized, HMAC-SHA256 signed zero-login link (`both` mode, 7-day validity). | Staff Emails & Submitter Self-Attendance |
 
 ---
 
 ## Granular Opt-Out & Compliance Scopes
 
 FormMail Hub manages unsubscribes across 3 strict scopes:
-1. **Form-Specific Respondent Unsubscribe:** Clicking `{Unsubscribe Link}` in custom templates or campaigns unsubscribes the respondent strictly from future emails related to that specific Form.
+1. **Form-Specific Respondent Unsubscribe:** Clicking `{Unsubscribe link}` in custom templates or campaigns unsubscribes the respondent strictly from future emails related to that specific Form.
 2. **Form-Specific System Daily Report Unsubscribe:** Unsubscribes Admins or Team Members from daily summary reports for that specific Form only.
 3. **User-Level SMTP Error Alert Unsubscribe:** Stops SMTP failure notification emails across all forms managed by that user account.
 
