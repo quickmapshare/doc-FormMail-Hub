@@ -13,7 +13,7 @@ hero:
     >
       Google Forms™ & Sheets™
     </span>
-  tagline: Powerful external cloud engine for automated emails, custom SMTP delivery, zero-login QR attendance check-in, and bulk broadcast campaigns.
+  tagline: Powerful external cloud engine for automated emails, custom SMTP delivery, zero-login QR attendance check-in, multi-mode analytics, and bulk broadcast campaigns.
   image:
     html: <img src="/logo.png" alt="FormMail Hub Logo" class="mx-auto h-32 w-auto" />
   actions:
@@ -49,10 +49,10 @@ import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
 		Connect via the Google Sheets™ add-on using 1 connection slot to manage multi-tab forms, filter rows, and dispatch targeted bulk email campaigns.
 	</Card>
 	<Card title="Custom SMTP & UI Protection" icon="setting">
-		Connect Gmail™ App Passwords, Amazon SES, SendGrid, or Mailgun. Unlocks full template, routing, and campaign capabilities once tested and verified.
+		Connect Gmail™ App Passwords, Amazon SES, SendGrid, or Mailgun. Unlocks full template, routing, campaign, and analytics capabilities once tested and verified.
 	</Card>
-	<Card title="Multi-Condition Logic & Privacy" icon="shield">
-		Evaluate multiple response fields simultaneously, enforce audience security isolation, and manage 3 granular unsubscribe scopes for full compliance.
+	<Card title="Multi-Mode Analytics & Daily Reports" icon="bars">
+		Track `emails_sent`, `emails_failed`, and `emails_opened` across `system`, `automation`, and `campaign` modes with automated midnight summary reports per form.
 	</Card>
 </CardGrid>
 
@@ -84,14 +84,14 @@ Explore step-by-step guides and tutorials tailored to your organizational use ca
 		href="/guides/email-campaigns/"
 	/>
 	<LinkCard
+		title="Analytics & Daily Summary Reports"
+		description="Monitor multi-mode email metrics (system, automation, campaign) and configure per-form daily reports."
+		href="/guides/analytics-daily-reports/"
+	/>
+	<LinkCard
 		title="Custom SMTP & Quota Scaling"
 		description="Configure Google App Passwords, Amazon SES, or SendGrid to bypass Workspace sending limits and unlock UI tabs."
 		href="/guides/smtp-setup/"
-	/>
-	<LinkCard
-		title="Dynamic Templates & Variable Tags"
-		description="Design responsive HTML emails with single-pass tags, QR ticket passes, and direct verification links."
-		href="/guides/template-customization/"
 	/>
 </CardGrid>
 
@@ -133,6 +133,10 @@ FormMail Hub decouples event capture in Google Workspace from backend delivery a
 - **Atomic Concurrency & 30-Day Rolling TTL:** Scans and verification clicks are processed under Redis key `checkin:{form_id}:{refCode}`, rejecting duplicate check-ins (`409 Conflict`) if already `IN`, and refreshing TTL to 30 days on every state transition.
 - **Camera & Camera-Free Verification:** Staff can scan visual QR codes with their authorized mobile camera or click direct manual verification links (`{Verify Link}` / `/qr-verify?t=...`) inside notification emails.
 - **7-Day Browser Authorization:** Personalized scanner links set a 7-day cryptographically signed authorization cookie (`scan_perms`) on the user's browser.
+
+### 4. Multi-Mode Metric Tracking & Daily Reports
+- **Multi-Mode Metrics:** Daily logging of `emails_sent`, `emails_failed`, and `emails_opened` strictly categorized across `system`, `automation`, and `campaign` execution modes.
+- **Midnight Summary Reports:** Automated daily reports dispatched at 00:00 (form timezone) via System SMTP to the Form Admin with per-form opt-out capability.
 
 ---
 
