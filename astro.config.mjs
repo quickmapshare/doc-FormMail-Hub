@@ -7,7 +7,7 @@ export default defineConfig({
         starlight({
             title: 'FormMail Hub - Docs',
             logo: {
-                src: './src/assets/logo_5.svg',
+                src: './src/assets/logo_16.svg',
             },
             favicon: '/favicon.ico',
             social: [
