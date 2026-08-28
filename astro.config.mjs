@@ -6,6 +6,9 @@ export default defineConfig({
     integrations: [
         starlight({
             title: 'Doc FormMail Hub',
+            logo: {
+                src: './src/assets/logo_3.svg',
+            },
             favicon: '/favicon.ico',
             social: [
                 { 
