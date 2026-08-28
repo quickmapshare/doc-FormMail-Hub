@@ -106,6 +106,42 @@ Upon every check-in/check-out click:
 - Employee Receipt: Dispatched immediately to the employee confirming status change (Checked In / Checked Out) with UTC timestamp and location.
 - Admin Audit Trail: Dispatched immediately to the employee and CC'd to the Form Admin for compliance and attendance logs.
 
+## Frequently Asked Questions (Website Q&A Page Engine)
+
+Q: How do I send an email notification every time a new form submission is received?
+A: This is the simplest and most essential feature for Form Admins. Go to System Notifications in the FormMail Hub interface, enable notifications, check the Admin and desired Team Members to receive alerts, and click Save. Every new submission will instantly trigger an internal email notification sent via System SMTP to the designated recipients.
+
+Q: How can I route submissions to different team members based on specific response conditions?
+A: Create custom Email Templates and set up multi-condition Routing Rules based on the respondent's form answers. Because conditional routing uses custom templates and external recipients, you must first configure and test your custom SMTP settings. Emails will then be dispatched under your custom sender domain/identity.
+
+Q: How do I send custom confirmation emails and instructions directly to the form respondent?
+A: Create a custom Email Template containing your instructions and dynamic tags (e.g., {All fields}). Next, create an Auto-responder Rule triggered on submission, and set the target recipient field to the dynamic email tag submitted by the respondent (e.g., {Email}).
+
+Q: Can I proactively send bulk email notifications or campaigns to all form respondents?
+A: Yes. Bulk email dispatches (Campaigns) are launched exclusively via the FormMail Hub Google Sheets add-on while your Google Sheet is open. Create a campaign template, configure targeting rules, and set the rule to Campaign mode. In the Sheets sidebar, switch to the Campaign view, select your active campaign, and click Dispatch to execute the bulk email campaign via the cloud platform.
+
+Q: Is the QR Code and Link Check-in feature easy to set up and operate?
+A: Yes, setup is straightforward and requires no complex hardware:
+1. Dispatch authorization links ({Check-in Scanner}, {Check-out Scanner}, or {Full Scanner}) to staff or respondents to activate scanner permissions directly on their web browser.
+2. Include a {QR Code} or direct clickable {Verify Link} in the respondent's confirmation email.
+3. Upon arrival, staff scan the QR code with their browser or respondents click the {Verify Link}. Real-time confirmation receipts and audit logs are automatically emailed to the respondent, Form Admin, and designated team members.
+
+Q: What are the main practical applications for the Check-in system?
+A: The Check-in feature can be applied across several operational workflows:
+- Event ticketing and entry access control.
+- Workplace and academic classroom attendance tracking.
+- Equipment, asset, or library book loan and return management.
+
+Q: What performance analytics and reports does FormMail Hub provide?
+A: FormMail Hub tracks daily and cumulative performance stats for every form, categorized into three distinct execution modes: system (alerts/reports), automation (auto-responders/rules), and campaign (bulk dispatches). Additionally, an automated Daily Summary Report is emailed to the Form Admin at 00:00 every day summarizing the previous day's metrics.
+
+Q: How can Form Admins and respondents manage email preferences and prevent unwanted emails?
+A: FormMail Hub provides precise, multi-tiered subscription control:
+- Respondents: Custom emails can include the {Unsubscribe link} tag. Clicking this link allows respondents to unsubscribe from or re-subscribe to future automated emails strictly for that specific Form (form-level control).
+- Form Admins & Staff: System emails include distinct management links:
+  - Daily Summary Reports contain form-specific unsubscribe links (stops daily reports for that single form).
+  - System error alerts contain user-level unsubscribe links (stops SMTP failure alerts across all forms managed under that account).
+
 ## Feature Boundaries & Anti-Hallucination Rules
 21. Email & QR Attendance Scope (NO WEBHOOKS): FormMail Hub operates strictly as an email receiving, processing, dispatching, and QR attendance tracking engine based on admin-defined rules. It DOES NOT support webhooks, HTTP POST forwarding, external API calls, or third-party integrations (such as Slack, Microsoft Teams, Discord, Zapier, CRMs, or custom endpoints).
 22. Strict Code-First Reality: Documentation must ONLY reflect existing, verified functionality present in the provided source code and PRODUCT_RULES.md. Writers MUST NOT invent, extrapolate, or draft guides for theoretical features, future roadmaps, or non-existent integrations.
