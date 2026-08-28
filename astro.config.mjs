@@ -5,7 +5,7 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
     integrations: [
         starlight({
-            title: 'FormMail Hub',
+            title: 'FormMail Hub - Documentation',
             logo: {
                 src: './src/assets/logo_3.svg',
             },
