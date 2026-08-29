@@ -1,6 +1,6 @@
 ---
 title: Conditional Logic & Smart Email Routing Guide
-description: Master multi-condition logic rules, targeted triggers, variable routing, department assignment, and fallback email workflows in FormMail Hub.
+description: Master multi-condition logic rules, targeted triggers, variable routing, department assignment, sender identity configuration, and fallback email workflows in FormMail Hub.
 ---
 
 Standard form submit triggers send identical email notifications for every single response. **FormMail Hub Multi-Condition Routing Logic** transforms this static workflow by evaluating multiple form response fields simultaneously to trigger targeted custom templates and route emails to specific recipients or internal teams.
@@ -60,10 +60,13 @@ Follow these steps to create a conditional email routing rule in FormMail Hub:
 4. Enter the **Target Value** (e.g., *Technical Support*).
 5. *(Optional)* Click **+ Add Condition** to evaluate multiple form response fields simultaneously using **AND** / **OR** logic.
 
-### Step 3: Configure Recipient & Template Actions
+### Step 3: Configure Recipient, Sender Identity & Template Actions
+Rule configurations in FormMail Hub control both the visual presentation and delivery routing:
 1. **To Recipients:** Enter static email addresses (e.g., `tech-support@yourcompany.com`) or select dynamic question tags like `{Email Address}`.
-2. **Email Template:** Choose a pre-built custom template.
-3. **Sender Identity / Custom SMTP:** Select the verified SMTP server account that dispatches this notification.
+2. **Internal Team Recipients:** Check specific Team Members from your roster to receive this conditional dispatch.
+3. **Custom Sender Information:** Specify the exact **Sender Name**, **Sender Email**, and **Reply-To** address directly within the rule settings to match the department or context.
+4. **Email Template:** Choose a pre-built custom template.
+5. **Sender Identity / Custom SMTP:** Select the verified SMTP server account that dispatches this notification.
 
 ### Step 4: Save & Activate
 1. Click **Save Rule**.
@@ -78,6 +81,7 @@ Follow these steps to create a conditional email routing rule in FormMail Hub:
 | Feature tabs locked | Custom SMTP not configured or tested. | Admins MUST configure and test custom SMTP under **Settings > SMTP Config** to unlock Rules, Templates, Campaigns, and Analytics. |
 | Rule does not trigger | Value mismatch or trailing spaces. | Ensure target values match form choices exactly, or use `Contains` operator. |
 | System SMTP cannot send rule email | Attempting to use System SMTP for rule notifications. | System SMTP is strictly restricted to sending system alerts (submission notifications, daily reports, SMTP error alerts) to Admin and Team Members. Use verified Custom SMTP for rules. |
+| Sender identity displays default | Sender name/email fields left empty on rule. | Configure custom `sender_name`, `sender_email`, and `reply_to` directly within the rule configuration. |
 
 ---
 
