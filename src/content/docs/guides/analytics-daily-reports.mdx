@@ -34,7 +34,7 @@ FormMail Hub captures every email transaction—categorized into three core deli
 |       METRICS TRACKED             |           |       EXECUTION MODES             |
 +-----------------------------------+           +-----------------------------------+
 | - emails_sent   (Delivered count) |           | 1. system: Operational alerts,   |
-| - emails_failed (Bounce & errors) |           |    daily reports, SMTP errors     |
+| - emails_failed (Terminal errors) |           |    daily reports, SMTP errors     |
 | - emails_opened (Tracking pixel)  |           | 2. automation: Auto-responders &  |
 |                                   |           |    submission-triggered rules     |
 |                                   |           | 3. campaign: Bulk emails from     |
@@ -43,9 +43,11 @@ FormMail Hub captures every email transaction—categorized into three core deli
 ```
 
 ### Metrics Tracked per Form
-- **`emails_sent`**: Total messages successfully handed off to target mail transfer agents (MTAs) and custom SMTP servers.
-- **`emails_failed`**: Total permanent (`BOUNCED_HARD`) and temporary (`BOUNCED_SOFT`) delivery failures or authentication errors.
-- **`emails_opened`**: Total unique and aggregate email opens recorded via privacy-compliant tracking endpoints.
+- **`emails_sent`**: Total messages successfully accepted and handed off to target mail transfer agents (MTAs) and custom SMTP servers.
+- **`emails_failed`**: Total permanent delivery failures (`BOUNCED_HARD`), unresolvable connection errors, or authentication failures recorded strictly when all retry attempts have been exhausted.
+- **`emails_opened`**: Total unique and aggregate email opens recorded via AES-256 encrypted, privacy-compliant tracking pixels.
+
+> **Retry & Failure Logging Mechanism:** If an email encounters a transient error, the worker queue retries the message automatically. The `emails_failed` metric is incremented **strictly on the final attempt** if all retry attempts fail, preventing transient network retries from inflating failure counts.
 
 ### 3 Execution Modes
 1. **`system`**: Automated operational alerts, daily summary reports, and SMTP connection error notifications dispatched via built-in System SMTP.
