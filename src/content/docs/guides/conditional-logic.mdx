@@ -1,9 +1,9 @@
 ---
-title: Conditional Logic & Smart Email Routing Guide
-description: Master multi-condition logic rules, targeted triggers, variable routing, department assignment, sender identity configuration, and fallback email workflows in FormMail Hub.
+title: Conditional Logic, Delayed Delivery & Smart Email Routing Guide
+description: Master multi-condition logic rules, delayed email delivery, targeted triggers, variable routing, department assignment, sender identity configuration, and recipient validation in FormMail Hub.
 ---
 
-Standard form submit triggers send identical email notifications for every single response. **FormMail Hub Multi-Condition Routing Logic** transforms this static workflow by evaluating multiple form response fields simultaneously to trigger targeted custom templates and route emails to specific recipients or internal teams.
+Standard form submit triggers send identical email notifications for every single response immediately upon submission. **FormMail Hub Multi-Condition Routing Logic & Delayed Delivery Engine** transforms this workflow by evaluating multiple form response fields simultaneously, introducing customizable delivery delays (seconds, minutes, hours, or days), triggering targeted custom templates, and routing emails to specific recipients or internal teams.
 
 Test conditional workflows using our official [Live Demo Form](https://docs.google.com/forms/d/e/1FAIpQLSc2lkYREd5ePz521uYfBDeumOOoPKeBP87i1aSpwokHdFMIHw/viewform) or install the add-on via the [Google Workspace Marketplace Listing](https://workspace.google.com/marketplace/app/formmail_hub/409227874327).
 
@@ -11,7 +11,7 @@ Test conditional workflows using our official [Live Demo Form](https://docs.goog
 
 ## 1. Prerequisites: Custom SMTP Requirement & UI Lock State
 
-Before configuring conditional logic rules or custom email templates, the Admin **MUST** complete Custom SMTP setup:
+Before configuring conditional logic rules, delayed delivery, or custom email templates, the Admin **MUST** complete Custom SMTP setup:
 
 - **Custom SMTP Requirement & UI Lock State:** Admins **MUST** configure and test custom SMTP settings before unlocking Templates, Rules, Campaigns, or Analytics. Until custom SMTP is active, these feature tabs remain strictly locked in the UI.
 - **Built-in System SMTP Scope:** Built-in System SMTP is **STRICTLY** restricted to sending system alerts (submission notifications, daily activity reports, and SMTP connection error alerts) to the Form Admin and selected Team Members. System SMTP **CANNOT** be used for custom templates, rule-based notifications, or respondent auto-responders.
@@ -20,12 +20,14 @@ Before configuring conditional logic rules or custom email templates, the Admin 
 
 ## 2. Core Architecture & Multi-Condition Logic
 
-Rules evaluate form response fields upon submission via the independent cloud platform engine before outgoing emails are constructed:
+Rules evaluate form response fields upon submission via the independent cloud platform engine before outgoing emails are scheduled and constructed:
 
 1. **Multi-Condition Evaluation:** Rules support evaluating multiple form response fields simultaneously to trigger targeted custom templates and route emails to specific recipients or internal teams.
 2. **Logic Combination Modes:**
    - **ALL Conditions Must Be Met (AND):** Every condition in the rule group must evaluate to true.
    - **ANY Condition May Be Met (OR):** The rule triggers if at least one condition evaluates to true.
+3. **Delayed Delivery Engine:** Emails can be scheduled for immediate dispatch (`0`) or deferred by a specified delay time across configurable units (**Seconds**, **Minutes**, **Hours**, or **Days**).
+4. **Mandatory Recipient Validation:** To prevent abandoned or orphaned delivery jobs, every rule requires selecting at least one team member recipient or specifying a valid customer email field.
 
 ### Condition Operator Reference
 
@@ -44,33 +46,64 @@ Rules evaluate form response fields upon submission via the independent cloud pl
 
 ## 3. Step-by-Step Setup Guide
 
-Follow these steps to create a conditional email routing rule in FormMail Hub:
+Follow these steps to create a conditional email routing rule with optional delayed delivery in FormMail Hub:
+
+```
+[ Form Submission Received ]
+             |
+             v
+[ Evaluate Multi-Condition Rules (AND / OR) ]
+             |
+     +-------+-------+
+     |               |
+     v (Match)       v (No Match)
+[ Check Delay Setting ]   [ Skip Rule ]
+     |
+     +---> Delay = 0 ---------> [ Instant Delivery via Custom SMTP ]
+     |
+     +---> Delay > 0 ---------> [ Queue in External Cloud Engine ]
+                                  (Wait Seconds / Minutes / Hours / Days)
+                                  |
+                                  v
+                                [ Deferred Dispatch via Custom SMTP ]
+```
 
 ### Step 1: Open Rule Configuration
 1. Ensure Custom SMTP is configured and tested under **Settings > SMTP Config** to unlock feature tabs.
-2. Launch Google Forms™ and open your form.
+2. Launch Google Forms™ or Google Sheets™ and open your connected form/sheet.
 3. Open the **FormMail Hub** add-on sidebar.
 4. Navigate to **Email Rules** > **Conditional Rules**.
 5. Click **+ Add Conditional Rule**.
 
 ### Step 2: Define Multi-Condition Triggers
-1. **Rule Name:** Enter a descriptive title (e.g., *Technical Support Escalation*).
+1. **Rule Name:** Enter a descriptive title (e.g., *Technical Support Escalation* or *Post-Event Follow-up Survey*).
 2. Select the **Target Form Field** from the drop-down menu (e.g., *Service Required*).
 3. Choose your **Operator** (e.g., *Equals*).
 4. Enter the **Target Value** (e.g., *Technical Support*).
 5. *(Optional)* Click **+ Add Condition** to evaluate multiple form response fields simultaneously using **AND** / **OR** logic.
 
-### Step 3: Configure Recipient, Sender Identity & Template Actions
-Rule configurations in FormMail Hub control both the visual presentation and delivery routing:
-1. **To Recipients:** Enter static email addresses (e.g., `tech-support@yourcompany.com`) or select dynamic question tags like `{Email Address}`.
-2. **Internal Team Recipients:** Check specific Team Members from your roster to receive this conditional dispatch.
-3. **Custom Sender Information:** Specify the exact **Sender Name**, **Sender Email**, and **Reply-To** address directly within the rule settings to match the department or context.
-4. **Email Template:** Choose a pre-built custom template.
-5. **Sender Identity / Custom SMTP:** Select the verified SMTP server account that dispatches this notification.
+### Step 3: Configure Recipients & Mandatory Validation
+Every rule requires at least one designated recipient:
+1. **Customer Email Field:** Specify a dynamic form field tag (e.g., `{Email Address}`) to route auto-responders directly to the submitter.
+2. **Team Member Recipients:** Check one or more Team Members from your roster to receive internal operational alerts.
+3. **Mandatory Validation Rule:** If neither a customer email field nor a team member is selected, the system will prevent saving the rule (`Cannot save rule! Please select at least one team member or specify a customer email field.`).
 
-### Step 4: Save & Activate
-1. Click **Save Rule**.
-2. Ensure the rule is toggled **Active**.
+### Step 4: Configure Delayed Delivery (Optional)
+FormMail Hub allows you to schedule auto-responders or internal alerts after a specific time interval:
+1. Locate the **Delay Delivery** section in the rule configuration panel.
+2. **Delay Time:** Enter a numerical value (default is `0` for immediate sending).
+3. **Time Unit:** Select your preferred unit from the dropdown:
+   - **Seconds:** Short buffer for transactional confirmations.
+   - **Minutes:** Follow-up reminders (e.g., 15 minutes after intake).
+   - **Hours:** Timed notifications (e.g., 2 hours post-registration).
+   - **Days:** Drip sequences or feedback requests (e.g., 3 days after onboarding).
+4. **Rule Preview:** The rule summary preview displays your configured delay (e.g., `Delay Delivery: 2 Days` or `Delay Delivery: Immediately`).
+
+### Step 5: Configure Custom Sender Information & Template
+1. **Sender Information:** Specify custom **Sender Name**, **Sender Email**, and **Reply-To** address to reflect the department or escalation team.
+2. **Email Template:** Select the pre-designed custom email template.
+3. **Sender Identity / Custom SMTP:** Choose the verified custom SMTP transport responsible for dispatching this notification.
+4. Click **Save Rule** and ensure the rule is toggled **Active**.
 
 ---
 
@@ -78,17 +111,20 @@ Rule configurations in FormMail Hub control both the visual presentation and del
 
 | Symptom / Issue | Likely Cause | Solution |
 | :--- | :--- | :--- |
-| Feature tabs locked | Custom SMTP not configured or tested. | Admins MUST configure and test custom SMTP under **Settings > SMTP Config** to unlock Rules, Templates, Campaigns, and Analytics. |
-| Rule does not trigger | Value mismatch or trailing spaces. | Ensure target values match form choices exactly, or use `Contains` operator. |
-| System SMTP cannot send rule email | Attempting to use System SMTP for rule notifications. | System SMTP is strictly restricted to sending system alerts (submission notifications, daily reports, SMTP error alerts) to Admin and Team Members. Use verified Custom SMTP for rules. |
-| Sender identity displays default | Sender name/email fields left empty on rule. | Configure custom `sender_name`, `sender_email`, and `reply_to` directly within the rule configuration. |
+| **Feature tabs locked in UI** | Custom SMTP not configured or tested. | Admins MUST configure and test custom SMTP under **Settings > SMTP Config** to unlock Rules, Templates, Campaigns, and Analytics. |
+| **"Cannot save rule!" error** | No recipient specified. | Select at least one team member or specify a customer email field (`{Email}`). |
+| **Rule does not trigger** | Value mismatch or trailing spaces. | Ensure target values match form choices exactly, or use the `Contains` operator. |
+| **Delayed email not received immediately** | Delay Delivery time is configured. | Check if a delay (minutes, hours, days) was set on the rule. The cloud engine holds the job in queue until the delay expires. |
+| **System SMTP cannot send rule email** | Attempting to use System SMTP for rule notifications. | System SMTP is strictly restricted to system alerts (submission alerts, daily reports, SMTP error alerts) to Admin and Team Members. Use verified Custom SMTP for rules. |
 
 ---
 
 ## 5. Official Resources & Assistance
 
-- **Help Desk:** Contact support via [Support & Contact](https://formmail.vietutd.com/contact).
-- **Compliance & Legal:** Review our [Privacy Policy](https://formmail.vietutd.com/privacy-policy) and [Terms of Service](https://formmail.vietutd.com/terms-of-service).
+- **Interactive Sandbox:** Test live submissions on our [Live Demo Form](https://docs.google.com/forms/d/e/1FAIpQLSc2lkYREd5ePz521uYfBDeumOOoPKeBP87i1aSpwokHdFMIHw/viewform).
+- **Add-on Installation:** [Google Workspace Marketplace Listing](https://workspace.google.com/marketplace/app/formmail_hub/409227874327).
+- **Technical Support:** Contact our team directly via [Support & Contact](https://formmail.vietutd.com/contact).
+- **Legal & Compliance:** Review our [Privacy Policy](https://formmail.vietutd.com/privacy-policy) and [Terms of Service](https://formmail.vietutd.com/terms-of-service).
 
 ---
 

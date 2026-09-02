@@ -1,6 +1,6 @@
 ---
 title: FormMail Hub - Complete User & Administration Guide
-description: Comprehensive guide for Google Forms email automation, custom SMTP setup, team routing, QR attendance tracking, staff scanner management, campaign dispatches, and quota expansion with FormMail Hub.
+description: Comprehensive guide for Google Forms email automation, custom SMTP setup, team routing, delayed delivery, QR attendance tracking, staff scanner management, campaign dispatches, and quota expansion with FormMail Hub.
 ---
 
 Welcome to the official **FormMail Hub** user and administration guide. FormMail Hub transforms standard Google Forms™ into an enterprise-grade customer communications, lead engagement, event ticketing, and email automation platform.
@@ -63,7 +63,7 @@ FormMail Hub separates internal administrative alerts from client-facing custom 
           v                                                              v
 +-----------------------------------+                          +-----------------------------------+
 |    BUILT-IN SYSTEM SMTP RELAY     |                          | USER-CONFIGURED CUSTOM SMTP       |
-+-----------------------------------+                          +-----------------------------------+\
++-----------------------------------+                          +-----------------------------------+
 | - RESTRICTED strictly to system   |                          | - MANDATORY setup & test BEFORE   |
 |   alerts (submission alerts,      |                          |   unlocking Templates, Rules,     |
 |   daily reports, SMTP error alerts)|                          |   Campaigns, or Analytics         |
@@ -87,7 +87,7 @@ Admins **MUST** configure and test custom SMTP settings before unlocking Templat
 
 ---
 
-## 4. Auto-Responders, Conditional Rules & Dynamic Tags
+## 4. Auto-Responders, Conditional Rules, Delayed Delivery & Dynamic Tags
 
 Once custom SMTP settings are configured and tested by the Admin to unlock feature tabs:
 
@@ -99,8 +99,10 @@ Templates parse submission fields into dynamic tags supporting `{Tag}`, `{{Tag}}
 - **Dynamic Question Field Tags:** Any exact form question title (e.g., `{First Name}`, `{Email Address}`).
 - **Security Isolation:** Scanner authorization tags (`{Check-in Scanner}`, `{Check-out Scanner}`, `{Full Scanner}`) are populated strictly in staff/team emails and automatically stripped from respondent emails.
 
-### Multi-Condition Routing Logic
-Rules support evaluating multiple form response fields simultaneously to trigger targeted custom templates and route emails to specific recipients or internal teams based on exact conditions.
+### Multi-Condition Routing & Delayed Delivery
+- **Multi-Condition Logic:** Rules support evaluating multiple form response fields simultaneously to trigger targeted custom templates and route emails to specific recipients or internal teams.
+- **Delayed Delivery Engine:** Configure optional delivery delays for rule execution (e.g., sending an auto-responder or follow-up email after a set number of **Seconds**, **Minutes**, **Hours**, or **Days**).
+- **Mandatory Recipient Selection:** To guarantee deliverability, rules require at least one designated recipient (either a selected team member or a mapped customer email field).
 
 ---
 
