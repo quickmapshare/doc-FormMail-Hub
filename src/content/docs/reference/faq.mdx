@@ -1,11 +1,11 @@
 ---
 title: Frequently Asked Questions & Operational Q&A
-description: Comprehensive answers to common questions about email notifications, conditional routing, auto-responders, bulk marketing campaigns, QR code check-in, and delivery analytics in FormMail Hub.
+description: Comprehensive answers to common questions about email notifications, conditional routing, auto-responders, delayed delivery, bulk marketing campaigns, QR code check-in, and delivery analytics in FormMail Hub.
 ---
 
 import { Card, CardGrid } from '@astrojs/starlight/components';
 
-This guide addresses the most frequent questions regarding setup, delivery routing, conditional rules, bulk campaigns, zero-login QR attendance, and subscription management in **FormMail Hub**.
+This guide addresses the most frequent questions regarding setup, delivery routing, conditional rules, delivery delays, bulk campaigns, zero-login QR attendance, and subscription management in **FormMail Hub**.
 
 To test any feature live or experience automated triggers firsthand, submit our [Live Demo Form](https://docs.google.com/forms/d/e/1FAIpQLSc2lkYREd5ePz521uYfBDeumOOoPKeBP87i1aSpwokHdFMIHw/viewform) or install the add-on from the [Google Workspace Marketplace Listing](https://workspace.google.com/marketplace/app/formmail_hub/409227874327).
 
@@ -22,7 +22,7 @@ To test any feature live or experience automated triggers firsthand, submit our 
 
 ### Q: How can I route submissions to different team members based on specific response conditions?
 **A:** 
-1. Configure and test your **Custom SMTP** provider under **Settings > SMTP Config** (unlocks the *Templates* and *Rules* tabs).
+1. Configure and test your **Custom SMTP** provider under **Settings > SMTP Config** (unlocks the *Templates*, *Rules*, *Campaigns*, and *Analytics* tabs).
 2. Create custom Email Templates under **Email Templates**.
 3. Go to **Email Rules** > **Conditional Rules** and configure multi-condition routing rules based on the respondent's form answers (e.g., Department equals "Support" or Budget > 5000).
 4. Emails will be dynamically dispatched under your custom sender domain and transport.
@@ -33,6 +33,9 @@ To test any feature live or experience automated triggers firsthand, submit our 
 2. Create an **Auto-responder Rule** triggered on form submission.
 3. Set the target recipient field to the dynamic email tag submitted by the respondent (e.g., `{Email}`).
 4. When respondents complete the form, FormMail Hub immediately sends them their customized confirmation email.
+
+### Q: Can I set a delay for emails triggered by form submission rules?
+**A:** **Yes.** When setting up Auto-responder or conditional routing rules, you can configure an optional delivery delay. Admins can specify custom delay durations in **seconds**, **minutes**, **hours**, or **days** to schedule timed follow-up emails automatically. The cloud platform engine buffers and dispatches the email once the specified duration elapses.
 
 ---
 
@@ -61,44 +64,44 @@ To test any feature live or experience automated triggers firsthand, submit our 
 ## 3. QR Code Ticketing & Attendance Check-in FAQ
 
 ### Q: Is the QR Code and Link Check-in feature easy to set up and operate?
-**A:** Yes. Setup is straightforward and requires no specialized scanning hardware or mobile app installations:
+**A:** **Yes.** Setup is straightforward and requires no complex hardware or mobile app installations:
 1. **Dispatch Authorization Links:** Send personalized scanner links (`{Check-in Scanner}`, `{Check-out Scanner}`, or `{Full Scanner}`) to staff or respondents to activate 7-day scanner permissions directly on their web browser.
 2. **Include Passes in Confirmation Emails:** Include a `{QR Code}` (visual QR code + embedded link) or direct clickable `{Verify Link}` (`/qr-verify?t=...`) in the respondent's confirmation email.
 3. **Execute Verification:** Upon arrival, staff scan the QR code with their mobile camera, or respondents/staff click the direct `{Verify Link}` on an authorized device. Real-time confirmation receipts and audit logs are automatically emailed to the respondent, Form Admin, and designated team members.
 
+### Q: What are the main practical applications for the Check-in system?
+**A:** The Check-in feature can be applied across several operational workflows:
+- **Event ticketing and entry access control:** Issuing digital entry passes and scanning tickets at entry gates.
+- **Workplace and academic classroom attendance tracking:** Tracking employee shift clock-ins or student lecture attendance.
+- **Office PC Kiosk Attendance:** Allowing employees to verify daily check-in and check-out directly from their office desktop browser without physical scanners.
+- **Equipment, asset, or library book loan and return management:** Recording asset checkout and checkin status transitions.
+
 ### Q: Can check-in be performed without a camera scanner?
 **A:** **Yes.** Both attendees and staff can perform verification without a camera by clicking the direct manual verification link (`{Verify Link}` / `/qr-verify?t=...`) rendered in their notification or confirmation emails on any authorized browser.
 
-### Q: What are the main practical applications for the Check-in system?
-**A:** The Check-in engine supports diverse operational use cases:
-- **Event Ticketing & Door Access Control:** Issuing digital entry passes and scanning tickets at entry gates.
-- **Workplace & Classroom Attendance Tracking:** Tracking employee shift clock-ins or student lecture attendance.
-- **Office PC Kiosk Attendance:** Allowing employees to verify daily check-in and check-out directly from their office desktop browser.
-- **Asset & Equipment Tracking:** Managing loan and return workflows for company laptops, tools, or library books.
-
 ### Q: How does the system prevent duplicate check-ins?
-**A:** When an authorized user or staff member scans a ticket, the backend endpoint (`/api/qr/action`) verifies state under Redis key `checkin:{form_id}:{refCode}`. If a ticket status is already `IN`, duplicate check-in attempts are rejected with a `409 Conflict` status, and the user is alerted immediately on screen. Every state change extends the record's TTL to **30 days (2,592,000 seconds)** without deleting data.
+**A:** When an authorized user or staff member accesses the verification link, the backend endpoint (`/api/qr/action`) verifies permissions and updates the ticket's explicit state (`IN` or `OUT`) under Redis key `checkin:{form_id}:{refCode}`. If a ticket status is already `IN`, duplicate check-in attempts are rejected with a `409 Conflict` status code. Every state change extends the record's TTL to **30 days (2,592,000 seconds)** without deleting data.
 
 ### Q: How do automated dual real-time attendance receipts work?
-**A:** Upon every successful check-in or check-out event, the engine dispatches two independent real-time emails:
-1. **Attendee Attendance Email:** Dispatched to the ticket holder confirming their updated status (`Checked In` or `Checked Out`), Event Name, Reference ID, and UTC timestamp.
-2. **Staff/Admin Audit Log Email:** Dispatched to the scanning operator and **CC'd directly to the Form Admin**, recording attendee identity, ticket reference code, operator identity, and scan timestamp.
+**A:** Upon every successful Check-in or Check-out event, the engine dispatches two independent, real-time email notifications:
+1. **Attendee Attendance Email:** Dispatched to the ticket holder confirming their updated status (`Checked In` or `Checked Out`), Event Name, Reference ID, Location (if applicable), and UTC timestamp.
+2. **Staff/Admin Audit Log Email:** Dispatched directly to the operator/user and **CC'd to the Form Owner** recording an audit trail containing attendee identity, ticket reference code, operator identity, and scan timestamp.
 
 ---
 
 ## 4. Analytics, Daily Reports & Subscription Management
 
 ### Q: What performance analytics and reports does FormMail Hub provide?
-**A:** FormMail Hub tracks daily and cumulative performance stats per Form across three distinct execution modes:
+**A:** FormMail Hub tracks daily and cumulative performance stats for every form, categorized into three distinct execution modes:
 - `system`: Automated operational alerts, daily reports, and SMTP connection error alerts.
 - `automation`: Submission-triggered auto-responders and rule-based emails.
 - `campaign`: Proactive bulk emails dispatched from the Google Sheets add-on.
 
-Additionally, an automated **Daily Summary Report** is emailed to the Form Admin at **00:00 (according to each form's configured timezone)** summarizing the previous day's `emails_sent`, `emails_failed`, and `emails_opened`.
+Additionally, an automated **Daily Summary Report** is emailed via System SMTP to the Form Admin at **00:00 (according to each form's configured timezone)** summarizing the previous day's `emails_sent`, `emails_failed`, and `emails_opened`.
 
 ### Q: How can Form Admins and respondents manage email preferences and prevent unwanted emails?
 **A:** FormMail Hub provides precise, multi-tiered subscription control across 3 granular scopes:
-- **Form-Specific Respondent Unsubscribe:** Custom email templates can include the `{Unsubscribe link}` tag. Clicking this link unsubscribes the respondent strictly from future automated emails related to that specific Form.
+- **Form-Specific Respondent Unsubscribe:** Custom email templates can include the `{Unsubscribe link}` tag. Clicking this link allows respondents to unsubscribe strictly from future emails related to that specific Form.
 - **Form-Specific System Daily Report Unsubscribe:** Daily summary report emails sent to Admins include an unsubscribe link that stops daily reports strictly for that specific Form, keeping reports active for others.
 - **User-Level SMTP Error Alert Unsubscribe:** SMTP error alert emails sent to Admins include an unsubscribe link scoped to the user account level, stopping SMTP failure alerts across all forms managed under that account.
 
@@ -113,7 +116,7 @@ Additionally, an automated **Daily Summary Report** is emailed to the Form Admin
 **A:** **No.** Built-in System SMTP is strictly restricted to internal administrative alerts (submission notifications, daily summary reports, and SMTP connection error alerts) sent to the Form Admin and selected Team Members. Custom auto-responders and campaign broadcasts must route through verified Custom SMTP.
 
 ### Q: Does FormMail Hub support webhooks, Zapier, or third-party CRM integrations?
-**A:** **No.** FormMail Hub operates strictly as an email receiving, processing, dispatching, and QR attendance tracking engine. It **DOES NOT** support webhooks, HTTP POST forwarding, external API calls, or third-party integrations (such as Slack, Discord, Zapier, or external CRMs).
+**A:** **No.** FormMail Hub operates strictly as an email receiving, processing, dispatching, and QR attendance tracking engine. It **DOES NOT** support webhooks, HTTP POST forwarding, external API calls, or third-party integrations (such as Slack, Microsoft Teams, Discord, Zapier, or external CRMs).
 
 ---
 
