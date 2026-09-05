@@ -150,7 +150,7 @@ Dynamic tags use single-pass scanning supporting `{Tag}`, `{{Tag}}`, and `${Tag}
 | `{Form title}` | The official title of the connected Google Form™. | All Templates |
 | `{All fields}` | Formatted summary table of all form questions and submitted answers. | All Templates |
 | `{Linked form}` | Direct URL link to the live Google Form™. | All Templates |
-| `{Unsubscribe link}` | Form-specific automated opt-out link for compliance. | Respondent & Campaign Emails |
+| `{Unsubscribe link}` | Form-specific automated opt-out link for compliance with RFC 8058 one-click headers. | Respondent & Campaign Emails |
 | `{QR Code}` | Stateless QR code ticket image (HMAC-SHA256 signed) + manual verification link (`/qr-verify?t=...`). | Respondent Tickets, Self-Attendance & Staff Alerts |
 | `{Verify Link}` | Direct clickable verification URL (`/qr-verify?t=...`) for instant camera-free verification on PC/mobile. | Respondent Tickets, Self-Attendance & Staff Alerts |
 | `{Check-in Scanner}` | Personalized, HMAC-SHA256 signed zero-login staff link (`checkin` mode, 7-day validity). | Staff / Team Emails Only |
@@ -162,7 +162,7 @@ Dynamic tags use single-pass scanning supporting `{Tag}`, `{{Tag}}`, and `${Tag}
 ## Granular Opt-Out & Compliance Scopes
 
 FormMail Hub manages unsubscribes across 3 strict scopes:
-1. **Form-Specific Respondent Unsubscribe:** Clicking `{Unsubscribe link}` in custom templates or campaigns unsubscribes the respondent strictly from future emails related to that specific Form.
+1. **Form-Specific Respondent Unsubscribe:** Clicking `{Unsubscribe link}` in custom templates or campaigns unsubscribes the respondent strictly from future emails related to that specific Form, and automatically injects RFC 8058 `List-Unsubscribe` one-click headers.
 2. **Form-Specific System Daily Report Unsubscribe:** Unsubscribes Admins or Team Members from daily summary reports for that specific Form only via body link or RFC 8058 one-click headers.
 3. **User-Level SMTP Error Alert Unsubscribe:** Stops SMTP failure notification emails across all forms managed by that user account.
 

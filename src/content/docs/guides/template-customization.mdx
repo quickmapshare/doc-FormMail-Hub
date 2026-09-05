@@ -36,18 +36,18 @@ Below is the strict verified catalog of dynamic tags supported in FormMail Hub t
 | :--- | :--- | :--- | :--- |
 | `{Question Title}` | Dynamically retrieves the response answer for any form field question label. | `Jane` (for question field `{First Name}`) | All Templates |
 | `{Form title}` | The official name of the connected Google Form™. | `Customer Onboarding Intake` | All Templates |
-| `{All Fields}` | Renders a full summary table of all form questions and submitted answers. | *(Formatted table of all responses)* | All Templates |
-| `{Linked Form}` | Generates the direct URL link to the connected Google Form™. | `https://docs.google.com/forms/...` | All Templates |
-| `{Unsubscribe Link}` | Generates an automated opt-out / unsubscribe URL for CAN-SPAM / GDPR compliance. | `https://hub.formmailhub.com/unsubscribe/...` | Respondent Templates & Campaigns |
+| `{All fields}` | Renders a full summary table of all form questions and submitted answers. | *(Formatted table of all responses)* | All Templates |
+| `{Linked form}` | Generates the direct URL link to the connected Google Form™. | `https://docs.google.com/forms/...` | All Templates |
+| `{Unsubscribe link}` | Generates an automated opt-out / unsubscribe URL for CAN-SPAM / GDPR compliance and injects RFC 8058 One-Click headers. | `https://hub.formmailhub.com/unsubscribe/...` | Respondent Templates & Campaigns |
 | `{QR Code}` | Generates a secure, stateless QR code ticket image (signed with HMAC-SHA256) along with a direct manual verification URL (`/qr-verify?t=...`). | `[Embedded QR Ticket Image + Manual Link]` | Respondent Auto-responders, Campaigns & Staff Notifications |
 | `{Verify Link}` | Generates a direct clickable manual verification URL (`/qr-verify?t=...`) for instant camera-free check-in. | `https://hub.formmailhub.com/qr-verify?t=...` | Respondent Tickets, Self-Attendance & Staff Alerts |
 | `{Check-in Scanner}` | Generates a personalized, HMAC-SHA256 signed zero-login link for staff check-in scanning (`checkin` mode, 7-day validity). | `https://hub.formmailhub.com/qr-auth?t=...` | Staff / Team Emails Only |
 | `{Check-out Scanner}` | Generates a personalized, HMAC-SHA256 signed zero-login link for staff check-out scanning (`checkout` mode, 7-day validity). | `https://hub.formmailhub.com/qr-auth?t=...` | Staff / Team Emails Only |
 | `{Full Scanner}` | Generates a personalized, HMAC-SHA256 signed zero-login link for dual scanning / browser authorization (`both` mode, 7-day validity). | `https://hub.formmailhub.com/qr-auth?t=...` | Staff Emails & Submitter Self-Attendance |
 
-> **Strict Dynamic Tag Rule:** Dynamic template tags are strictly handled by single-pass scanning supporting `{Tag}`, `{{Tag}}`, and `${Tag}` enclosure formats. The valid built-in system tags are strictly `{Form title}`, `{All Fields}`, `{Linked Form}`, `{Unsubscribe Link}`, `{QR Code}`, `{Verify Link}`, `{Check-in Scanner}`, `{Check-out Scanner}`, and `{Full Scanner}`, alongside any dynamic form question field title. Writers and template authors MUST NOT invent or assume unverified system tags.
+> **Strict Dynamic Tag Rule:** Dynamic template tags are strictly handled by single-pass scanning supporting `{Tag}`, `{{Tag}}`, and `${Tag}` enclosure formats. The valid built-in system tags are strictly `{Form title}`, `{Linked form}`, `{All fields}`, `{Unsubscribe link}`, `{QR Code}`, `{Verify Link}`, `{Check-in Scanner}`, `{Check-out Scanner}`, and `{Full Scanner}`, alongside any dynamic form question field title. Writers and template authors MUST NOT invent or assume unverified system tags.
 
-> **Audience Targeting & Self-Attendance Scope:** Scanner authorization tags (`{Check-in Scanner}`, `{Check-out Scanner}`, `{Full Scanner}`) are routed to Staff/Team Members for event verification. For internal automated employee self-attendance (Rule 16), `{Full Scanner}` followed by `{Verify Link}` can be included in auto-responder templates sent directly to form submitters, allowing employees to authorize their office PC browser without manual team member pre-registration.
+> **Audience Targeting & Self-Attendance Scope:** Scanner authorization tags (`{Check-in Scanner}`, `{Check-out Scanner}`, `{Full Scanner}`) are routed to Staff/Team Members for event verification. For internal automated employee self-attendance (Rule 20), `{Full Scanner}` followed by `{Verify Link}` can be included in auto-responder templates sent directly to form submitters, allowing employees to authorize their office PC browser without manual team member pre-registration.
 
 > **Custom SMTP Requirement:** Admins MUST configure and test custom SMTP settings before unlocking Templates, Rules, Campaigns, or Analytics. Until custom SMTP is active, these feature tabs remain strictly locked in the UI.
 
@@ -132,7 +132,7 @@ Follow these steps to construct a personalized auto-responder email template:
       </div>
     </div>
     <div class="footer">
-      <p>Sent via FormMail Hub. <a href="{Unsubscribe Link}">Unsubscribe</a></p>
+      <p>Sent via FormMail Hub. <a href="{Unsubscribe link}">Unsubscribe</a></p>
     </div>
   </div>
 </body>
@@ -150,7 +150,7 @@ Before deploying a template to live users, verify variable substitution and layo
 
 - **Send Test Submission Email:** Click **Send Test Email** in the template editor to dispatch a sample email populated with test question data.
 - **Mobile Responsiveness Verification:** Open test emails on both mobile devices and desktop clients (Outlook, Gmail, Apple Mail) to check for proper padding and scaling.
-- **Dynamic Tag Audit:** Confirm that dynamic question field tags (e.g., `{First Name}`) and system tags (e.g., `{Form title}`, `{All Fields}`, `{Unsubscribe Link}`, `{QR Code}`, `{Verify Link}`) resolve correctly.
+- **Dynamic Tag Audit:** Confirm that dynamic question field tags (e.g., `{First Name}`) and system tags (e.g., `{Form title}`, `{All fields}`, `{Unsubscribe link}`, `{QR Code}`, `{Verify Link}`) resolve correctly.
 
 ---
 
