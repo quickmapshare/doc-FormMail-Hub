@@ -61,13 +61,16 @@ FormMail Hub employs a decentralized, zero-third-party database architecture for
 
 ## 3. Regulatory Compliance Frameworks & Unsubscribe Mechanics
 
-FormMail Hub provides built-in tools to help organizations comply with global privacy laws and email delivery standards.
+FormMail Hub provides built-in tools to help organizations comply with global privacy laws, RFC email standards, and modern inbox provider sender requirements.
 
 ### Granular Opt-Out Scopes
 Opt-out management operates across 3 strict scopes tracked by our Cloud Backend endpoints:
 1. **Form-Specific Respondent Unsubscribe:** Inserting `{Unsubscribe Link}` in custom email templates (Auto-responders and Campaign emails) allows respondents to unsubscribe strictly from future emails related to that specific Google Form.
-2. **Form-Specific System Daily Report Unsubscribe:** Daily summary report emails sent to Admins/Team Members feature an opt-out link scoped strictly to that specific Form (halting daily summary alerts for that form only).
+2. **Form-Specific System Daily Report Unsubscribe:** Daily summary report emails sent to Admins/Team Members feature an opt-out link and RFC 8058 `List-Unsubscribe` / `List-Unsubscribe-Post: List-Unsubscribe=One-Click` headers scoped strictly to that specific Form (halting daily summary alerts for that form only).
 3. **User-Level SMTP Error Alert Unsubscribe:** SMTP failure alert notifications sent to the Admin include an unsubscribe link scoped to the User level (stopping connection failure alerts across all forms managed by that user account).
+
+### RFC 8058 & Email Deliverability Compliance
+- **One-Click Unsubscribe Headers:** In compliance with 2024+ email authentication requirements (including Google and Yahoo sender guidelines), administrative daily reports include `List-Unsubscribe` and `List-Unsubscribe-Post: List-Unsubscribe=One-Click` headers, enabling instant one-click unsubscribe action in compatible email clients without opening the email body.
 
 ### GDPR (General Data Protection Regulation) Compliance
 - **Right to Access & Rectification:** Form responses reside entirely in user-owned Google Sheets. Administrators can edit, export, or delete respondent records at any time without third-party intervention.

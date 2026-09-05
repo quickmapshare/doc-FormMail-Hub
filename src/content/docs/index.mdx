@@ -52,7 +52,7 @@ import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
 		Connect Gmail™ App Passwords, Amazon SES, SendGrid, or Mailgun. Unlocks full template, routing, campaign, and analytics capabilities once tested and verified.
 	</Card>
 	<Card title="Multi-Mode Analytics & Daily Reports" icon="bars">
-		Track `emails_sent`, `emails_failed`, and `emails_opened` across `system`, `automation`, and `campaign` modes with automated midnight summary reports per form.
+		Track `emails_sent`, `emails_failed`, and `emails_opened` across `system`, `automation`, and `campaign` modes with automated midnight summary reports and RFC 8058 one-click unsubscribe headers.
 	</Card>
 </CardGrid>
 
@@ -136,7 +136,7 @@ FormMail Hub decouples event capture in Google Workspace from backend delivery a
 
 ### 4. Multi-Mode Metric Tracking & Daily Reports
 - **Multi-Mode Metrics:** Daily logging of `emails_sent`, `emails_failed`, and `emails_opened` strictly categorized across `system`, `automation`, and `campaign` execution modes.
-- **Midnight Summary Reports:** Automated daily reports dispatched at 00:00 (form timezone) via System SMTP to the Form Admin with per-form opt-out capability.
+- **Midnight Summary Reports:** Automated daily reports dispatched at 00:00 (form timezone) via System SMTP to the Form Admin with per-form opt-out capability and RFC 8058 `List-Unsubscribe: One-Click` header compliance.
 
 ---
 
@@ -163,7 +163,7 @@ Dynamic tags use single-pass scanning supporting `{Tag}`, `{{Tag}}`, and `${Tag}
 
 FormMail Hub manages unsubscribes across 3 strict scopes:
 1. **Form-Specific Respondent Unsubscribe:** Clicking `{Unsubscribe link}` in custom templates or campaigns unsubscribes the respondent strictly from future emails related to that specific Form.
-2. **Form-Specific System Daily Report Unsubscribe:** Unsubscribes Admins or Team Members from daily summary reports for that specific Form only.
+2. **Form-Specific System Daily Report Unsubscribe:** Unsubscribes Admins or Team Members from daily summary reports for that specific Form only via body link or RFC 8058 one-click headers.
 3. **User-Level SMTP Error Alert Unsubscribe:** Stops SMTP failure notification emails across all forms managed by that user account.
 
 ---

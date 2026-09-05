@@ -99,7 +99,7 @@ To keep administrators informed without requiring manual dashboard logins, FormM
        +----------------------+----------------------+
        |                                             |
        v                                             v
-[ Admin Reviews Daily Metrics ]        [ Optional: Form Unsubscribe Link ]
+[ Admin Reviews Daily Metrics ]        [ RFC 8058 One-Click / Body Unsubscribe ]
                                                      |
                                                      v
                                   [ Opts Out Strictly for That Form ]
@@ -111,10 +111,11 @@ To keep administrators informed without requiring manual dashboard logins, FormM
 - **Content:** Comprehensive breakdown of the previous day's `emails_sent`, `emails_failed`, and `emails_opened`, categorized across `system`, `automation`, and `campaign` execution modes.
 - **Quota-Free Delivery:** Delivered via built-in System SMTP, ensuring that daily reports consume 0% of your custom SMTP or Google Workspace sending quota.
 
-### Granular Per-Form Unsubscribe Control
+### Granular Per-Form Unsubscribe Control & RFC 8058 One-Click Compliance
 Admins managing multiple forms can independently opt out of daily reports for high-volume or non-critical forms without disabling reports globally:
-- **Embedded Unsubscribe Link:** Every daily report includes a dedicated unsubscribe link.
-- **Scope Isolation:** Clicking the link stops daily reports **strictly for that specific form**, keeping daily summary reports active for all other forms.
+- **Embedded Unsubscribe Link:** Every daily report includes a dedicated form-specific unsubscribe link.
+- **One-Click List-Unsubscribe Header Support:** In addition to the footer link, daily report emails include standard `List-Unsubscribe` and `List-Unsubscribe-Post: List-Unsubscribe=One-Click` email headers. This allows modern email clients (such as Gmail and Apple Mail) to display native one-click unsubscribe buttons, ensuring full compliance with modern mail provider standards.
+- **Scope Isolation:** Unsubscribing stops daily reports **strictly for that specific form**, keeping daily summary reports active for all other forms.
 
 ---
 
@@ -125,7 +126,7 @@ FormMail Hub manages unsubscribes across three strict, independent scopes:
 | Scope Level | Target Audience | Trigger Context | System Action |
 | :--- | :--- | :--- | :--- |
 | **Form-Specific Respondent Unsubscribe** | Form Respondents | `{Unsubscribe Link}` clicked in Auto-responders or Campaigns | Unsubscribes respondent's email address strictly from future emails related to that specific Form. |
-| **Form-Specific System Daily Report Unsubscribe** | Form Admin / Team | Unsubscribe link in Daily Summary Report email | Stops daily summary report emails strictly for that specific Form. |
+| **Form-Specific System Daily Report Unsubscribe** | Form Admin / Team | Unsubscribe link in Daily Summary Report email or native 1-click header (`List-Unsubscribe`) | Stops daily summary report emails strictly for that specific Form. |
 | **User-Level SMTP Error Alert Unsubscribe** | Form Admin | Unsubscribe link in SMTP failure warning email | Stops SMTP connection failure notifications across all forms managed by that user account. |
 
 ---
