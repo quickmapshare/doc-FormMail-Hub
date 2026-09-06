@@ -83,7 +83,7 @@ Within the FormMail Hub user interface, the **Analytics** dashboard correspondin
 
 ---
 
-## 4. Per-Form Daily Summary Reports & Unsubscribe Control
+## 4. Per-Form Daily Summary Reports & Timezone Standardization
 
 To keep administrators informed without requiring manual dashboard logins, FormMail Hub automatically generates and delivers daily summary emails.
 
@@ -91,7 +91,7 @@ To keep administrators informed without requiring manual dashboard logins, FormM
 [ Daily Midnight Boundary (00:00 in Form's Configured Timezone) ]
                               |
                               v
-   [ Cloud Engine Aggregates Previous Day's Multi-Mode Metrics ]
+   [ Cloud Engine Normalizes Timezone & Aggregates Daily Metrics ]
                               |
                               v
  [ System SMTP Dispatches Daily Summary Report Email to Form Admin ]
@@ -110,6 +110,12 @@ To keep administrators informed without requiring manual dashboard logins, FormM
 - **Schedule:** At the start of a new day (**00:00 according to each form's configured timezone**), the system automatically generates and dispatches a Daily Summary Report email via System SMTP to the Form Admin for each active Form.
 - **Content:** Comprehensive breakdown of the previous day's `emails_sent`, `emails_failed`, and `emails_opened`, categorized across `system`, `automation`, and `campaign` execution modes.
 - **Quota-Free Delivery:** Delivered via built-in System SMTP, ensuring that daily reports consume 0% of your custom SMTP or Google Workspace sending quota.
+
+### Robust Timezone Support & Normalization
+FormMail Hub features an intelligent timezone normalization engine (`statsCounter.mjs`) ensuring accurate midnight report scheduling across diverse regional formats:
+- **IANA Timezone Strings:** Full support for canonical timezones (e.g., `America/New_York`, `Europe/London`, `Asia/Ho_Chi_Minh`, `Asia/Tokyo`).
+- **ISO Offset & GMT Formats:** Accepts standard offset notations such as `+07:00`, `-05:00`, `GMT+7`, `UTC+7`, `GMT+07:00`, or direct integer offsets (`7`, `-5`, `+7`).
+- **Safe Date Formatting & Fallback:** Date extraction uses native `Intl.DateTimeFormat` part parsing with automated fallback to `UTC` to guarantee 100% resilient date boundaries.
 
 ### Granular Per-Form Unsubscribe Control & RFC 8058 One-Click Compliance
 Admins managing multiple forms can independently opt out of daily reports for high-volume or non-critical forms without disabling reports globally:
