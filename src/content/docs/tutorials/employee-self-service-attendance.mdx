@@ -27,16 +27,16 @@ The internal self-service attendance workflow operates on a dual-role pattern:
                                           v
 +-----------------------------------------------------------------------------------+
 |                        EMPLOYEE DEVICE AUTHORIZATION                              |
-|  Employee opens {Full Scanner} authorization link in mobile browser              |
-|  -> Sets secure 7-day cookie on device (/qr-auth?t=...)                           |
+|  Employee opens {Full Scanner} authorization link in mobile/desktop browser       |
+|  -> Authorizes device securely for 7 days without needing an account password     |
 +-----------------------------------------------------------------------------------+
                                           |
                                           v
 +-----------------------------------------------------------------------------------+
-|                      SELF-SERVICE SCAN & ATOMIC STATE ENGINE                      |
-|  Employee scans their own {QR Code} ticket using their authorized browser         |
-|  -> Engine updates Redis state key: checkin:{form_id}:{refCode}                   |
-|  -> Sets status to IN or OUT and extends TTL to 30 days (2,592,000s)              |
+|                      SELF-SERVICE SCAN & ATTENDANCE ENGINE                        |
+|  Employee scans their own {QR Code} ticket or clicks {Verify Link} on their device |
+|  -> Cloud engine records Check-in or Check-out status in real-time                |
+|  -> Maintains 30-day rolling attendance retention                                 |
 +-----------------------------------------------------------------------------------+
                                           |
                                           v
@@ -50,10 +50,10 @@ The internal self-service attendance workflow operates on a dual-role pattern:
 ### Key Workflow Components:
 1. **Dual Role Assignment:** Every employee acts as both a **Team Member** (authorized scanner operator) and a **Form Respondent** (individual pass holder).
 2. **Single Ticket Enforcement:** Native single-pass restrictions per respondent are enforced directly at the form entry point by enabling **"Limit to 1 response"** in Google Forms Settings.
-3. **Zero-Login Authentication:** Employees authorize their mobile devices using cryptographically signed authorization links (`{Full Scanner}`) valid for 7 days.
-4. **Stateless Ticket Verification:** Each employee receives a secure `{QR Code}` ticket signed with HMAC-SHA256 containing their identity and reference code (`refCode`).
-5. **Stateful Attendance Tracking:** Scans update explicit ticket state (`IN` or `OUT`) under Redis key `checkin:{form_id}:{refCode}` with automatic 30-day rolling TTL retention.
-6. **Dual Audit Email Receipts:** Every scan immediately triggers confirmation receipts for both the employee and management (Rule 15).
+3. **Zero-Login Authentication:** Employees authorize their devices using secure 1-click authorization links (`{Full Scanner}`) valid for 7 days.
+4. **Digital Ticket Verification:** Each employee receives a digital `{QR Code}` ticket pass containing their identity and reference code.
+5. **Real-Time Attendance Tracking:** Scans update explicit ticket state (`IN` or `OUT`) with automatic 30-day rolling data retention.
+6. **Dual Audit Email Receipts:** Every scan immediately triggers confirmation receipts for both the employee and management.
 
 ---
 
@@ -105,7 +105,7 @@ Use these explicit dynamic tags in your employee ticket template:
 ```text
 {QR Code}
 ```
-*Generates a secure, stateless QR code ticket pass signed with HMAC-SHA256 containing reference ID.*
+*Generates a visual QR code ticket image with embedded link for scanning.*
 
 ```text
 {Form title}
@@ -174,9 +174,9 @@ To allow employees to scan their own QR passes, you must send them a personalize
 
 | Dynamic Tag | Mode | Functionality |
 | :--- | :--- | :--- |
-| `{Check-in Scanner}` | `checkin` | Authorizes device exclusively for arrival clock-in scans (7-day cookie). |
-| `{Check-out Scanner}` | `checkout` | Authorizes device exclusively for departure clock-out scans (7-day cookie). |
-| `{Full Scanner}` | `both` | **Recommended for Employees:** Authorizes device for both clock-in and clock-out scanning (7-day cookie). |
+| `{Check-in Scanner}` | `checkin` | Authorizes device exclusively for arrival clock-in scans (7-day validity). |
+| `{Check-out Scanner}` | `checkout` | Authorizes device exclusively for departure clock-out scans (7-day validity). |
+| `{Full Scanner}` | `both` | **Recommended for Employees:** Authorizes device for both clock-in and clock-out scanning (7-day validity). |
 
 > **Security & Audience Isolation Rule:** Scanner authorization tags (`{Check-in Scanner}`, `{Check-out Scanner}`, `{Full Scanner}`) are populated **strictly in team member email notifications**. To guarantee security isolation, scanner links are automatically stripped from standard respondent emails.
 
@@ -194,12 +194,12 @@ To enable self-service attendance scanning on your mobile phone, click your pers
 
 IMPORTANT INSTRUCTIONS:
 1. Open or copy this link directly in the exact mobile browser app (e.g., Chrome or Safari) you will use to scan your QR badge.
-2. Authorization sets a secure browser cookie valid for 7 days.
+2. Authorization sets a secure browser session valid for 7 days.
 3. Once authorized, bookmark the scanning page for daily access.
 ```
 
 > **Warning: Browser Session Isolation Note**  
-> Because scanner authorization relies on a secure cookie set during link activation (`/qr-auth?t=...`), opening the link inside an in-app email previewer (such as Gmail's or Outlook's built-in webview) will **NOT** authorize external browsers (such as default Safari, mobile Chrome, or a standalone camera app). Employees **MUST** copy and paste the Auth link directly into the exact browser application used for scanning QR codes.
+> Because scanner authorization relies on a secure browser session set during link activation, opening the link inside an in-app email previewer (such as Gmail's or Outlook's built-in webview) will **NOT** authorize external browsers (such as default Safari, mobile Chrome, or a standalone camera app). Employees **MUST** copy and paste the Auth link directly into the exact browser application used for scanning QR codes.
 
 ---
 
@@ -211,13 +211,13 @@ Once an employee activates their authorization link on their mobile device brows
 [ Employee Arrival ]
          |
          v
-Employee opens authorized mobile browser (/qr-verify interface)
+Employee opens authorized mobile browser
          |
          v
-Employee points phone camera at their digital {QR Code} badge
+Employee points phone camera at their digital {QR Code} badge (or clicks {Verify Link})
          |
          v
-System verifies signature & displays Live Attendance Status Badge:
+System verifies authorization & displays Live Attendance Status Badge:
    - ⚪ Status: Not Checked-In Yet  (Initial)
    - 🟢 Status: Checked-In         (Active Shift)
    - 🚪 Status: Checked-Out        (Shift Completed)
@@ -226,40 +226,40 @@ System verifies signature & displays Live Attendance Status Badge:
 Employee taps 'Check-In' or 'Check-Out' button
          |
          v
-Backend processing via /api/qr/action:
-   - Validates HMAC-SHA256 payload & scanner permissions
-   - Updates state in Redis key checkin:{form_id}:{refCode}
-   - Extends record TTL to 30 days (2,592,000 seconds)
+Backend processing:
+   - Validates scanner permissions
+   - Updates state (IN / OUT)
+   - Extends rolling record retention to 30 days
          |
          v
-Automated Dual Real-Time Email Receipts Dispatched (Rule 15)
+Automated Dual Real-Time Email Receipts Dispatched
 ```
 
-### Atomic State Engine Rules & Concurrency Control
-When an employee scans their pass, the backend (`/api/qr/action`) enforces atomic state transitions under Redis key `checkin:{form_id}:{refCode}`:
+### Attendance Engine Rules & Concurrency Control
+When an employee scans their pass, the platform enforces strict state transitions:
 
 - **Clock-In Transition:** 
-  - Validates current state. If the status is already `IN`, the system rejects duplicate clock-ins with a `409 Conflict` status code and alerts the user on screen.
-  - If valid, sets status to `IN`, records the operator email and UTC timestamp, and refreshes the Redis key TTL to **30 days (2,592,000 seconds)**.
+  - Validates current state. If the status is already `IN`, the system rejects duplicate clock-ins and alerts the user on screen.
+  - If valid, sets status to `IN`, records the operator email and UTC timestamp, and refreshes the retention period to **30 days**.
 - **Clock-Out Transition:**
   - Validates that the ticket is currently in `IN` state. If the status is not `IN`, clock-out is denied.
-  - Updates status to `OUT`, records the operator email and UTC timestamp, and refreshes the Redis key TTL to **30 days** without deleting the historical record.
+  - Updates status to `OUT`, records the operator email and UTC timestamp, and refreshes the retention period to **30 days** without deleting the historical record.
 
 ---
 
-## 7. Step 5: Automated Dual Real-Time Receipts (Rule 15)
+## 7. Step 5: Automated Dual Real-Time Receipts
 
 Upon every successful self-service clock-in or clock-out event, FormMail Hub instantly dispatches two independent real-time email notifications:
 
 ### Receipt 1: Employee Attendance Receipt
 Dispatched immediately to the employee:
 - **Subject:** `Attendance Confirmation: {Form title}`
-- **Payload:** Updated status (`Checked In` or `Checked Out`), Event/Form Name, Reference Pass ID (`refCode`), and exact UTC timestamp.
+- **Payload:** Updated status (`Checked In` or `Checked Out`), Event/Form Name, Reference Pass ID, and exact UTC timestamp.
 
 ### Receipt 2: Management Audit Log Email
 Dispatched immediately to the employee's scanner identity and **CC'd directly to the Form Admin**:
 - **Recipient:** Scanning Employee (CC: Primary Connector / Form Admin).
-- **Payload:** Complete audit trail recording employee identity, ticket reference code (`refCode`), operator identity, action mode (`checkin`/`checkout`), and scan timestamp.
+- **Payload:** Complete audit trail recording employee identity, ticket reference code, operator identity, action mode (`checkin`/`checkout`), and scan timestamp.
 
 ---
 
@@ -268,11 +268,11 @@ Dispatched immediately to the employee's scanner identity and **CC'd directly to
 | Symptom / Error | Root Cause | Technical Remediation |
 | :--- | :--- | :--- |
 | **Feature tabs locked in UI** | Custom SMTP not configured or connection test failed. | Navigate to **Settings > SMTP Config**, enter custom SMTP credentials (e.g., Gmail App Password or SES), and click **Test Connection**. |
-| **Employee generated multiple tickets** | "Limit to 1 response" is disabled in Google Form Settings. | In Google Forms Settings > Responses, turn on **\"Limit to 1 response\"**. The backend engine tracks each ticket's canonical state under `checkin:{form_id}:{refCode}`. |
+| **Employee generated multiple tickets** | "Limit to 1 response" is disabled in Google Form Settings. | In Google Forms Settings > Responses, turn on **"Limit to 1 response"**. The backend engine tracks each ticket's canonical state automatically. |
 | **Scanner tag appears blank in email** | Scanner tags included in respondent emails instead of team emails. | `{Check-in Scanner}`, `{Check-out Scanner}`, and `{Full Scanner}` tags are populated **strictly in team member notifications** and stripped from respondent emails for security isolation. |
-| **\"Unauthorized Device\" error on scan** | Browser session isolation mismatch. | Opening the Auth link in an in-app email previewer sets the cookie in the previewer, not the default browser. Copy the Auth link directly into Safari or Chrome. |
-| **Duplicate scan rejected (`409 Conflict`)** | Employee attempted to clock in while already marked `IN`. | The employee is already clocked in (`🟢 Status: Checked-In`). To clock out, select the **Check-Out** action button on screen. |
-| **Scanner link expired** | 7-day authorization token elapsed. | Re-send the scanner authorization email to generate a fresh 7-day `/qr-auth?t=...` link for the employee. |
+| **"Unauthorized Device" error on scan** | Browser session isolation mismatch. | Opening the Auth link in an in-app email previewer sets authorization in the previewer, not the default browser. Copy the Auth link directly into Safari or Chrome. |
+| **Duplicate scan rejected** | Employee attempted to clock in while already marked `IN`. | The employee is already clocked in (`🟢 Status: Checked-In`). To clock out, select the **Check-Out** action button on screen. |
+| **Scanner link expired** | 7-day authorization window elapsed. | Re-send the scanner authorization email to generate a fresh 7-day authorization link for the employee. |
 
 ---
 
