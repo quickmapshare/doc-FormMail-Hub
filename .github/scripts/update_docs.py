@@ -6,7 +6,7 @@ import re
 from google import genai
 
 print("========================================")
-print("🚀 AI MULTI-PAGE DOCS BUILDER & EXPANDER v2.5 (USER-CENTRIC HELP CENTER ENGINE)")
+print("🚀 AI USER-CENTRIC DOCS BUILDER & EXPANDER v3.0 (FORM ADMIN FOCUS)")
 
 MODEL_NAME = os.environ.get("GEMINI_MODEL", "gemini-3.7-flash") 
 print(f"🤖 Gemini Model Engine: {MODEL_NAME}")
@@ -64,7 +64,7 @@ product_rules = """# PRODUCT RULES & ABSOLUTE TRUTHS (GROUND TRUTH)
 21. Unsubscribe Mechanics & Granular Scopes: The system handles unsubscribe requests via Cloud Backend tracking endpoints across 3 strict scopes:
     - Form-Specific Respondent Unsubscribe: Admins can insert {Unsubscribe link} into custom email templates (Auto-responders and Campaign emails). Clicking this link unsubscribes the respondent's email address strictly from future emails related to that specific Form.
     - Form-Specific System Daily Report Unsubscribe: Daily summary report emails sent to Admins/Team Members include an unsubscribe link scoped strictly to that specific Form (stopping daily reports for that single form).
-    - User-Level SMTP Error Alert Unsubscribe: SMTP error alert emails sent to the Admin include an unsubscribe link scoped to the User level (stopping all SMTP connection failure notifications across all forms managed under that account).
+    - User-Level SMTP Error Alert Unsubscribe: SMTP error alert emails sent to the Admin include an unsubscribe link scoped to the User level (stopping all SMTP connection failure notifications across all forms managed by that user account).
 
 ## Step-by-Step Implementation: Office PC Kiosk & Automated Self-Attendance System
 Organizations can set up direct self-service attendance for employees on their office computers using click-to-verify links without requiring manual team member pre-registration, physical QR codes, or camera scanners.
@@ -157,6 +157,7 @@ A: FormMail Hub provides precise, multi-tiered subscription control:
 27. Live Demo Form: https://docs.google.com/forms/d/e/1FAIpQLSc2lkYREd5ePz521uYfBDeumOOoPKeBP87i1aSpwokHdFMIHw/viewform
 28. Support & Contact: https://formmail.vietutd.com/contact
 """
+
 with open(rules_file, "w", encoding="utf-8") as f:
     f.write(product_rules)
 
@@ -184,7 +185,6 @@ for root, dirs, files in os.walk("src"):
 
 priority_sources = [f for f in all_source_files if any(k in f.lower() for k in keywords)]
 other_sources = [f for f in all_source_files if f not in priority_sources]
-
 selected_sources = (priority_sources[:8] + other_sources[:4])
 
 for s_file in selected_sources:
@@ -196,24 +196,26 @@ for s_file in selected_sources:
 
 diff_context = code_diff if code_diff else "NO RECENT CODE DIFF."
 
-# 4. PROMPT CẬP NHẬT TRANG CHỦ & TÀI LIỆU DÀNH CHO NGƯỜI DÙNG (FORM ADMIN & DECISION MAKERS)
+# 4. PROMPT CẬP NHẬT TRANG CHỦ & TÀI LIỆU HƯỚNG TỚI FORM ADMIN
 prompt = f"""
-You are an expert Help Center Author & Customer Success Strategist for 'FormMail Hub'.
-Your primary mission is to maintain and expand the user-facing documentation suite for **Form Admins, Event Coordinators, HR Managers, and Business Decision-Makers** searching for Google Forms/Sheets automation solutions.
+You are an expert UX Content Strategist and Technical Communicator for 'FormMail Hub'.
+Your primary role is to write clear, engaging, elegant, and action-oriented documentation for Form Admins, Event Managers, HR Professionals, and Business Owners who use Google Forms & Google Sheets.
 
-TARGET AUDIENCE & TONALITY GUIDELINES (STRICT COMPLIANCE REQUIRED):
-1. **Target Audience**: Non-technical Form Admins, Event Hosts, Office Managers, and Business Users. DO NOT write technical documentation meant for internal software engineers or backend developers.
-2. **Tone & Style**: Welcoming, professional, clear, and solution-driven (similar to Stripe, Notion, or HubSpot Help Centers). Focus heavily on **What this feature does for you**, **Step-by-step UI setup instructions**, and **Business Value**.
-3. **Hide Backend Jargon & Implementation Details**:
-   - Translate internal code mechanics into plain, benefit-driven language.
-   - NEVER mention internal source file names (e.g. `templateParser.js`), internal API routes (e.g. `/api/qr/action`), backend keys (`Redis`, `checkin:{{form_id}}:{{refCode}}`), or HTTP status codes (`409 Conflict`).
-   - Explain security/tech concepts simply: e.g., instead of "HMAC-SHA256 signed payload", write "secure 1-click authorization link"; instead of "Redis TTL 30 days", write "automatically saved in real-time and securely retained for 30 days".
-4. **Focus on UI & Practical Workflows**: Clearly describe buttons, tabs, dropdowns, and step-by-step actions inside the Google Forms add-on, Google Sheets add-on, and FormMail Hub web dashboard interface.
+CRITICAL AUDIENCE & TONAL RULES (USER-CENTRIC DOCUMENTATION):
+1. AUDIENCE: Form Admins, Event Organizers, HR Ops, Business Leaders. They do NOT care about developer internals or database keys. They care about SOLVING PROBLEMS (e.g., automated email replies, ticket check-in, bulk notifications, workplace attendance).
+2. TECHNICAL TRANSLATION (DO NOT USE DEV JARGON IN USER DOCS):
+   - NEVER mention internal code filenames (e.g., DO NOT write `templateParser.js`).
+   - NEVER mention database keys or Redis mechanics (e.g., DO NOT write `checkin:form_id:refCode` or `Redis TTL`).
+   - NEVER mention internal API paths (e.g., DO NOT write `/api/qr/action`).
+   - NEVER write deep crypto jargon like "HMAC-SHA256 payload" or "stateless ticket mechanics". Instead, write "Secure 1-click authorization link (no password required)" or "Automated real-time attendance verification".
+   - Translate technical constraints into clear UI prerequisites (e.g., "Note: Custom SMTP must be configured before unlocking Email Templates and Rules").
+3. FOCUS ON VALUE & EASY UI STEPS: Frame features as practical solutions. Use step-by-step numbered instructions, UI button navigation (e.g., "Go to Templates -> Click Create New"), dynamic tag callouts (e.g., `{{QR Code}}`), and real-world use cases (Event Access Control, Classroom Attendance, Asset Tracking).
+4. ABSOLUTE COMPLIANCE WITH GROUND TRUTH: All 24 Product Rules must be respected 100% (e.g., strictly NO webhooks, Custom SMTP required for auto-responders, Campaigns launched ONLY from Google Sheets Add-on). Express these as clear product rules/prerequisites for the user.
 
 ABSOLUTE PRODUCT RULES (GROUND TRUTH - NEVER VIOLATE THESE):
 {product_rules}
 
-SAMPLED CODE & API IMPLEMENTATION (Use strictly to understand UI/feature behavior; DO NOT quote raw code files in user guides):
+SAMPLED CODE & API IMPLEMENTATION (For context only - translate logic into user-facing UI features):
 {json.dumps(source_files_content, indent=2)}
 
 RAW CODE DIFF (IF ANY):
@@ -224,35 +226,35 @@ CURRENT PUBLISHED DOCUMENTATION FILES:
 
 DOCUMENTATION EXPANSION & HOMEPAGE ARCHITECTURE INSTRUCTIONS:
 
-TASK 0 (MANDATORY USER-FRIENDLY HOMEPAGE MAINTENANCE - `src/content/docs/index.mdx`):
-- YOU MUST ALWAYS UPDATE or REVIEW `src/content/docs/index.mdx` to serve as a clean, engaging Portal for Form Admins and prospective users.
-- **Visual Structure**: Modern, clean, and inspiring using Starlight / MDX components (`Card`, `CardGrid`, callouts).
-- **Value Proposition**: Clearly highlight how FormMail Hub solves Google Forms execution limits, enables seamless QR/Link event ticketing, powers office self-attendance, sends bulk email campaigns from Google Sheets, and manages custom SMTP.
-- **Quick Navigation**: Provide intuitive cards leading to practical guides (`/tutorials/qr-event-checkin-guide`, `/guides/smtp-setup`, `/guides/campaigns`, etc.) and official resources.
+TASK 0 (MANDATORY CREATIVE HOMEPAGE MAINTENANCE - `src/content/docs/index.mdx`):
+- YOU MUST ALWAYS UPDATE or REVIEW `src/content/docs/index.mdx` to reflect the latest platform capabilities.
+- **Creative & Visual Structure**: Make the homepage modern, professional, and inspiring for Form Admins. Use Starlight / MDX components (`<CardGrid>`, `<Card>`).
+- **User Narrative**: Highlight how FormMail Hub transforms Google Forms & Sheets into a complete email automation and QR ticket attendance hub without quota limits.
+- **Quick Navigation Cards**: Provide direct links to key admin guides (`/tutorials/qr-event-checkin-guide`, `/guides/smtp-setup`, `/guides/campaigns`, `/guides/office-pc-attendance`, etc.) and official links (Marketplace, Demo Form, Support).
 
 TASK 1 (PROACTIVE USER-CENTRIC TUTORIAL & GUIDE CREATION):
-Analyze documentation gaps. Create or expand step-by-step user guides under `src/content/docs/tutorials/` or `src/content/docs/guides/` for practical workflows (e.g., Event Check-in Ticketing, Office PC Kiosk Attendance, Custom SMTP Configuration, Bulk Campaigns).
+Identify gaps in user docs. Create or update articles under `src/content/docs/tutorials/` or `src/content/docs/guides/` targeting common admin workflows (e.g., Office PC Self-Attendance, Custom SMTP Configuration, Bulk Campaigns from Sheets, Event QR Ticketing).
 
-TASK 2 (USER ACCESSIBILITY & READABILITY STANDARDS):
-Use clear numbered steps, visual callouts (`> **Tip:**`, `> **Note:**`), code blocks for dynamic tags (e.g., `{{QR Code}}`, `{{Verify Link}}`, `{{Full Scanner}}`), and FAQ/Troubleshooting sections.
+TASK 2 (FORMATTING & ACCESSIBILITY):
+- Use clean Markdown callouts (`> **Tip:**`, `> **Prerequisite:**`).
+- Include practical FAQs at the end of guides addressing common user questions.
 
-TASK 3 (STRICT LINK WEAVING & GROUND TRUTH COMPLIANCE):
-- Contextually weave official links in created/updated docs (Marketplace Listing, Live Demo Form, Support, Privacy Policy, Terms of Service).
-- Ensure 100% adherence to Ground Truths (e.g. No Webhooks, Bulk Campaigns only available in Google Sheets).
-- If ALL docs including `src/content/docs/index.mdx` are completely up-to-date, visually appealing, non-technical, and 100% aligned with ground truths, return: `@@@NO_UPDATES_NEEDED@@@`.
+TASK 3 (STRICT LINK WEAVING):
+Contextually weave official resources into articles (Marketplace, Demo Form, Privacy, Terms, Support).
+If ALL docs including `src/content/docs/index.mdx` are completely up-to-date, user-friendly, beautifully structured, and 100% aligned with Ground Truth, return: `@@@NO_UPDATES_NEEDED@@@`.
 
 STRICT FORMAT DELIMITERS (DO NOT USE JSON):
 
 @@@FILE_PATH: src/content/docs/index.mdx
 @@@CONTENT:
 ---
-title: FormMail Hub Help Center & Knowledge Base
-description: The complete guide to automated email notifications, QR ticket attendance tracking, and bulk campaigns for Google Forms & Sheets.
+title: FormMail Hub Help Center & Guide
+description: Transform Google Forms & Sheets into an automated email engine, QR ticket scanner, and attendance management system.
 template: splash
 hero:
-  tagline: Enterprise-grade email automation & QR attendance tracking for Google Forms & Sheets.
+  tagline: Enterprise email automation, QR ticket check-in, and bulk campaigns for Google Forms & Sheets.
   actions:
-    - text: Get Started Guide
+    - text: QR Check-in Quickstart
       link: /tutorials/qr-event-checkin-guide/
       icon: right-arrow
     - text: Try Live Demo Form
@@ -263,29 +265,29 @@ hero:
 
 import {{ Card, CardGrid }} from '@astrojs/starlight/components';
 
-## Why Choose FormMail Hub?
+## What You Can Do with FormMail Hub
 
 <CardGrid stack>
-  <Card title="Independent Cloud Power" icon="rocket">
-    Bypasses native Google Workspace limits to reliably process high-volume email workflows and submission triggers in real time.
+  <Card title="High-Capacity Cloud Engine" icon="rocket">
+    Process unlimited notifications and confirmation emails reliably, bypassing native Google Workspace execution limits.
   </Card>
-  <Card title="App-Free QR & Link Check-in" icon="approve-check">
-    Equip event staff or employees with secure 1-click scanner links ({{Check-in Scanner}}) for camera or browser verification without logins.
+  <Card title="Password-Free QR Scanner" icon="approve-check">
+    Authorize staff browsers with 1-click links ({{Check-in Scanner}}) for instant camera or manual ticket verification.
   </Card>
-  <Card title="Dual Real-Time Receipts" icon="email">
-    Automatically dispatches attendance confirmation emails to respondents while sending instant audit logs to staff and managers.
+  <Card title="Instant Dual Email Receipts" icon="email">
+    Automatically send confirmation receipts to attendees and real-time audit logs to event staff upon every check-in/out.
   </Card>
-  <Card title="Google Sheets Campaign Hub" icon="document">
-    Launch targeted bulk email campaigns directly from your responses spreadsheet using customizable filters and templates.
+  <Card title="Google Sheets Bulk Campaigns" icon="document">
+    Send targeted bulk email campaigns directly from your Google Sheet with customizable filtering and templates.
   </Card>
 </CardGrid>
 
-(Additional rich markdown content, guides index, and official links...)
+(Include user-centric feature guides overview, step-by-step navigation, and official links...)
 @@@END_FILE
 """
 
 try:
-    print("⏳ Đang gửi dữ liệu cho AI phân tích, thiết kế Trang Chủ & hoàn thiện bài viết...")
+    print("⏳ Đang gửi dữ liệu cho AI phân tích, tối ưu tài liệu dành riêng cho Form Admin...")
     response = client.models.generate_content(
         model=MODEL_NAME,
         contents=prompt
@@ -315,7 +317,7 @@ try:
 
     if not docs_to_update:
         if "@@@NO_UPDATES_NEEDED@@@" in cleaned_text:
-            print("✅ AI BÁO CÁO: Trang chủ và toàn bộ tài liệu đã đạt chuẩn sáng tạo, trực quan và khớp 100% Ground Truth.")
+            print("✅ AI BÁO CÁO: Trang chủ và toàn bộ tài liệu đã đạt chuẩn trải nghiệm người dùng Admin và khớp 100% Ground Truth.")
             sys.exit(0)
         else:
             print("❌ LỖI: AI không trả về block nội dung hợp lệ nào.")
@@ -341,7 +343,7 @@ try:
         with open(target_path, "w", encoding="utf-8") as f:
             f.write(content.strip())
             
-        print(f"✅ Đã ghi nhận/Cập nhật file: {target_path}")
+        print(f"✅ Đã ghi nhận/Cập nhật file người dùng: {target_path}")
 
 except Exception as e:
     print(f"❌ LỖI khi thực thi script: {e}")
