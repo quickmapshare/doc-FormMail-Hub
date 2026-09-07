@@ -64,7 +64,7 @@ product_rules = """# PRODUCT RULES & ABSOLUTE TRUTHS (GROUND TRUTH)
 21. Unsubscribe Mechanics & Granular Scopes: The system handles unsubscribe requests via Cloud Backend tracking endpoints across 3 strict scopes:
     - Form-Specific Respondent Unsubscribe: Admins can insert {Unsubscribe link} into custom email templates (Auto-responders and Campaign emails). Clicking this link unsubscribes the respondent's email address strictly from future emails related to that specific Form.
     - Form-Specific System Daily Report Unsubscribe: Daily summary report emails sent to Admins/Team Members include an unsubscribe link scoped strictly to that specific Form (stopping daily reports for that single form).
-    - User-Level SMTP Error Alert Unsubscribe: SMTP error alert emails sent to the Admin include an unsubscribe link scoped to the User level (stopping all SMTP connection failure notifications across all forms managed by that user account).
+    - User-Level SMTP Error Alert Unsubscribe: SMTP error alert emails sent to the Admin include an unsubscribe link scoped to the User level (stopping all SMTP connection failure notifications across all forms managed under that account).
 
 ## Step-by-Step Implementation: Office PC Kiosk & Automated Self-Attendance System
 Organizations can set up direct self-service attendance for employees on their office computers using click-to-verify links without requiring manual team member pre-registration, physical QR codes, or camera scanners.
@@ -206,7 +206,7 @@ TARGET AUDIENCE & TONALITY GUIDELINES (STRICT COMPLIANCE REQUIRED):
 2. **Tone & Style**: Welcoming, professional, clear, and solution-driven (similar to Stripe, Notion, or HubSpot Help Centers). Focus heavily on **What this feature does for you**, **Step-by-step UI setup instructions**, and **Business Value**.
 3. **Hide Backend Jargon & Implementation Details**:
    - Translate internal code mechanics into plain, benefit-driven language.
-   - NEVER mention internal source file names (e.g. `templateParser.js`), internal API routes (e.g. `/api/qr/action`), backend keys (`Redis`, `checkin:{form_id}:{refCode}`), or HTTP status codes (`409 Conflict`).
+   - NEVER mention internal source file names (e.g. `templateParser.js`), internal API routes (e.g. `/api/qr/action`), backend keys (`Redis`, `checkin:{{form_id}}:{{refCode}}`), or HTTP status codes (`409 Conflict`).
    - Explain security/tech concepts simply: e.g., instead of "HMAC-SHA256 signed payload", write "secure 1-click authorization link"; instead of "Redis TTL 30 days", write "automatically saved in real-time and securely retained for 30 days".
 4. **Focus on UI & Practical Workflows**: Clearly describe buttons, tabs, dropdowns, and step-by-step actions inside the Google Forms add-on, Google Sheets add-on, and FormMail Hub web dashboard interface.
 
@@ -234,7 +234,7 @@ TASK 1 (PROACTIVE USER-CENTRIC TUTORIAL & GUIDE CREATION):
 Analyze documentation gaps. Create or expand step-by-step user guides under `src/content/docs/tutorials/` or `src/content/docs/guides/` for practical workflows (e.g., Event Check-in Ticketing, Office PC Kiosk Attendance, Custom SMTP Configuration, Bulk Campaigns).
 
 TASK 2 (USER ACCESSIBILITY & READABILITY STANDARDS):
-Use clear numbered steps, visual callouts (`> **Tip:**`, `> **Note:**`), code blocks for dynamic tags (e.g., `{QR Code}`, `{Verify Link}`, `{Full Scanner}`), and FAQ/Troubleshooting sections.
+Use clear numbered steps, visual callouts (`> **Tip:**`, `> **Note:**`), code blocks for dynamic tags (e.g., `{{QR Code}}`, `{{Verify Link}}`, `{{Full Scanner}}`), and FAQ/Troubleshooting sections.
 
 TASK 3 (STRICT LINK WEAVING & GROUND TRUTH COMPLIANCE):
 - Contextually weave official links in created/updated docs (Marketplace Listing, Live Demo Form, Support, Privacy Policy, Terms of Service).
