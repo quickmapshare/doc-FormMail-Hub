@@ -6,9 +6,9 @@ import re
 from google import genai
 
 print("========================================")
-print("🚀 AI USER-CENTRIC DOCS BUILDER & EXPANDER v3.0 (FORM ADMIN FOCUS)")
+print("🚀 AI USER-CENTRIC DOCS BUILDER & EXPANDER v3.1 (ASTRO MDX SAFE)")
 
-MODEL_NAME = os.environ.get("GEMINI_MODEL", "gemini-3.7-flash") 
+MODEL_NAME = os.environ.get("GEMINI_MODEL", "gemini-3.7-flash")
 print(f"🤖 Gemini Model Engine: {MODEL_NAME}")
 
 api_key = os.environ.get("GEMINI_API_KEY")
@@ -197,47 +197,57 @@ for s_file in selected_sources:
 diff_context = code_diff if code_diff else "NO RECENT CODE DIFF."
 
 # 4. PROMPT CẬP NHẬT TRANG CHỦ & TÀI LIỆU HƯỚNG TỚI FORM ADMIN
+# Lưu ý: Các biến f-string được escape cẩn thận, bổ sung quy tắc ngặt nghèo về định dạng MDX.
+json_sources = json.dumps(source_files_content, indent=2)
+json_docs = json.dumps(existing_docs, indent=2)
+
 prompt = f"""
 You are an expert UX Content Strategist and Technical Communicator for 'FormMail Hub'.
 Your primary role is to write clear, engaging, elegant, and action-oriented documentation for Form Admins, Event Managers, HR Professionals, and Business Owners who use Google Forms & Google Sheets.
 
 CRITICAL AUDIENCE & TONAL RULES (USER-CENTRIC DOCUMENTATION):
-1. AUDIENCE: Form Admins, Event Organizers, HR Ops, Business Leaders. They do NOT care about developer internals or database keys. They care about SOLVING PROBLEMS (e.g., automated email replies, ticket check-in, bulk notifications, workplace attendance).
+1. AUDIENCE: Form Admins, Event Organizers, HR Ops, Business Leaders. They care about SOLVING PROBLEMS (e.g., automated email replies, ticket check-in, bulk notifications, workplace attendance).
 2. TECHNICAL TRANSLATION (DO NOT USE DEV JARGON IN USER DOCS):
    - NEVER mention internal code filenames (e.g., DO NOT write `templateParser.js`).
    - NEVER mention database keys or Redis mechanics (e.g., DO NOT write `checkin:form_id:refCode` or `Redis TTL`).
    - NEVER mention internal API paths (e.g., DO NOT write `/api/qr/action`).
-   - NEVER write deep crypto jargon like "HMAC-SHA256 payload" or "stateless ticket mechanics". Instead, write "Secure 1-click authorization link (no password required)" or "Automated real-time attendance verification".
+   - NEVER write deep crypto jargon like "HMAC-SHA256 payload". Instead, write "Secure 1-click authorization link (no password required)" or "Automated real-time attendance verification".
    - Translate technical constraints into clear UI prerequisites (e.g., "Note: Custom SMTP must be configured before unlocking Email Templates and Rules").
-3. FOCUS ON VALUE & EASY UI STEPS: Frame features as practical solutions. Use step-by-step numbered instructions, UI button navigation (e.g., "Go to Templates -> Click Create New"), dynamic tag callouts (e.g., `{{QR Code}}`), and real-world use cases (Event Access Control, Classroom Attendance, Asset Tracking).
-4. ABSOLUTE COMPLIANCE WITH GROUND TRUTH: All 24 Product Rules must be respected 100% (e.g., strictly NO webhooks, Custom SMTP required for auto-responders, Campaigns launched ONLY from Google Sheets Add-on). Express these as clear product rules/prerequisites for the user.
+
+3. CRITICAL ASTRO MDX SYNTAX SAFETY RULE (MUST FOLLOW TO PREVENT BUILD CRASHES):
+   - In `.mdx` files, text inside curly braces `{...}` is parsed as JavaScript!
+   - You MUST ALWAYS wrap system tags inside inline code backticks in MDX output!
+     - Correct MDX: `{`{QR Code}`}` or `{`{Verify Link}`}` or `{`{Check-in Scanner}`}`
+     - INCORRECT MDX (CRASHES ASTRO BUILD): {{QR Code}} or {{Verify Link}} without backticks.
+
+4. FOCUS ON VALUE & EASY UI STEPS: Frame features as practical solutions. Use step-by-step numbered instructions, UI button navigation (e.g., "Go to Templates -> Click Create New"), and real-world use cases.
+5. ABSOLUTE COMPLIANCE WITH GROUND TRUTH: All 24 Product Rules must be respected 100% (e.g., strictly NO webhooks, Custom SMTP required for auto-responders, Campaigns launched ONLY from Google Sheets Add-on).
 
 ABSOLUTE PRODUCT RULES (GROUND TRUTH - NEVER VIOLATE THESE):
 {product_rules}
 
-SAMPLED CODE & API IMPLEMENTATION (For context only - translate logic into user-facing UI features):
-{json.dumps(source_files_content, indent=2)}
+SAMPLED CODE & API IMPLEMENTATION:
+{json_sources}
 
 RAW CODE DIFF (IF ANY):
 {diff_context}
 
 CURRENT PUBLISHED DOCUMENTATION FILES:
-{json.dumps(existing_docs, indent=2)}
+{json_docs}
 
 DOCUMENTATION EXPANSION & HOMEPAGE ARCHITECTURE INSTRUCTIONS:
 
 TASK 0 (MANDATORY CREATIVE HOMEPAGE MAINTENANCE - `src/content/docs/index.mdx`):
 - YOU MUST ALWAYS UPDATE or REVIEW `src/content/docs/index.mdx` to reflect the latest platform capabilities.
-- **Creative & Visual Structure**: Make the homepage modern, professional, and inspiring for Form Admins. Use Starlight / MDX components (`<CardGrid>`, `<Card>`).
-- **User Narrative**: Highlight how FormMail Hub transforms Google Forms & Sheets into a complete email automation and QR ticket attendance hub without quota limits.
-- **Quick Navigation Cards**: Provide direct links to key admin guides (`/tutorials/qr-event-checkin-guide`, `/guides/smtp-setup`, `/guides/campaigns`, `/guides/office-pc-attendance`, etc.) and official links (Marketplace, Demo Form, Support).
+- Use Starlight / MDX components (`<CardGrid>`, `<Card>`).
+- Wrap all dynamic tag mentions inside code backticks (e.g., `{`{Check-in Scanner}`}`).
 
 TASK 1 (PROACTIVE USER-CENTRIC TUTORIAL & GUIDE CREATION):
-Identify gaps in user docs. Create or update articles under `src/content/docs/tutorials/` or `src/content/docs/guides/` targeting common admin workflows (e.g., Office PC Self-Attendance, Custom SMTP Configuration, Bulk Campaigns from Sheets, Event QR Ticketing).
+Identify gaps in user docs. Create or update articles under `src/content/docs/tutorials/` or `src/content/docs/guides/`.
 
 TASK 2 (FORMATTING & ACCESSIBILITY):
 - Use clean Markdown callouts (`> **Tip:**`, `> **Prerequisite:**`).
-- Include practical FAQs at the end of guides addressing common user questions.
+- Include practical FAQs at the end of guides.
 
 TASK 3 (STRICT LINK WEAVING):
 Contextually weave official resources into articles (Marketplace, Demo Form, Privacy, Terms, Support).
@@ -272,7 +282,7 @@ import {{ Card, CardGrid }} from '@astrojs/starlight/components';
     Process unlimited notifications and confirmation emails reliably, bypassing native Google Workspace execution limits.
   </Card>
   <Card title="Password-Free QR Scanner" icon="approve-check">
-    Authorize staff browsers with 1-click links ({{Check-in Scanner}}) for instant camera or manual ticket verification.
+    Authorize staff browsers with 1-click links (`{{Check-in Scanner}}`) for instant camera or manual ticket verification.
   </Card>
   <Card title="Instant Dual Email Receipts" icon="email">
     Automatically send confirmation receipts to attendees and real-time audit logs to event staff upon every check-in/out.
