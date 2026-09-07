@@ -1,6 +1,6 @@
 ---
 title: FormMail Hub - Google Forms Email Automation & QR Attendance Platform
-description: Enterprise-grade cloud notification, bulk marketing campaign, and QR code ticket attendance platform for Google Forms™ and Google Sheets™.
+description: Cloud email notification engine, bulk broadcast campaigns, and zero-login QR attendance tracking for Google Forms™ and Google Sheets™.
 template: splash
 hero:
   title: |
@@ -13,19 +13,19 @@ hero:
     >
       Google Forms™ & Sheets™
     </span>
-  tagline: Powerful external cloud engine for automated emails, custom SMTP delivery, zero-login QR attendance check-in, multi-mode analytics, and bulk broadcast campaigns.
+  tagline: Transform standard Google Forms into an automated communication center with custom SMTP delivery, password-free QR attendance check-in, real-time analytics, and bulk email campaigns.
   image:
     html: <img src="/banner_FormMailHub.png" alt="FormMail Hub Logo" class="mx-auto h-64 w-auto" />
   actions:
-    - text: Complete User Guide
+    - text: User & Admin Guide
       link: /guides/formmailhub/
       icon: right-arrow
       variant: primary
-    - text: Office PC Kiosk Tutorial
+    - text: Office PC Attendance Tutorial
       link: /tutorials/office-pc-kiosk-attendance/
       icon: rocket
       variant: secondary
-    - text: Install Add-on
+    - text: Install from Marketplace
       link: https://workspace.google.com/marketplace/app/formmail_hub/409227874327
       icon: external
       variant: minimal
@@ -33,49 +33,54 @@ hero:
 
 import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
 
-## Platform Architecture & Capabilities
+## What You Can Do with FormMail Hub
 
 <CardGrid stagger>
-	<Card title="Independent Cloud Engine" icon="rocket">
-		Operates on a dedicated, external high-performance cloud backend platform built to overcome Google Workspace execution time limits, sending quotas, and trigger constraints.
+	<Card title="High-Performance Cloud Engine" icon="rocket">
+		Operates on a dedicated external cloud engine built to overcome native Google Workspace execution limits, quotas, and trigger constraints.
 	</Card>
-	<Card title="Zero-Login QR Scanner & Attendance" icon="approve-check">
-		Generate stateless HMAC-SHA256 `{QR Code}` tickets and direct `{Verify Link}` tags alongside 7-day signed device authorization links (`{Full Scanner}`) for camera or camera-free browser check-in.
+	<Card title="Password-Free QR & Link Check-in" icon="approve-check">
+		Generate digital `{QR Code}` tickets and clickable `{Verify Link}` passes alongside 7-day browser authorization links (`{Full Scanner}`) for camera or camera-free verification.
 	</Card>
 	<Card title="Dual Real-Time Attendance Receipts" icon="email">
-		Every check-in and check-out event dispatches an instant status confirmation email to the attendee and an activity audit log email to the staff member/user (CC'd to Form Admin).
+		Every check-in and check-out event automatically sends an instant status confirmation email to the attendee and an audit log email to the staff member (CC'd to Form Admin).
 	</Card>
-	<Card title="Full-Featured Sheets Campaign Hub" icon="document">
+	<Card title="Google Sheets Bulk Campaigns" icon="document">
 		Connect via the Google Sheets™ add-on using 1 connection slot to manage multi-tab forms, filter rows, and dispatch targeted bulk email campaigns.
 	</Card>
-	<Card title="Custom SMTP & UI Protection" icon="setting">
-		Connect Gmail™ App Passwords, Amazon SES, SendGrid, or Mailgun. Unlocks full template, routing, campaign, and analytics capabilities once tested and verified.
+	<Card title="Custom SMTP & Sender Identity" icon="setting">
+		Connect your own email infrastructure (Gmail™ App Passwords, Amazon SES, SendGrid, Mailgun, or corporate SMTP) to send branded auto-responders and broadcast campaigns.
 	</Card>
 	<Card title="Multi-Mode Analytics & Daily Reports" icon="bars">
-		Track `emails_sent`, `emails_failed`, and `emails_opened` across `system`, `automation`, and `campaign` modes with automated midnight summary reports and RFC 8058 one-click unsubscribe headers.
+		Track sent emails, delivery errors, and open rates across system alerts, submission automations, and campaigns, with automated daily summary reports delivered at midnight.
 	</Card>
 </CardGrid>
 
 ---
 
-## Core Ecosystem Workflows & Reference Hub
+## Practical Guides & Workflows
 
-Explore step-by-step guides and tutorials tailored to your organizational use case:
+Explore step-by-step guides tailored to your organizational use case:
 
 <CardGrid>
 	<LinkCard
+		title="Complete User & Admin Guide"
+		description="Master all core features, custom SMTP setup, dynamic tags, routing rules, and campaign workflows."
+		href="/guides/formmailhub/"
+	/>
+	<LinkCard
 		title="Office PC Kiosk & Self-Attendance"
-		description="Set up an automated office desktop attendance station or direct self-service check-in with click-to-verify links."
+		description="Set up an automated desktop attendance station or direct self-service check-in with click-to-verify links."
 		href="/tutorials/office-pc-kiosk-attendance/"
 	/>
 	<LinkCard
-		title="QR Event Check-in & Ticketing"
-		description="Deploy stateless QR tickets, zero-login staff scanner links (7-day auth), camera-free verification, and live attendance badges."
+		title="Event QR Ticketing & Staff Scanning"
+		description="Issue digital entry passes, authorize staff mobile scanners with zero-login links, and verify tickets with or without cameras."
 		href="/tutorials/qr-event-ticketing/"
 	/>
 	<LinkCard
 		title="Employee Self-Service Clock-In"
-		description="Set up internal staff attendance tracking where employees scan their personal QR badge using authorized devices."
+		description="Configure internal staff attendance tracking where employees scan their personal QR badge using authorized devices."
 		href="/tutorials/employee-self-service-attendance/"
 	/>
 	<LinkCard
@@ -84,13 +89,8 @@ Explore step-by-step guides and tutorials tailored to your organizational use ca
 		href="/guides/email-campaigns/"
 	/>
 	<LinkCard
-		title="Analytics & Daily Summary Reports"
-		description="Monitor multi-mode email metrics (system, automation, campaign) and configure per-form daily reports."
-		href="/guides/analytics-daily-reports/"
-	/>
-	<LinkCard
 		title="Frequently Asked Questions (FAQ)"
-		description="Review common operational questions, routing workflows, check-in setup, and unsubscribe controls."
+		description="Find answers to common operational questions, routing workflows, check-in setup, and unsubscribe controls."
 		href="/reference/faq/"
 	/>
 </CardGrid>
@@ -99,7 +99,7 @@ Explore step-by-step guides and tutorials tailored to your organizational use ca
 
 ## Architectural Breakdown: 4 Ingestion Bridges & 1 Cloud Platform
 
-FormMail Hub decouples event capture in Google Workspace from backend delivery and state execution:
+FormMail Hub cleanly separates event capture in Google Workspace from backend delivery and state execution:
 
 ```
 +-----------------------------------------------------------------------------------+
@@ -122,55 +122,44 @@ FormMail Hub decouples event capture in Google Workspace from backend delivery a
 ```
 
 ### 1. Ingestion Bridges & Scaling
-- **3 Google Forms Entry Add-ons:** *Form Confirmation Emails*, *Form to Email*, and *Form Notifications SMTP* act strictly as data ingestion bridges pushing submission events to the cloud platform engine.
-- **1 Google Sheets Management Client:** The *FormMail Hub* Google Sheets add-on acts as the primary full-featured management client. A single spreadsheet can host multiple Form Responses tabs, consuming only **1 connection slot** while providing the interface to launch bulk email **Campaigns**.
+- **3 Google Forms Entry Add-ons:** *Form Confirmation Emails*, *Form to Email*, and *Form Notifications SMTP* act as data ingestion bridges pushing submission events to the cloud engine.
+- **1 Google Sheets Management Client:** The *FormMail Hub* Google Sheets add-on acts as the primary full-featured management client. A single spreadsheet can host multiple Form Responses tabs, consuming only **1 connection slot** while scaling across multiple forms and launching bulk email **Campaigns**.
 
 ### 2. Dual Delivery Routing Architecture
-- **Built-in System SMTP:** Strictly restricted to sending internal system alerts (submission notifications, daily activity reports, and SMTP connection error alerts) to the Form Admin and selected Team Members without consuming your personal SMTP quota.
+- **Built-in System SMTP:** Strictly restricted to sending internal system alerts (submission notifications, daily activity reports, and SMTP connection error alerts) to the Form Admin and selected Team Members without consuming your personal email quota.
 - **Custom SMTP Relay:** Mandatory for custom email templates, conditional rules, respondent auto-responders, and bulk campaigns. Admins **MUST** configure and test custom SMTP to unlock the UI tabs (*Templates*, *Rules*, *Campaigns*, and *Analytics*).
 
-### 3. Stateful QR Attendance Engine
-- **Atomic Concurrency & 30-Day Rolling TTL:** Scans and verification clicks are processed under Redis key `checkin:{form_id}:{refCode}`, rejecting duplicate check-ins (`409 Conflict`) if already `IN`, and refreshing TTL to 30 days on every state transition.
-- **Camera & Camera-Free Verification:** Staff can scan visual QR codes with their authorized mobile camera or click direct manual verification links (`{Verify Link}` / `/qr-verify?t=...`) inside notification emails.
-- **7-Day Browser Authorization:** Personalized scanner links set a 7-day cryptographically signed authorization cookie (`scan_perms`) on the user's browser.
+### 3. Real-Time Attendance & Check-in Engine
+- **Duplicate Prevention & 30-Day Retention:** The attendance engine prevents duplicate check-ins and maintains live attendance records with 30-day rolling data retention.
+- **Camera & Camera-Free Verification:** Staff can scan visual QR codes with their authorized mobile camera or click direct verification links (`{Verify Link}`) inside notification emails.
+- **7-Day Browser Authorization:** Personalized scanner links set a 7-day secure authorization on the user's browser without requiring account logins.
 
 ### 4. Multi-Mode Metric Tracking & Daily Reports
-- **Multi-Mode Metrics:** Daily logging of `emails_sent`, `emails_failed`, and `emails_opened` strictly categorized across `system`, `automation`, and `campaign` execution modes.
-- **Midnight Summary Reports:** Automated daily reports dispatched at 00:00 (form timezone) via System SMTP to the Form Admin with per-form opt-out capability and RFC 8058 `List-Unsubscribe: One-Click` header compliance.
+- **Multi-Mode Metrics:** Daily tracking of sent emails, delivery failures, and open rates across `system`, `automation`, and `campaign` execution modes.
+- **Midnight Summary Reports:** Automated daily reports dispatched at 00:00 (form timezone) via System SMTP to the Form Admin with per-form opt-out capability.
 
 ---
 
-## Verified Dynamic Tags Reference
+## Dynamic Template Tags Reference
 
-Dynamic tags use single-pass scanning supporting `{Tag}`, `{{Tag}}`, and `${Tag}` enclosure formats:
+Dynamic tags support `{Tag}`, `{{Tag}}`, and `${Tag}` enclosure formats:
 
 | Dynamic Tag | Purpose & Output | Audience Scope |
 | :--- | :--- | :--- |
-| `{Question Title}` | Dynamically retrieves the submitted response for any form question field title. | All Templates |
+| `{Question Title}` | Retrieves the submitted answer for any form question field title. | All Templates |
 | `{Form title}` | The official title of the connected Google Form™. | All Templates |
 | `{All fields}` | Formatted summary table of all form questions and submitted answers. | All Templates |
 | `{Linked form}` | Direct URL link to the live Google Form™. | All Templates |
-| `{Unsubscribe link}` | Form-specific automated opt-out link for compliance with RFC 8058 one-click headers. | Respondent & Campaign Emails |
-| `{QR Code}` | Stateless QR code ticket image (HMAC-SHA256 signed) + manual verification link (`/qr-verify?t=...`). | Respondent Tickets, Self-Attendance & Staff Alerts |
-| `{Verify Link}` | Direct clickable verification URL (`/qr-verify?t=...`) for instant camera-free verification on PC/mobile. | Respondent Tickets, Self-Attendance & Staff Alerts |
-| `{Check-in Scanner}` | Personalized, HMAC-SHA256 signed zero-login staff link (`checkin` mode, 7-day validity). | Staff / Team Emails Only |
-| `{Check-out Scanner}` | Personalized, HMAC-SHA256 signed zero-login staff link (`checkout` mode, 7-day validity). | Staff / Team Emails Only |
-| `{Full Scanner}` | Personalized, HMAC-SHA256 signed zero-login link (`both` mode, 7-day validity). | Staff Emails & Submitter Self-Attendance |
+| `{Unsubscribe link}` | Form-specific automated opt-out link for compliance. | Respondent & Campaign Emails |
+| `{QR Code}` | Visual QR code ticket image with embedded verification link. | Respondent Tickets, Self-Attendance & Staff Alerts |
+| `{Verify Link}` | Direct clickable verification link for instant camera-free check-in on PC/mobile. | Respondent Tickets, Self-Attendance & Staff Alerts |
+| `{Check-in Scanner}` | Personalized zero-login staff link for check-in mode (7-day validity). | Staff / Team Emails Only |
+| `{Check-out Scanner}` | Personalized zero-login staff link for check-out mode (7-day validity). | Staff / Team Emails Only |
+| `{Full Scanner}` | Personalized zero-login link for dual check-in and check-out mode (7-day validity). | Staff Emails & Submitter Self-Attendance |
 
 ---
 
-## Granular Opt-Out & Compliance Scopes
-
-FormMail Hub manages unsubscribes across 3 strict scopes:
-1. **Form-Specific Respondent Unsubscribe:** Clicking `{Unsubscribe link}` in custom templates or campaigns unsubscribes the respondent strictly from future emails related to that specific Form, and automatically injects RFC 8058 `List-Unsubscribe` one-click headers.
-2. **Form-Specific System Daily Report Unsubscribe:** Unsubscribes Admins or Team Members from daily summary reports for that specific Form only via body link or RFC 8058 one-click headers.
-3. **User-Level SMTP Error Alert Unsubscribe:** Stops SMTP failure notification emails across all forms managed by that user account.
-
----
-
-## Official Platform Resources & Support Hub
-
-Explore our official resources to deploy, configure, and manage FormMail Hub across your organization:
+## Official Platform Resources & Support
 
 <CardGrid>
 	<Card title="Google Workspace Marketplace" icon="add-document">
@@ -180,7 +169,7 @@ Explore our official resources to deploy, configure, and manage FormMail Hub acr
 		Experience automated triggers and QR ticketing firsthand using our interactive [Live Demo Form](https://docs.google.com/forms/d/e/1FAIpQLSc2lkYREd5ePz521uYfBDeumOOoPKeBP87i1aSpwokHdFMIHw/viewform).
 	</Card>
 	<Card title="Technical Support Desk" icon="information">
-		Need assistance with custom SMTP or attendance tracking? Contact our engineering team via [Support & Contact](https://formmail.vietutd.com/contact).
+		Need assistance with custom SMTP or attendance tracking? Contact our team via [Support & Contact](https://formmail.vietutd.com/contact).
 	</Card>
 	<Card title="Security & Compliance" icon="shield">
 		Review our security architecture and terms in the [Privacy Policy](https://formmail.vietutd.com/privacy-policy) and [Terms of Service](https://formmail.vietutd.com/terms-of-service).

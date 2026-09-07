@@ -66,7 +66,7 @@ To test any feature live or experience automated triggers firsthand, submit our 
 ### Q: Is the QR Code and Link Check-in feature easy to set up and operate?
 **A:** **Yes.** Setup is straightforward and requires no complex hardware or mobile app installations:
 1. **Dispatch Authorization Links:** Send personalized scanner links (`{Check-in Scanner}`, `{Check-out Scanner}`, or `{Full Scanner}`) to staff or respondents to activate 7-day scanner permissions directly on their web browser.
-2. **Include Passes in Confirmation Emails:** Include a `{QR Code}` (visual QR code + embedded link) or direct clickable `{Verify Link}` (`/qr-verify?t=...`) in the respondent's confirmation email.
+2. **Include Passes in Confirmation Emails:** Include a `{QR Code}` (visual QR code + embedded link) or direct clickable `{Verify Link}` in the respondent's confirmation email.
 3. **Execute Verification:** Upon arrival, staff scan the QR code with their mobile camera, or respondents/staff click the direct `{Verify Link}` on an authorized device. Real-time confirmation receipts and audit logs are automatically emailed to the respondent, Form Admin, and designated team members.
 
 ### Q: What are the main practical applications for the Check-in system?
@@ -77,10 +77,10 @@ To test any feature live or experience automated triggers firsthand, submit our 
 - **Equipment, asset, or library book loan and return management:** Recording asset checkout and checkin status transitions.
 
 ### Q: Can check-in be performed without a camera scanner?
-**A:** **Yes.** Both attendees and staff can perform verification without a camera by clicking the direct manual verification link (`{Verify Link}` / `/qr-verify?t=...`) rendered in their notification or confirmation emails on any authorized browser.
+**A:** **Yes.** Both attendees and staff can perform verification without a camera by clicking the direct manual verification link (`{Verify Link}`) rendered in their notification or confirmation emails on any authorized browser.
 
 ### Q: How does the system prevent duplicate check-ins?
-**A:** When an authorized user or staff member accesses the verification link, the backend endpoint (`/api/qr/action`) verifies permissions and updates the ticket's explicit state (`IN` or `OUT`) under Redis key `checkin:{form_id}:{refCode}`. If a ticket status is already `IN`, duplicate check-in attempts are rejected with a `409 Conflict` status code. Every state change extends the record's TTL to **30 days (2,592,000 seconds)** without deleting data.
+**A:** When an authorized user or staff member accesses the verification link, the platform verifies permissions and updates the ticket's explicit state (`IN` or `OUT`). If a ticket status is already `IN`, duplicate check-in attempts are rejected with a conflict alert on screen. Every state change extends the record's retention to **30 days** without deleting data.
 
 ### Q: How do automated dual real-time attendance receipts work?
 **A:** Upon every successful Check-in or Check-out event, the engine dispatches two independent, real-time email notifications:
@@ -97,7 +97,7 @@ To test any feature live or experience automated triggers firsthand, submit our 
 - `automation`: Submission-triggered auto-responders and rule-based emails.
 - `campaign`: Proactive bulk emails dispatched from the Google Sheets add-on.
 
-Additionally, an automated **Daily Summary Report** is emailed via System SMTP to the Form Admin at **00:00 (according to each form's configured timezone)** summarizing the previous day's `emails_sent`, `emails_failed`, and `emails_opened`.
+Additionally, an automated **Daily Summary Report** is emailed via System SMTP to the Form Admin at **00:00 (according to each form's configured timezone)** summarizing the previous day's sent emails, delivery errors, and open rates.
 
 ### Q: How can Form Admins and respondents manage email preferences and prevent unwanted emails?
 **A:** FormMail Hub provides precise, multi-tiered subscription control across 3 granular scopes:

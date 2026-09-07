@@ -29,7 +29,7 @@ The internal automated self-service attendance model eliminates administrative f
 |                   EMPLOYEE OFFICE PC ONE-TIME AUTHORIZATION                       |
 |  1. Employee submits Google Form and receives auto-responder confirmation email   |
 |  2. Employee opens email in main browser and clicks {Full Scanner} link once      |
-|  3. Cloud platform sets 7-day rolling authorization cookie (scan_perms)           |
+|  3. Cloud platform sets 7-day rolling authorization on office browser             |
 +-----------------------------------------------------------------------------------+
                                           |
                                           v
@@ -37,8 +37,8 @@ The internal automated self-service attendance model eliminates administrative f
 |                        DAILY ATTENDANCE EXECUTION WORKFLOW                        |
 |  1. Arrival: Employee clicks {Verify Link} in email / bookmark -> Check-In        |
 |  2. Departure: Employee clicks {Verify Link} prior to leaving -> Check-Out        |
-|  3. Backend verifies permissions (scan_perms/self_perms), updates Redis state     |
-|     key checkin:{form_id}:{refCode}, and refreshes TTL to 30 days (2,592,000s)     |
+|  3. Backend verifies permissions, updates attendance state (IN/OUT), and refreshes|
+|     data retention for 30 days                                                    |
 +-----------------------------------------------------------------------------------+
                                           |
                                           v
@@ -57,7 +57,7 @@ Follow these 7 steps to configure and deploy the camera-free self-attendance wor
 
 ### Step 1: Configure Google Form
 1. Open Google Forms™ and create the employee registration/attendance form (e.g., asking for Employee Name, Department, and Work Email).
-2. In Google Forms **Settings > Responses**, enable **"Limit to 1 response"**. This ensures each employee holds a single unique reference ticket code (`refCode`).
+2. In Google Forms **Settings > Responses**, enable **"Limit to 1 response"**. This ensures each employee holds a single unique reference ticket code.
 3. Connect the form to FormMail Hub via the Google Forms™ entry add-on or Google Sheets™ add-on.
 
 > **Primary Connector Rule:** Only the first user among the form's editors who connects that form to FormMail Hub is granted exclusive rights to configure settings, templates, rules, and triggers.
@@ -75,7 +75,7 @@ Follow these 7 steps to configure and deploy the camera-free self-attendance wor
 3. Set **Subject Line** (e.g., `Your Daily Attendance Portal - {Form title}`).
 4. Build the email body with the mandatory dynamic tags in sequence:
    - `{Full Scanner}`: Grants dual check-in/check-out permissions to the employee's office PC browser upon first click.
-   - `{Verify Link}`: Direct clickable verification URL (`/qr-verify?t=...`) used daily by the employee to trigger Check-in and Check-out actions.
+   - `{Verify Link}`: Direct clickable verification link used daily by the employee to trigger Check-in and Check-out actions.
    - `{Form title}`: Form title identifier.
    - `{Unsubscribe Link}`: Form-specific opt-out link.
 5. Add clear step-by-step instructions in the email body:
@@ -89,13 +89,13 @@ Follow these 7 steps to configure and deploy the camera-free self-attendance wor
 <head>
   <meta charset="utf-8">
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8fafc; color: #1e293b; padding: 20px; }
-    .card { max-width: 540px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 28px; }
-    .header { text-align: center; border-bottom: 2px solid #2563eb; padding-bottom: 14px; margin-bottom: 20px; }
-    .step-box { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; padding: 16px; margin: 16px 0; }
-    .action-box { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 20px; text-align: center; margin: 16px 0; }
-    .btn { display: inline-block; background-color: #2563eb; color: #ffffff !important; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 15px; }
-    .footer { text-align: center; font-size: 11px; color: #64748b; margin-top: 24px; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8fafc; color: #1e293b; padding: 20px; }\
+    .card { max-width: 540px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 28px; }\
+    .header { text-align: center; border-bottom: 2px solid #2563eb; padding-bottom: 14px; margin-bottom: 20px; }\
+    .step-box { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; padding: 16px; margin: 16px 0; }\
+    .action-box { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 20px; text-align: center; margin: 16px 0; }\
+    .btn { display: inline-block; background-color: #2563eb; color: #ffffff !important; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 15px; }\
+    .footer { text-align: center; font-size: 11px; color: #64748b; margin-top: 24px; }\
   </style>
 </head>
 <body>
@@ -140,15 +140,15 @@ Follow these 7 steps to configure and deploy the camera-free self-attendance wor
 ### Step 5: Employee Office PC One-Time Authorization
 1. The employee submits the Google Form and receives the confirmation email on their office computer.
 2. The employee opens the email in their main office browser and clicks the `{Full Scanner}` link once.
-3. FormMail Hub verifies the HMAC-SHA256 signature and grants device permissions, setting a secure 7-day rolling authorization cookie (`scan_perms`).
+3. FormMail Hub grants device permissions, setting a secure 7-day rolling authorization on that browser.
 
-> **Browser Session Isolation Note:** Because authorization relies on a secure cookie set during link activation, opening the link in one browser (e.g., an in-app email previewer) will **NOT** authorize a different browser (e.g., standard Google Chrome or Edge). Employees **MUST** open or copy/paste the Auth link directly into the exact browser application used for daily verification.
+> **Browser Session Isolation Note:** Because authorization relies on a secure browser session set during link activation, opening the link in one browser (e.g., an in-app email previewer) will **NOT** authorize a different browser (e.g., standard Google Chrome or Edge). Employees **MUST** open or copy/paste the authorization link directly into the exact browser application used for daily verification.
 
 ### Step 6: Daily Attendance Execution Workflow
 1. On working days, the employee opens their authorized office desktop browser.
 2. **Arrival:** The employee clicks `{Verify Link}` from their email (or saved bookmark) to perform Check-in.
 3. **Departure:** The employee clicks `{Verify Link}` prior to leaving to perform Check-out.
-4. The cloud platform endpoint (`/api/qr/action`) verifies authorization (`scan_perms` / `self_perms`), updates ticket state under Redis key `checkin:{form_id}:{refCode}`, and refreshes key TTL to **30 days (2,592,000 seconds)**.
+4. The cloud platform verifies authorization, updates ticket state (`IN` or `OUT`), and refreshes data retention for **30 days**.
 
 ### Step 7: Automated Dual Real-Time Receipts
 Upon every successful Check-in or Check-out action, two real-time receipts are dispatched immediately:
@@ -157,15 +157,15 @@ Upon every successful Check-in or Check-out action, two real-time receipts are d
 
 ---
 
-## 3. Atomic State Concurrency & 30-Day Rolling TTL Rules
+## 3. Real-Time Concurrency & 30-Day Retention Rules
 
-The state engine enforces strict concurrency and status transitions under Redis key `checkin:{form_id}:{refCode}`:
+The state engine enforces strict concurrency and status transitions:
 
-| Action | Current Ticket State | Engine Execution & Concurrency Behavior | Key TTL Result |
+| Action | Current Ticket State | Engine Execution & Concurrency Behavior | Data Retention Result |
 | :--- | :--- | :--- | :--- |
-| **Check-in** | `OUT` or Initial Unscanned | Validates permission, sets status to `IN`, logs operator email & timestamp. | Refreshes to 30 Days (2,592,000s) |
-| **Check-in** | `IN` | **Rejected with `409 Conflict`** (prevents duplicate clock-ins). | Unchanged (retains existing state) |
-| **Check-out** | `IN` | Validates active `IN` state, updates status to `OUT`, logs operator & timestamp. | Refreshes to 30 Days (2,592,000s) |
+| **Check-in** | `OUT` or Initial Unscanned | Validates permission, sets status to `IN`, logs operator email & timestamp. | Refreshes for 30 Days |
+| **Check-in** | `IN` | **Rejected duplicate check-in** (prevents duplicate clock-ins). | Unchanged (retains existing state) |
+| **Check-out** | `IN` | Validates active `IN` state, updates status to `OUT`, logs operator & timestamp. | Refreshes for 30 Days |
 | **Check-out** | `OUT` or Initial Unscanned | Rejected (ticket must be in `IN` state before checking out). | Unchanged |
 
 ---
@@ -175,9 +175,9 @@ The state engine enforces strict concurrency and status transitions under Redis 
 | Symptom / Error | Root Cause | Technical Remediation |
 | :--- | :--- | :--- |
 | **Templates and Rules tabs locked in UI** | Custom SMTP not configured or connection test unverified. | Go to **Settings > SMTP Config**, input custom credentials, and click **Test Connection** to unlock the UI. |
-| **"Unauthorized Device" error on click** | Browser cookie missing or opened in a different browser. | Copy the `{Full Scanner}` link from the email and paste it directly into the office PC browser address bar to set the 7-day cookie. |
-| **Duplicate ticket submissions per employee** | "Limit to 1 response" disabled in Google Forms. | Enable **"Limit to 1 response"** in Google Forms Settings. The backend tracks canonical ticket state via `checkin:{form_id}:{refCode}`. |
-| **Duplicate Check-in rejected (`409 Conflict`)** | Employee is already clocked in (`IN` state). | The system detected status `IN`. If the employee is departing, select the **Check-Out** action button. |
+| **"Unauthorized Device" error on click** | Browser authorization missing or opened in a different browser. | Copy the `{Full Scanner}` link from the email and paste it directly into the office PC browser address bar to activate authorization. |
+| **Duplicate ticket submissions per employee** | "Limit to 1 response" disabled in Google Forms. | Enable **"Limit to 1 response"** in Google Forms Settings. The backend tracks canonical ticket state automatically. |
+| **Duplicate Check-in rejected** | Employee is already clocked in (`IN` state). | The system detected status `IN`. If the employee is departing, select the **Check-Out** action button. |
 | **Dynamic tag renders raw text** | Malformed tag syntax. | Use verified single-pass tags: `{Full Scanner}`, `{Verify Link}`, `{Form title}`, `{Unsubscribe Link}`. |
 
 ---

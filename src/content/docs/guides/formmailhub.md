@@ -92,10 +92,10 @@ Admins **MUST** configure and test custom SMTP settings before unlocking Templat
 Once custom SMTP settings are configured and tested by the Admin to unlock feature tabs:
 
 ### Dynamic Tag Personalization
-Templates parse submission fields into dynamic tags supporting `{Tag}`, `{{Tag}}`, and `${Tag}` enclosure formats using single-pass scanning in `templateParser.js`.
+Templates parse submission fields into dynamic tags supporting `{Tag}`, `{{Tag}}`, and `${Tag}` enclosure formats.
 
 #### Supported System & Field Tags
-- **Valid Built-in System Tags:** Strictly `{Form title}`, `{All Fields}`, `{Linked Form}`, `{Unsubscribe Link}`, `{QR Code}`, `{Verify Link}`, `{Check-in Scanner}`, `{Check-out Scanner}`, and `{Full Scanner}`.
+- **Valid Built-in System Tags:** Strictly `{Form title}`, `{Linked form}`, `{All fields}`, `{Unsubscribe link}`, `{QR Code}`, `{Verify Link}`, `{Check-in Scanner}`, `{Check-out Scanner}`, and `{Full Scanner}`.
 - **Dynamic Question Field Tags:** Any exact form question title (e.g., `{First Name}`, `{Email Address}`).
 - **Security Isolation:** Scanner authorization tags (`{Check-in Scanner}`, `{Check-out Scanner}`, `{Full Scanner}`) are populated strictly in staff/team emails and automatically stripped from respondent emails.
 
@@ -110,25 +110,24 @@ Templates parse submission fields into dynamic tags supporting `{Tag}`, `{{Tag}}
 
 FormMail Hub includes an integrated QR ticketing and attendance tracking system.
 
-### Stateless QR Code Tickets & Camera-Free Verification
-Admins can insert `{QR Code}` or `{Verify Link}` into auto-responders and campaign templates. The cloud platform engine generates a secure, stateless QR code ticket signed with HMAC-SHA256. Scanning the QR code or clicking the verification link directs to `/qr-verify` for real-time verification of ticket authenticity, submission timestamp, respondent details, and reference code without database overhead.
+### Digital QR Code Tickets & Camera-Free Verification
+Admins can insert `{QR Code}` or `{Verify Link}` into auto-responders and campaign templates. The cloud platform engine generates a secure digital QR code ticket. Scanning the QR code or clicking the verification link opens the live verification screen for real-time verification of ticket authenticity, submission timestamp, respondent details, and reference code.
 
 ### Personalized Staff Scanner Links & Live Status Screen
-When routing notifications to Team Members, the platform generates personalized, cryptographically signed Authorization Links (`{Check-in Scanner}`, `{Check-out Scanner}`, `{Full Scanner}`).
-- **Zero-Login Token:** Link includes an HMAC-SHA256 signed payload encoding form ID, staff email identity, mode (`checkin`, `checkout`, `both`), and a **7-day expiration token** (`/qr-auth?t=...`).
-- **Instant Authorization:** Clicking the link sets a secure cookie on the staff member's device valid for **7 days** for browser-based scanning without password logins.
-- **Live Attendance Status Badge (`/qr-verify`):** Upon scanning, staff are shown a dynamic status badge (`🟢 Status: Checked-In`, `🚪 Status: Checked-Out`, or `⚪ Status: Not Checked-In Yet`) with timestamps automatically converted to the device's local timezone. Clicking Check-In or Check-Out updates the status badge state immediately on screen.
+When routing notifications to Team Members, the platform generates personalized, secure authorization links (`{Check-in Scanner}`, `{Check-out Scanner}`, `{Full Scanner}`).
+- **Zero-Login Token:** Link provides browser authorization valid for **7 days** without requiring password logins.
+- **Live Attendance Status Badge:** Upon scanning, staff see a dynamic status badge (`🟢 Status: Checked-In`, `🚪 Status: Checked-Out`, or `⚪ Status: Not Checked-In Yet`) with timestamps automatically converted to the device's local timezone. Clicking Check-In or Check-Out updates the status badge state immediately on screen.
 
-> **Browser Session Isolation Note:** Because authorization relies on a secure cookie set during link activation, opening the link in one browser (e.g., in-app email viewer) will NOT authorize a different browser (e.g., default mobile browser or standalone camera scanner). Staff must copy and paste the Auth link directly into the exact browser application used for scanning QR codes.
+> **Browser Session Isolation Note:** Because authorization relies on a secure browser session set during link activation, opening the link in one browser (e.g., in-app email viewer) will NOT authorize a different browser (e.g., default mobile browser or standalone camera scanner). Staff must copy and paste the authorization link directly into the exact browser application used for scanning QR codes.
 
-### Atomic State Engine & 30-Day Rolling TTL
-When authorized staff scan a QR code or access the verification link, `/api/qr/action` verifies permissions and updates ticket explicit state (`IN` or `OUT`) under Redis key `checkin:{form_id}:{refCode}`. Every state change extends the record's TTL to **30 days (2,592,000 seconds)** without deleting data:
-- **Check-in:** Rejects duplicate scans with a `409 Conflict` status if already checked in (`IN`). Sets status to `IN`, logs check-in operator email and timestamp, and refreshes key TTL to 30 days.
-- **Check-out:** Validates `IN` status before updating status to `OUT`. Logs check-out operator email and timestamp, and refreshes key TTL to 30 days instead of deleting the Redis key.
+### Real-Time Attendance State Engine & 30-Day Retention
+When authorized staff scan a QR code or access the verification link, the platform verifies permissions and updates ticket status (`IN` or `OUT`). Every state change maintains the record with **30 days** of rolling data retention:
+- **Check-in:** Prevents duplicate check-ins if the attendee is already marked as checked in (`IN`). Sets status to `IN`, logs operator email and timestamp, and refreshes the 30-day retention period.
+- **Check-out:** Validates that the ticket is currently in `IN` status before updating status to `OUT`. Logs operator email and timestamp, and refreshes the 30-day retention period without deleting historical data.
 
 ### Automated Dual Real-Time Attendance Receipts
 Upon every successful scan, two real-time email receipts are dispatched:
-1. **Attendee Attendance Email:** Dispatched to ticket holder with updated status (Checked In / Checked Out), Event Name, Ref ID, and UTC timestamp.
+1. **Attendee Attendance Email:** Dispatched to ticket holder with updated status (Checked In / Checked Out), Event Name, Reference ID, and UTC timestamp.
 2. **Staff Activity Log Email:** Dispatched directly to the scanning Staff member (and CC'd to Form Owner) recording an audit trail containing attendee identity, ticket reference code, staff email identity, and scan timestamp.
 
 ---
@@ -141,18 +140,27 @@ Proactive bulk email marketing to form respondents is powered exclusively by the
 Bulk sending (Campaigns) is **ONLY** available when launched from the **FormMail Hub Google Sheets add-on**.
 
 ### Campaign Creation & Dispatch Workflow
-To send a proactive campaign to form respondents, the Admin follows this exact workflow:
+To send a proactive campaign to form respondents, follow this exact workflow:
 
-1. **Create Campaign Template:** The Admin creates a campaign template.
-2. **Configure Filtering Rules:** The Admin configures filtering rules to target specific respondents in the responses Google Sheet™.
-3. **Enable Active Campaign Rule:** The Admin enables the rule as an active campaign.
-4. **Switch to Campaign View:** Within the FormMail Hub Google Sheets add-on interface on the responses sheet, the Admin switches to the **Campaign** view.
-5. **Select Synchronized Campaign:** The Admin selects the synchronized campaign name.
-6. **Initiate Dispatch:** The Admin clicks the **'Dispatch'** button to initiate the bulk email dispatch.
+1. **Create Campaign Template:** Create a campaign template under Email Templates.
+2. **Configure Filtering Rules:** Configure filtering rules to target specific respondents in the responses Google Sheet™.
+3. **Enable Active Campaign Rule:** Enable the rule as an active campaign.
+4. **Switch to Campaign View:** Within the FormMail Hub Google Sheets add-on interface on the responses sheet, switch to the **Campaign** view.
+5. **Select Synchronized Campaign:** Select the synchronized campaign name from the list.
+6. **Initiate Dispatch:** Click the **'Dispatch'** button to initiate the bulk email dispatch processed by the cloud engine.
 
 ---
 
-## 7. Official Resources, Compliance & Support
+## 7. Granular Subscription Management & Unsubscribe Scopes
+
+FormMail Hub manages unsubscribes across 3 distinct scopes:
+- **Form-Specific Respondent Unsubscribe:** Inserting `{Unsubscribe link}` in custom templates and campaigns unsubscribes respondents strictly from future emails related to that specific Form.
+- **Form-Specific System Daily Report Unsubscribe:** Unsubscribe links in daily summary reports stop report emails strictly for that specific Form.
+- **User-Level SMTP Error Alert Unsubscribe:** Unsubscribe links in SMTP failure alerts stop error notification emails across all forms managed by that user account.
+
+---
+
+## 8. Official Resources, Compliance & Support
 
 - **App Marketplace:** [Google Workspace Marketplace Listing](https://workspace.google.com/marketplace/app/formmail_hub/409227874327)
 - **Live Demo:** Test workflows on the official [Live Demo Form](https://docs.google.com/forms/d/e/1FAIpQLSc2lkYREd5ePz521uYfBDeumOOoPKeBP87i1aSpwokHdFMIHw/viewform)
