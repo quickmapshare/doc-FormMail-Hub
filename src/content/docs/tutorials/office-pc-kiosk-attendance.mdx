@@ -89,13 +89,13 @@ Follow these 7 steps to configure and deploy the camera-free self-attendance wor
 <head>
   <meta charset="utf-8">
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8fafc; color: #1e293b; padding: 20px; }\
-    .card { max-width: 540px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 28px; }\
-    .header { text-align: center; border-bottom: 2px solid #2563eb; padding-bottom: 14px; margin-bottom: 20px; }\
-    .step-box { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; padding: 16px; margin: 16px 0; }\
-    .action-box { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 20px; text-align: center; margin: 16px 0; }\
-    .btn { display: inline-block; background-color: #2563eb; color: #ffffff !important; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 15px; }\
-    .footer { text-align: center; font-size: 11px; color: #64748b; margin-top: 24px; }\
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8fafc; color: #1e293b; padding: 20px; }
+    .card { max-width: 540px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 28px; }
+    .header { text-align: center; border-bottom: 2px solid #2563eb; padding-bottom: 14px; margin-bottom: 20px; }
+    .step-box { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; padding: 16px; margin: 16px 0; }
+    .action-box { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 20px; text-align: center; margin: 16px 0; }
+    .btn { display: inline-block; background-color: #2563eb; color: #ffffff !important; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 15px; }
+    .footer { text-align: center; font-size: 11px; color: #64748b; margin-top: 24px; }
   </style>
 </head>
 <body>
@@ -175,8 +175,8 @@ The state engine enforces strict concurrency and status transitions:
 | Symptom / Error | Root Cause | Technical Remediation |
 | :--- | :--- | :--- |
 | **Templates and Rules tabs locked in UI** | Custom SMTP not configured or connection test unverified. | Go to **Settings > SMTP Config**, input custom credentials, and click **Test Connection** to unlock the UI. |
-| **"Unauthorized Device" error on click** | Browser authorization missing or opened in a different browser. | Copy the `{Full Scanner}` link from the email and paste it directly into the office PC browser address bar to activate authorization. |
-| **Duplicate ticket submissions per employee** | "Limit to 1 response" disabled in Google Forms. | Enable **"Limit to 1 response"** in Google Forms Settings. The backend tracks canonical ticket state automatically. |
+| **\"Unauthorized Device\" error on click** | Browser authorization missing or opened in a different browser. | Copy the `{Full Scanner}` link from the email and paste it directly into the office PC browser address bar to activate authorization. |
+| **Duplicate ticket submissions per employee** | \"Limit to 1 response\" disabled in Google Forms. | Enable **\"Limit to 1 response\"** in Google Forms Settings. The backend tracks canonical ticket state automatically. |
 | **Duplicate Check-in rejected** | Employee is already clocked in (`IN` state). | The system detected status `IN`. If the employee is departing, select the **Check-Out** action button. |
 | **Dynamic tag renders raw text** | Malformed tag syntax. | Use verified single-pass tags: `{Full Scanner}`, `{Verify Link}`, `{Form title}`, `{Unsubscribe Link}`. |
 
