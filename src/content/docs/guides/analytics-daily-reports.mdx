@@ -94,20 +94,26 @@ To keep administrators informed without requiring manual dashboard logins, FormM
    [ Cloud Engine Normalizes Timezone & Aggregates Daily Metrics ]
                               |
                               v
- [ System SMTP Dispatches Daily Summary Report Email to Form Admin ]
+     [ Check Form Activity (Submissions > 0 or Emails Sent > 0) ]
                               |
-       +----------------------+----------------------+
-       |                                             |
-       v                                             v
-[ Admin Reviews Daily Metrics ]        [ Form-Specific Unsubscribe Link ]
-                                                     |
-                                                     v
-                                  [ Opts Out Strictly for That Form ]
-                                  [ Other Active Forms Continue Reporting ]
+        +---------------------+---------------------+
+        | (Activity Found)                          | (No Activity)
+        v                                           v
+[ System SMTP Dispatches Daily Report ]     [ Suppress Empty Report ]
+        |                                   (Keeps Admin Inbox Clean)
+        +----------------------+----------------------+
+        |                                             |
+        v                                             v
+ [ Admin Reviews Daily Metrics ]        [ Form-Specific Unsubscribe Link ]
+                                                      |
+                                                      v
+                                   [ Opts Out Strictly for That Form ]
+                                   [ Other Active Forms Continue Reporting ]
 ```
 
 ### Automated Dispatch Mechanics
 - **Schedule:** At the start of a new day (**00:00 according to each form's configured timezone**), the system automatically generates and dispatches a Daily Summary Report email via System SMTP to the Form Admin for each active Form.
+- **Smart Noise Reduction:** The cloud engine checks daily activity and dispatches reports for forms with recorded submissions or sent emails, automatically suppressing empty reports on inactive days to keep your inbox clutter-free.
 - **Content:** Comprehensive breakdown of the previous day's `emails_sent`, `emails_failed`, and `emails_opened`, categorized across `system`, `automation`, and `campaign` execution modes.
 - **Quota-Free Delivery:** Delivered via built-in System SMTP, ensuring that daily reports consume 0% of your custom SMTP sending quota.
 
@@ -129,7 +135,7 @@ FormMail Hub manages unsubscribes across three strict, independent scopes:
 
 | Scope Level | Target Audience | Trigger Context | System Action |
 | :--- | :--- | :--- | :--- |
-| **Form-Specific Respondent Unsubscribe** | Form Respondents | `{Unsubscribe Link}` clicked in Auto-responders or Campaigns | Unsubscribes respondent's email address strictly from future emails related to that specific Form. |
+| **Form-Specific Respondent Unsubscribe** | Form Respondents | `{Unsubscribe link}` clicked in Auto-responders or Campaigns | Unsubscribes respondent's email address strictly from future emails related to that specific Form. |
 | **Form-Specific System Daily Report Unsubscribe** | Form Admin / Team | Unsubscribe link in Daily Summary Report email | Stops daily summary report emails strictly for that specific Form. |
 | **User-Level SMTP Error Alert Unsubscribe** | Form Admin | Unsubscribe link in SMTP failure warning email | Stops SMTP connection failure notifications across all forms managed by that user account. |
 
