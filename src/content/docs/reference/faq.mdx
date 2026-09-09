@@ -97,12 +97,12 @@ To test any feature live or experience automated triggers firsthand, submit our 
 - `automation`: Submission-triggered auto-responders and rule-based emails.
 - `campaign`: Proactive bulk emails dispatched from the Google Sheets add-on.
 
-Additionally, an automated **Daily Summary Report** is emailed via System SMTP to the Form Admin at **00:00 (according to each form's configured timezone)** summarizing the previous day's metrics for active forms. Forms without activity on a given day are suppressed to keep inboxes clean.
+Additionally, an automated **Daily Summary Report** is emailed via System SMTP to the Form Admin at **00:00 (according to each form's configured timezone)** for each active Form, summarizing the previous day's metrics.
 
 ### Q: How can Form Admins and respondents manage email preferences and prevent unwanted emails?
 **A:** FormMail Hub provides precise, multi-tiered subscription control across 3 granular scopes:
 - **Form-Specific Respondent Unsubscribe:** Custom email templates can include the `{Unsubscribe link}` tag. Clicking this link allows respondents to unsubscribe strictly from future emails related to that specific Form.
-- **Form-Specific System Daily Report Unsubscribe:** Daily summary report emails sent to Admins include an unsubscribe link that stops daily reports strictly for that specific Form, keeping reports active for others.
+- **Form-Specific System Daily Report Unsubscribe:** Daily summary report emails sent to Admins include an unsubscribe link that stops daily reports strictly for that specific Form, keeping daily summary reports active for other forms.
 - **User-Level SMTP Error Alert Unsubscribe:** SMTP error alert emails sent to Admins include an unsubscribe link scoped to the user account level, stopping SMTP failure alerts across all forms managed under that account.
 
 ---
