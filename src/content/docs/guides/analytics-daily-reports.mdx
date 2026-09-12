@@ -104,6 +104,9 @@ To keep administrators informed without requiring manual dashboard logins, FormM
                                                                      v
                                                   [ Opts Out Strictly for That Form ]
                                                   [ Other Active Forms Continue Reporting ]
+                                                                     |
+                                                                     v
+                                                  [ Instant Confirmation Email Sent ]
 ```
 
 ### Automated Dispatch Mechanics
@@ -116,10 +119,11 @@ FormMail Hub features automated timezone normalization ensuring accurate midnigh
 - **Canonical Timezone Names:** Full support for canonical timezones (e.g., `America/New_York`, `Europe/London`, `Asia/Ho_Chi_Minh`, `Asia/Tokyo`).
 - **Offset Formats:** Accepts standard offset notations such as `+07:00`, `-05:00`, `GMT+7`, or `UTC+7`.
 
-### Granular Per-Form Unsubscribe Control
+### Granular Per-Form Unsubscribe Control & Instant Confirmation
 Admins managing multiple forms can independently opt out of daily reports for high-volume or non-critical forms without disabling reports globally:
 - **Embedded Unsubscribe Link:** Every daily report includes a dedicated form-specific unsubscribe link.
 - **Scope Isolation:** Unsubscribing stops daily reports **strictly for that specific form**, keeping daily summary reports active for all other forms.
+- **Instant Preference Confirmation Notice:** Whenever you update your daily report preference (enable or disable), FormMail Hub automatically delivers an instant confirmation email notice to your administrator inbox via System SMTP verifying the updated status and providing a 1-click link to manage preferences anytime.
 
 ---
 
@@ -130,7 +134,7 @@ FormMail Hub manages unsubscribes across three strict, independent scopes:
 | Scope Level | Target Audience | Trigger Context | System Action |
 | :--- | :--- | :--- | :--- |
 | **Form-Specific Respondent Unsubscribe** | Form Respondents | `{Unsubscribe link}` clicked in Auto-responders or Campaigns | Unsubscribes respondent's email address strictly from future emails related to that specific Form. |
-| **Form-Specific System Daily Report Unsubscribe** | Form Admin / Team | Unsubscribe link in Daily Summary Report email | Stops daily summary report emails strictly for that specific Form. |
+| **Form-Specific System Daily Report Unsubscribe** | Form Admin / Team | Unsubscribe link in Daily Summary Report email | Stops daily summary report emails strictly for that specific Form, and sends an instant preference confirmation notice. |
 | **User-Level SMTP Error Alert Unsubscribe** | Form Admin | Unsubscribe link in SMTP failure warning email | Stops SMTP connection failure notifications across all forms managed by that user account. |
 
 ---
