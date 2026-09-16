@@ -10,6 +10,25 @@ export default defineConfig({
                 src: './src/assets/logo_III.svg',
             },
             favicon: '/favicon.ico',
+            // 🟢 TÍCH HỢP GOOGLE ANALYTICS (GA4)
+            head: [
+                {
+                    tag: 'script',
+                    attrs: {
+                        async: true,
+                        src: 'https://www.googletagmanager.com/gtag/js?id=G-05MV4LHN6P',
+                    },
+                },
+                {
+                    tag: 'script',
+                    content: `
+                        window.dataLayer = window.dataLayer || [];
+                        function gtag(){dataLayer.push(arguments);}
+                        gtag('js', new Date());
+                        gtag('config', 'G-05MV4LHN6P');
+                    `,
+                },
+            ],
             social: [
                 { 
                     icon: 'external', 
@@ -20,17 +39,14 @@ export default defineConfig({
             sidebar: [
                 {
                     label: 'Guides',
-                    // Đã đưa autogenerate vào trong items
                     items: [{ autogenerate: { directory: 'guides' } }],
                 },
                 {
                     label: 'Reference',
-                    // Đã đưa autogenerate vào trong items
                     items: [{ autogenerate: { directory: 'reference' } }],
                 },
                 {
                     label: 'Tutorials',
-                    // Đã đưa autogenerate vào trong items
                     items: [{ autogenerate: { directory: 'tutorials' } }],
                 },
             ],
