@@ -1,8 +1,10 @@
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import tailwindcss from '@tailwindcss/vite';
+import sitemap from '@astrojs/sitemap'; // 🟢 1. Import sitemap
 
 export default defineConfig({
+    site: 'https://doc.formmailhub.com', // 🟢 2. Cấu hình domain chuẩn để tạo sitemap
     integrations: [
         starlight({
             title: 'FormMail Hub - Docs',
@@ -52,6 +54,7 @@ export default defineConfig({
             ],
             customCss: ['./src/styles/global.css'],
         }),
+        sitemap(), // 🟢 3. Kích hoạt tự động tạo sitemap khi build
     ],
     vite: {
         plugins: [tailwindcss()],
