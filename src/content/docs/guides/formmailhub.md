@@ -1,6 +1,6 @@
 ---
 title: FormMail Hub - Complete User & Administration Guide
-description: Comprehensive guide for Google Forms email automation, custom SMTP setup, team routing, delayed delivery, QR attendance tracking, staff scanner management, campaign dispatches, and quota expansion with FormMail Hub.
+description: Comprehensive guide for Google Forms email automation, custom SMTP setup, team routing, delayed delivery, scheduled dispatch, QR attendance tracking, staff scanner management, campaign dispatches, and quota expansion with FormMail Hub.
 ---
 
 Welcome to the official **FormMail Hub** user and administration guide. FormMail Hub transforms standard Google Forms™ into an enterprise-grade customer communications, lead engagement, event ticketing, and email automation platform.
@@ -36,7 +36,7 @@ FormMail Hub operates via an independent external cloud platform engine coupled 
 ### Architecture Overview
 - **Independent Cloud Platform Engine:** FormMail Hub operates on a powerful, independent external cloud backend platform specifically built to overcome Google Workspace's native execution limits, quotas, and trigger constraints.
 - **Data Ingestion Bridges:** All 3 Google Forms entry add-ons (*Form Confirmation Emails*, *Form to Email*, *Form Notifications SMTP*) and the 1 Google Sheets add-on (*FormMail Hub*) act strictly as data ingestion bridges/entry points that push submission events and configuration data to the FormMail Hub cloud platform.
-- **Full-Featured Google Sheets Management Client:** The **"FormMail Hub" Google Sheets add-on** acts as the primary full-featured management client. Because a single Google Spreadsheet can host multiple Form Responses tabs, connecting via the Sheets add-on uses only 1 connection slot while scaling across multiple forms, and provides the interface to launch proactive bulk email Campaigns processed by our cloud platform engine.
+- **Full-Featured Google Sheets Management Client:** The **\"FormMail Hub\" Google Sheets add-on** acts as the primary full-featured management client. Because a single Google Spreadsheet can host multiple Form Responses tabs, connecting via the Sheets add-on uses only 1 connection slot while scaling across multiple forms, and provides the interface to launch proactive bulk email Campaigns processed by our cloud platform engine.
 
 ---
 
@@ -99,9 +99,9 @@ Templates parse submission fields into dynamic tags supporting `{Tag}`, `{{Tag}}
 - **Dynamic Question Field Tags:** Any exact form question title (e.g., `{First Name}`, `{Email Address}`).
 - **Security Isolation:** Scanner authorization tags (`{Check-in Scanner}`, `{Check-out Scanner}`, `{Full Scanner}`) are populated strictly in staff/team emails and automatically stripped from respondent emails.
 
-### Multi-Condition Routing & Delayed Delivery
+### Multi-Condition Routing, Delayed Delivery & Scheduled Dispatch
 - **Multi-Condition Logic:** Rules support evaluating multiple form response fields simultaneously to trigger targeted custom templates and route emails to specific recipients or internal teams.
-- **Delayed Delivery Engine:** Configure optional delivery delays for rule execution (e.g., sending an auto-responder or follow-up email after a set number of **Seconds**, **Minutes**, **Hours**, or **Days**).
+- **Configurable Delivery Delay & Scheduled Dispatch:** Configure flexible timed delivery options. Admins can specify relative delay intervals in **Seconds**, **Minutes**, **Hours**, or **Days**, or set a fixed date and time (**Scheduled mode**). In scheduled mode, the cloud platform automatically converts local datetime using your Form's configured timezone into UTC for delayed execution, and safely skips execution if the scheduled timestamp has already passed at the time of submission.
 - **Mandatory Recipient Selection:** To guarantee deliverability, rules require at least one designated recipient (either a selected team member or a mapped customer email field).
 
 ---

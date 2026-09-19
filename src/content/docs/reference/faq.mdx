@@ -34,15 +34,15 @@ To test any feature live or experience automated triggers firsthand, submit our 
 3. Set the target recipient field to the dynamic email tag submitted by the respondent (e.g., `{Email}`).
 4. When respondents complete the form, FormMail Hub immediately sends them their customized confirmation email.
 
-### Q: Can I set a delay for emails triggered by form submission rules?
-**A:** **Yes.** When setting up Auto-responder or conditional routing rules, you can configure an optional delivery delay. Admins can specify custom delay durations in **seconds**, **minutes**, **hours**, or **days** to schedule timed follow-up emails automatically. The cloud platform engine buffers and dispatches the email once the specified duration elapses.
+### Q: Can I set a delay or schedule specific dates/times for emails triggered by form submission rules?
+**A:** **Yes.** When setting up Auto-responder or conditional routing rules, you can configure flexible execution timing. You can specify relative delay intervals in **seconds**, **minutes**, **hours**, or **days**, or select a fixed date and time (**Scheduled mode**). The cloud backend platform automatically adjusts the scheduled timestamp using your Form's configured timezone and safely skips execution if the target scheduled time has already elapsed at the time of submission.
 
 ---
 
 ## 2. Campaigns & Google Sheets Management Client
 
 ### Q: Can I proactively send bulk email notifications or campaigns to all form respondents?
-**A:** **Yes.** Bulk sending (**Campaigns**) is launched exclusively via the **FormMail Hub Google Sheets add-on** while your Google Sheet is open.
+**A:** **Yes.** Bulk email dispatches (**Campaigns**) are launched exclusively via the **FormMail Hub Google Sheets add-on** while your Google Sheet is open.
 
 ```
 +-----------------------------------------------------------------------------------+
