@@ -1,0 +1,18 @@
+(() => {
+  const style = document.createElement('style');
+  style.textContent = `
+    #fmm-chat-toggle{position:fixed;right:22px;bottom:22px;z-index:1000;border:0;border-radius:999px;background:#2563eb;color:#fff;padding:13px 18px;font-weight:700;box-shadow:0 8px 24px #0003;cursor:pointer}
+    #fmm-chat{display:none;position:fixed;right:22px;bottom:78px;width:min(380px,calc(100vw - 32px));height:min(560px,calc(100vh - 110px));z-index:1000;background:var(--sl-color-bg, #fff);color:var(--sl-color-text, #111);border:1px solid #94a3b8;border-radius:14px;box-shadow:0 12px 40px #0004;overflow:hidden;font-family:inherit}
+    #fmm-chat.open{display:flex;flex-direction:column}#fmm-chat header{padding:14px 16px;background:#2563eb;color:#fff;font-weight:700;display:flex;justify-content:space-between}#fmm-chat header button{background:transparent;color:#fff;border:0;font-size:20px;cursor:pointer}
+    #fmm-chat-log{flex:1;overflow:auto;padding:14px;display:flex;flex-direction:column;gap:10px}.fmm-msg{max-width:88%;padding:9px 11px;border-radius:10px;white-space:pre-wrap;line-height:1.45;font-size:14px}.fmm-user{align-self:flex-end;background:#dbeafe}.fmm-bot{align-self:flex-start;background:#f1f5f9}.fmm-chat-form{display:flex;gap:8px;padding:10px;border-top:1px solid #cbd5e1}.fmm-chat-form textarea{resize:none;flex:1;border:1px solid #94a3b8;border-radius:8px;padding:8px;font:inherit}.fmm-chat-form button{border:0;border-radius:8px;background:#2563eb;color:#fff;padding:0 13px;cursor:pointer}.fmm-chat-form button:disabled{opacity:.5}
+  `;
+  document.head.appendChild(style);
+  const wrapper = document.createElement('div');
+  wrapper.innerHTML = `<button id="fmm-chat-toggle" aria-label="Mở FormMail Hub AI">💬 Hỏi FormMail Hub</button><section id="fmm-chat" aria-label="FormMail Hub AI chatbot"><header>FormMail Hub AI <button aria-label="Đóng">×</button></header><div id="fmm-chat-log"><div class="fmm-msg fmm-bot">Xin chào! Tôi có thể giải đáp về FormMail Hub dựa trên PRODUCT_RULES.md và USER_GUIDE.md.</div></div><form class="fmm-chat-form"><textarea rows="2" maxlength="4000" placeholder="Bạn muốn hỏi điều gì?"></textarea><button type="submit">Gửi</button></form></section>`;
+  document.body.appendChild(wrapper);
+  const chat = wrapper.querySelector('#fmm-chat'); const log = wrapper.querySelector('#fmm-chat-log'); const form = wrapper.querySelector('form'); const input = form.querySelector('textarea'); const send = form.querySelector('button'); const history = [];
+  wrapper.querySelector('#fmm-chat-toggle').onclick = () => { chat.classList.add('open'); input.focus(); };
+  chat.querySelector('header button').onclick = () => chat.classList.remove('open');
+  const add = (text, cls) => { const el = document.createElement('div'); el.className = `fmm-msg ${cls}`; el.textContent = text; log.appendChild(el); log.scrollTop = log.scrollHeight; return el; };
+  form.onsubmit = async (event) => { event.preventDefault(); const message = input.value.trim(); if (!message || send.disabled) return; add(message, 'fmm-user'); input.value = ''; send.disabled = true; const pending = add('Đang tra cứu tài liệu…', 'fmm-bot'); try { const response = await fetch('/api/chat', { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({ message, history }) }); const data = await response.json(); pending.textContent = data.answer || data.error || 'Đã xảy ra lỗi.'; if (data.answer) { history.push({role:'user', text:message}, {role:'model', text:data.answer}); if(history.length > 10) history.splice(0, 2); } } catch { pending.textContent = 'Không thể kết nối chatbot lúc này.'; } finally { send.disabled = false; input.focus(); } };
+})();
