@@ -4,6 +4,9 @@ const MAX_HISTORY_ITEMS = 10;
 // Sử dụng model chính thức của Google Gemini
 const MODEL = 'gemini-3.6-flash';
 
+// THÊM DÒNG NÀY ĐỂ SOI LOG
+    console.log('Calling URL:', apiUrl.replace(env.GEMINI_API_KEY, 'HIDDEN_KEY'));
+
 const DOC_URLS = [
   'https://raw.githubusercontent.com/quickmapshare/doc-FormMail-Hub/main/PRODUCT_RULES.md',
   'https://raw.githubusercontent.com/quickmapshare/doc-FormMail-Hub/main/USER_GUIDE.md',
