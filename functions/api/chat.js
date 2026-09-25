@@ -70,13 +70,13 @@ export async function onRequestPost({ request, env }) {
     const accountId = env.CF_ACCOUNT_ID;
     const gatewayName = env.CF_GATEWAY_NAME || 'gemini-gateway';
 
-    // THÊM DÒNG NÀY ĐỂ SOI LOG
-    console.log('Calling URL:', apiUrl.replace(env.GEMINI_API_KEY, 'HIDDEN_KEY'));
-
     const apiUrl = accountId
       ? `https://gateway.ai.cloudflare.com/v1/${accountId}/${gatewayName}/google-ai-studio/v1beta/models/${MODEL}:generateContent?key=${encodeURIComponent(env.GEMINI_API_KEY)}`
       : `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${encodeURIComponent(env.GEMINI_API_KEY)}`;
 
+    // THÊM DÒNG NÀY ĐỂ SOI LOG
+    console.log('Calling URL:', apiUrl.replace(env.GEMINI_API_KEY, 'HIDDEN_KEY'));
+    
     const response = await fetch(apiUrl, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
