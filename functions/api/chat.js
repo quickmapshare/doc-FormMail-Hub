@@ -4,9 +4,6 @@ const MAX_HISTORY_ITEMS = 10;
 // Sử dụng model chính thức của Google Gemini
 const MODEL = 'gemini-3.6-flash';
 
-// THÊM DÒNG NÀY ĐỂ SOI LOG
-    console.log('Calling URL:', apiUrl.replace(env.GEMINI_API_KEY, 'HIDDEN_KEY'));
-
 const DOC_URLS = [
   'https://raw.githubusercontent.com/quickmapshare/doc-FormMail-Hub/main/PRODUCT_RULES.md',
   'https://raw.githubusercontent.com/quickmapshare/doc-FormMail-Hub/main/USER_GUIDE.md',
@@ -72,6 +69,9 @@ export async function onRequestPost({ request, env }) {
     // Tự động chuyển hướng qua AI Gateway nếu đã khai báo biến CF_ACCOUNT_ID
     const accountId = env.CF_ACCOUNT_ID;
     const gatewayName = env.CF_GATEWAY_NAME || 'gemini-gateway';
+
+    // THÊM DÒNG NÀY ĐỂ SOI LOG
+    console.log('Calling URL:', apiUrl.replace(env.GEMINI_API_KEY, 'HIDDEN_KEY'));
 
     const apiUrl = accountId
       ? `https://gateway.ai.cloudflare.com/v1/${accountId}/${gatewayName}/google-ai-studio/v1beta/models/${MODEL}:generateContent?key=${encodeURIComponent(env.GEMINI_API_KEY)}`
