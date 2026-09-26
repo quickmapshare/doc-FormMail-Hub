@@ -121,6 +121,17 @@ export async function POST(request) {
     // GHI LOG CHAT TRỰC TIẾP LÊN VERCEL LOGS
     console.log(`[CHAT_LOG] User: "${message}" | Bot: "${answer.replace(/\n/g, ' ')}"`);
 
+    // Gửi log trực tiếp về Discord Webhook
+    const discordUrl = process.env.DISCORD_WEBHOOK_URL;
+    if (discordUrl) {
+      const content = `💬 **FormMail Hub Chat**\n👤 **User:** ${message}\n🤖 **Bot:** ${answer}`;
+      fetch(discordUrl, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ content }),
+      }).catch((err) => console.error('Discord log error:', err));
+    }
+
     return json({ answer });
   } catch (error) {
     console.error('Server Internal Error:', error);
