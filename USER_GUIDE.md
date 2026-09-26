@@ -79,5 +79,7 @@ Analytics track sent, failed, and opened email metrics in three modes: `system`,
 - **Templates limit:** Free tier users can create up to 6 templates per form.
 - **Rules limit:** Free tier users can create up to 5 rules per form.
 - **Plan upgrades:** Upgrading to a paid plan removes or increases these template and rule caps.
-  
-For support, visit https://formmail.vietutd.com/contact.
+
+## Support & Documentation updates
+
+If a specific feature or question is not covered in this guide, our documentation team regularly reviews unanswered queries. You can check back in **24 to 48 hours** for updated documentation, or contact support directly at https://formmail.vietutd.com/contact.
