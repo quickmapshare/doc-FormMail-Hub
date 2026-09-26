@@ -98,7 +98,8 @@
     const pending = add('Searching docs…', 'fmm-bot', false);
 
     try {
-      const response = await fetch('/api/chat', {
+      // Trỏ trực tiếp tới Vercel Domain
+      const response = await fetch('https://doc.formmailhub.com/api/chat', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ message, history })
