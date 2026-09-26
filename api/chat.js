@@ -1,34 +1,43 @@
 const MAX_MESSAGE_LENGTH = 4000;
 const MAX_HISTORY_ITEMS = 10;
-const MODEL = 'gemini-3.6-flash';
+const MODEL = 'gemini-3.6-flash'; // Đã sửa tên model chuẩn của Google
 
-// Danh sách đường dẫn file trong repo
 const DOC_FILES = ['PRODUCT_RULES.md', 'USER_GUIDE.md'];
 const GITHUB_REPO = 'quickmapshare/doc-FormMail-Hub';
-const BRANCH = 'main'; // Đổi thành 'master' nếu branch chính của bạn là master
+const BRANCH = 'main';
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  'content-type': 'application/json; charset=utf-8',
+  'cache-control': 'no-store',
+};
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: {
-      'content-type': 'application/json; charset=utf-8',
-      'cache-control': 'no-store',
-    },
+    headers: corsHeaders,
   });
 }
 
-async function loadKnowledge(env) {
+// Xử lý Preflight CORS request từ trình duyệt
+export async function OPTIONS() {
+  return new Response(null, { status: 200, headers: corsHeaders });
+}
+
+async function loadKnowledge() {
   try {
+    const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
     const validDocs = await Promise.all(
       DOC_FILES.map(async (filePath) => {
-        // Dùng GitHub API thay vì raw URL để truy cập được cả Repo Private
-        const url = env?.GITHUB_TOKEN
+        const url = GITHUB_TOKEN
           ? `https://api.github.com/repos/${GITHUB_REPO}/contents/${filePath}?ref=${BRANCH}`
           : `https://raw.githubusercontent.com/${GITHUB_REPO}/${BRANCH}/${filePath}`;
 
-        const headers = { 'User-Agent': 'Cloudflare-Pages' };
-        if (env?.GITHUB_TOKEN) {
-          headers['Authorization'] = `token ${env.GITHUB_TOKEN}`;
+        const headers = { 'User-Agent': 'Vercel-Node' };
+        if (GITHUB_TOKEN) {
+          headers['Authorization'] = `token ${GITHUB_TOKEN}`;
           headers['Accept'] = 'application/vnd.github.v3.raw';
         }
 
@@ -48,9 +57,12 @@ async function loadKnowledge(env) {
   }
 }
 
-export async function onRequestPost({ request, env }) {
-  if (!env.GEMINI_API_KEY) {
-    return json({ error: 'Chatbot chưa được cấu hình API key.' }, 503);
+// Handler chuẩn cho Vercel Serverless Function
+export async function POST(request) {
+  const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+
+  if (!GEMINI_API_KEY) {
+    return json({ error: 'Chatbot chưa được cấu hình GEMINI_API_KEY trên Vercel.' }, 503);
   }
 
   let body;
@@ -73,14 +85,13 @@ export async function onRequestPost({ request, env }) {
     : [];
 
   try {
-    const knowledge = await loadKnowledge(env);
+    const knowledge = await loadKnowledge();
     const systemInstruction = `Bạn là trợ lý tài liệu chính thức của FormMail Hub. Trả lời bằng ngôn ngữ của người dùng, ưu tiên tiếng Việt nếu họ hỏi bằng tiếng Việt. Chỉ sử dụng thông tin trong hai tài liệu SOURCE DOCUMENT bên dưới. Không được bịa đặt tính năng, endpoint, giá, chính sách, tích hợp hoặc hướng dẫn không có trong tài liệu. Nếu câu hỏi nằm ngoài tài liệu, hãy nói rõ rằng tài liệu hiện không cung cấp thông tin đó và đề nghị liên hệ https://formmail.vietutd.com/contact. Trả lời ngắn gọn, rõ ràng.\n\nSOURCE DOCUMENTS:\n${knowledge}`;
 
-    // Endpoint gọi qua Proxy xử lý IP
-    const targetUrl = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${encodeURIComponent(env.GEMINI_API_KEY)}`;
-    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
+    // Gọi TRỰC TIẾP Google Gemini API (Server Vercel tại Mỹ kết nối thẳng Google, không qua Proxy trung gian)
+    const targetUrl = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${encodeURIComponent(GEMINI_API_KEY)}`;
 
-    const response = await fetch(proxyUrl, {
+    const response = await fetch(targetUrl, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
@@ -90,14 +101,13 @@ export async function onRequestPost({ request, env }) {
       }),
     });
 
-    // Đọc dưới dạng text để parse an toàn, tránh crash khi proxy trả về HTML error
     const rawText = await response.text();
     let result;
     try {
       result = JSON.parse(rawText);
     } catch (parseError) {
-      console.error('API/Proxy response is not valid JSON:', rawText);
-      return json({ error: 'Dịch vụ AI trung gian phản hồi phản hồi không hợp lệ.' }, 502);
+      console.error('Gemini response is not valid JSON:', rawText);
+      return json({ error: 'Dịch vụ AI phản hồi không hợp lệ.' }, 502);
     }
 
     if (!response.ok) {
