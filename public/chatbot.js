@@ -39,7 +39,7 @@
   document.head.appendChild(style);
 
   const wrapper = document.createElement('div');
-  wrapper.innerHTML = `<button id="fmm-chat-toggle" aria-label="Open FormMail Hub AI">💬 Ask FormMail Hub</button><section id="fmm-chat" aria-label="FormMail Hub AI chatbot"><header>FormMail Hub AI <button aria-label="Close">×</button></header><div id="fmm-chat-log"><div class="fmm-msg fmm-bot">Hello! I can answer your questions about FormMail Hub based on PRODUCT_RULES.md and USER_GUIDE.md.</div></div><form class="fmm-chat-form"><textarea rows="2" maxlength="4000" placeholder="Type your question... (Enter to send)"></textarea><button type="submit">Send</button></form></section>`;
+  wrapper.innerHTML = `<button id="fmm-chat-toggle" aria-label="Open FormMail Hub AI">💬 Ask FormMail Hub</button><section id="fmm-chat" aria-label="FormMail Hub AI chatbot"><header>FormMail Hub AI <button aria-label="Close">×</button></header><div id="fmm-chat-log"><div class="fmm-msg fmm-bot">Hello! How can I help you with FormMail Hub today? Feel free to ask about setup, features, or integrations.</div></div><form class="fmm-chat-form"><textarea rows="2" maxlength="4000" placeholder="Type your question... (Enter to send)"></textarea><button type="submit">Send</button></form></section>`;
   document.body.appendChild(wrapper);
 
   const chat = wrapper.querySelector('#fmm-chat'); 
