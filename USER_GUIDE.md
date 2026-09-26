@@ -74,4 +74,10 @@ Analytics track sent, failed, and opened email metrics in three modes: `system`,
 - **Check-out is rejected:** the ticket must currently be checked in (`IN`) before it can be checked out.
 - **A tag is not replaced:** verify the exact supported tag spelling and enclosure format.
 
+## Free tier limits
+
+- **Templates limit:** Free tier users can create up to 6 templates per form.
+- **Rules limit:** Free tier users can create up to 5 rules per form.
+- **Plan upgrades:** Upgrading to a paid plan removes or increases these template and rule caps.
+  
 For support, visit https://formmail.vietutd.com/contact.
