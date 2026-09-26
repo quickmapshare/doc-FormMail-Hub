@@ -9,8 +9,8 @@
 
   const style = document.createElement('style');
   style.textContent = `
-    #fmm-chat-toggle{position:fixed;right:22px;bottom:22px;z-index:1000;border:0;border-radius:999px;background:#2563eb;color:#fff;padding:13px 18px;font-weight:700;box-shadow:0 8px 24px #0003;cursor:pointer}
-    #fmm-chat{display:none;position:fixed;right:22px;bottom:78px;width:min(420px,calc(100vw - 32px));height:min(600px,calc(100vh - 110px));z-index:1000;background:var(--sl-color-bg, #fff);color:var(--sl-color-text, #111);border:1px solid #94a3b8;border-radius:14px;box-shadow:0 12px 40px #0004;overflow:hidden;font-family:system-ui,-apple-system,sans-serif}
+    #fmm-chat-toggle{position:fixed;right:22px;bottom:90px;z-index:1000;border:0;border-radius:999px;background:#2563eb;color:#fff;padding:13px 18px;font-weight:700;box-shadow:0 8px 24px #0003;cursor:pointer}
+    #fmm-chat{display:none;position:fixed;right:22px;bottom:146px;width:min(420px,calc(100vw - 32px));height:min(600px,calc(100vh - 110px));z-index:1000;background:var(--sl-color-bg, #fff);color:var(--sl-color-text, #111);border:1px solid #94a3b8;border-radius:14px;box-shadow:0 12px 40px #0004;overflow:hidden;font-family:system-ui,-apple-system,sans-serif}
     #fmm-chat.open{display:flex;flex-direction:column}
     #fmm-chat header{padding:14px 16px;background:#2563eb;color:#fff;font-weight:700;display:flex;justify-content:space-between;align-items:center}
     #fmm-chat header button{background:transparent;color:#fff;border:0;font-size:20px;cursor:pointer}
