@@ -112,6 +112,14 @@ export async function POST(request) {
 
     if (!response.ok) {
       console.error('Gemini API Error Detail:', result);
+      
+      // Xử lý riêng khi bị quá tải / đụng trần Quota (Lỗi 429)
+      if (response.status === 429) {
+        return json({ 
+          error: 'The AI assistant is currently receiving too many requests. Please wait a minute and try again.' 
+        }, 429);
+      }
+
       return json({ error: result?.error?.message || 'Gemini is currently unable to process your request.' }, 502);
     }
 
