@@ -59,10 +59,19 @@ async function loadKnowledge() {
 
 // Handler for Vercel Serverless Function
 export async function POST(request) {
-  const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+  // Gom nhóm danh sách 6 API Keys (và fallback key gốc nếu có)
+  const apiKeys = [
+    process.env.GEMINI_API_KEY_1,
+    process.env.GEMINI_API_KEY_2,
+    process.env.GEMINI_API_KEY_3,
+    process.env.GEMINI_API_KEY_4,
+    process.env.GEMINI_API_KEY_5,
+    process.env.GEMINI_API_KEY_6,
+    process.env.GEMINI_API_KEY,
+  ].filter(Boolean).map((key) => key.trim());
 
-  if (!GEMINI_API_KEY) {
-    return json({ error: 'Chatbot GEMINI_API_KEY is not configured on Vercel.' }, 503);
+  if (apiKeys.length === 0) {
+    return json({ error: 'No Gemini API Keys are configured on Vercel.' }, 503);
   }
 
   let body;
@@ -85,67 +94,104 @@ export async function POST(request) {
     : [];
 
   try {
+    // Tải dữ liệu tài liệu GitHub 1 lần duy nhất trước khi lặp qua các Key
     const knowledge = await loadKnowledge();
     const systemInstruction = `You are the official documentation assistant for FormMail Hub. Respond in the user's language (prefer English if the prompt is in English). Strictly use only the information provided in the two SOURCE DOCUMENTS below. Do not fabricate features, endpoints, pricing, policies, integrations, or instructions not present in the documentation. If a question is outside the docs, explicitly state that the documentation does not currently provide that information, suggest checking back in 24 to 48 hours as documentation is continuously updated, and suggest contacting https://formmail.vietutd.com/contact if they need immediate assistance. Keep answers concise and clear.\n\nSOURCE DOCUMENTS:\n${knowledge}`;
-    
-    // Call Google Gemini API directly from Vercel US server
-    const targetUrl = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${encodeURIComponent(GEMINI_API_KEY)}`;
 
-    const response = await fetch(targetUrl, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({
-        system_instruction: { parts: [{ text: systemInstruction }] },
-        contents: [...history, { role: 'user', parts: [{ text: message }] }],
-        generationConfig: { temperature: 0.2, maxOutputTokens: 900 },
-      }),
-    });
+    const payload = {
+      system_instruction: { parts: [{ text: systemInstruction }] },
+      contents: [...history, { role: 'user', parts: [{ text: message }] }],
+      generationConfig: { temperature: 0.2, maxOutputTokens: 900 },
+    };
 
-    const rawText = await response.text();
-    let result;
-    try {
-      result = JSON.parse(rawText);
-    } catch (parseError) {
-      console.error('Gemini response is not valid JSON:', rawText);
-      return json({ error: 'Invalid response from AI service.' }, 502);
-    }
+    let lastErrorStatus = 502;
+    let lastErrorMessage = '';
 
-    if (!response.ok) {
-      console.error('Gemini API Error Detail:', result);
-      
-      // Xử lý riêng khi bị quá tải / đụng trần Quota (Lỗi 429)
-      if (response.status === 429) {
-        return json({ 
-          error: 'The AI assistant is currently receiving too many requests. Please wait a minute and try again.' 
-        }, 429);
-      }
+    // VÒNG LẶP XOAY VÒNG API KEYS (FALLBACK STRATEGY)
+    for (let i = 0; i < apiKeys.length; i++) {
+      const apiKey = apiKeys[i];
+      const targetUrl = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${encodeURIComponent(apiKey)}`;
 
-      return json({ error: result?.error?.message || 'Gemini is currently unable to process your request.' }, 502);
-    }
-
-    const answer = result?.candidates?.[0]?.content?.parts?.map((part) => part.text || '').join('').trim();
-    if (!answer) return json({ error: 'No answer received from Gemini.' }, 502);
-
-    // GHI LOG CHAT TRỰC TIẾP LÊN VERCEL LOGS
-    console.log(`[CHAT_LOG] User: "${message}" | Bot: "${answer.replace(/\n/g, ' ')}"`);
-
-    // Gửi log trực tiếp về Discord Webhook (Sử dụng await để không bị Vercel ngắt kết nối giữa chừng)
-    const discordUrl = process.env.DISCORD_WEBHOOK_URL;
-    if (discordUrl) {
       try {
-        await fetch(discordUrl, {
+        const response = await fetch(targetUrl, {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({
-            content: `💬 **FormMail Hub Chat**\n👤 **User:** ${message}\n🤖 **Bot:** ${answer}`,
-          }),
+          body: JSON.stringify(payload),
         });
-      } catch (err) {
-        console.error('Discord log error:', err);
+
+        const rawText = await response.text();
+        let result;
+        try {
+          result = JSON.parse(rawText);
+        } catch {
+          console.error(`Gemini response (Key #${i + 1}) is not valid JSON:`, rawText);
+          lastErrorMessage = 'Invalid response from AI service.';
+          continue;
+        }
+
+        if (!response.ok) {
+          // Trường hợp bị 429 (Rate Limit / Quota Limit) -> Tự nhảy sang Key tiếp theo
+          if (response.status === 429) {
+            console.warn(`Key #${i + 1} bị đụng trần Quota (429). Đang chuyển sang Key #${i + 2}...`);
+            lastErrorStatus = 429;
+            lastErrorMessage = result?.error?.message || 'Rate limit reached.';
+            continue;
+          }
+
+          // Nếu là lỗi khác (chẳng hạn 400 Bad Request), dừng vòng lặp và trả lỗi ngay
+          console.error(`Gemini API Error Detail (Key #${i + 1}):`, result);
+          return json({ error: result?.error?.message || 'Gemini is currently unable to process your request.' }, response.status);
+        }
+
+        const answer = result?.candidates?.[0]?.content?.parts?.map((part) => part.text || '').join('').trim();
+        if (!answer) {
+          lastErrorMessage = 'No answer received from Gemini.';
+          continue;
+        }
+
+        // Báo động nếu hệ thống đã phải gánh tới Key trả phí cuối cùng (#6)
+        if (i === apiKeys.length - 1 && apiKeys.length > 1) {
+          console.warn('⚠️ TOÀN BỘ KEY FREE ĐÃ BỊ DĨNH LIMIT! Đã kích hoạt Key dự phòng cuối cùng.');
+        }
+
+        // GHI LOG CHAT TRỰC TIẾP LÊN VERCEL LOGS
+        console.log(`[CHAT_LOG] (Key #${i + 1}) User: "${message}" | Bot: "${answer.replace(/\n/g, ' ')}"`);
+
+        // Gửi log về Discord Webhook
+        const discordUrl = process.env.DISCORD_WEBHOOK_URL;
+        if (discordUrl) {
+          try {
+            await fetch(discordUrl, {
+              method: 'POST',
+              headers: { 'content-type': 'application/json' },
+              body: JSON.stringify({
+                content: `💬 **FormMail Hub Chat** *(Key #${i + 1})*\n👤 **User:** ${message}\n🤖 **Bot:** ${answer}`,
+              }),
+            });
+          } catch (err) {
+            console.error('Discord log error:', err);
+          }
+        }
+
+        // Trả kết quả thành công ngay khi có một Key phản hồi thành công
+        return json({ answer });
+
+      } catch (fetchErr) {
+        console.error(`Lỗi kết nối tới Gemini API bằng Key #${i + 1}:`, fetchErr);
+        lastErrorMessage = fetchErr.message;
+        continue;
       }
     }
 
-    return json({ answer });
+    // Nếu đã thử qua tất cả các Key mà vẫn không Key nào xử lý thành công
+    if (lastErrorStatus === 429) {
+      return json({
+        error: 'The AI assistant is currently receiving too many requests. Please wait a minute and try again.'
+      }, 429);
+    }
+
+    return json({ error: lastErrorMessage || 'Unable to process your request across all API keys.' }, 502);
+
   } catch (error) {
     console.error('Server Internal Error:', error);
     return json({ error: 'Unable to connect to the chatbot service at this time.', detail: error.message }, 502);
