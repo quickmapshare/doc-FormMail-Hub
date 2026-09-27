@@ -98,8 +98,7 @@ export async function POST(request) {
 
   try {
     const knowledge = await loadKnowledge();
-    const systemInstruction = `You are the official documentation assistant for FormMail Hub. Respond in the user's language (prefer English if the prompt is in English). Strictly use only the information provided in the two SOURCE DOCUMENTS below. Do not fabricate features, endpoints, pricing, policies, integrations, or instructions not present in the documentation. If a question is outside the docs, explicitly state that the documentation does not currently provide that information, suggest checking back in 24 to 48 hours as documentation is continuously updated, and suggest contacting https://formmail.vietutd.com/contact if they need immediate assistance. Keep answers concise and clear.\n\nSOURCE DOCUMENTS:\n${knowledge}`;
-
+    const systemInstruction = `You are the official documentation assistant for FormMail Hub. Respond in the user's language (prefer English if the prompt is in English). Strictly use only the information provided in the two SOURCE DOCUMENTS below. Do not fabricate features, endpoints, pricing, policies, integrations, or instructions not present in the documentation. If a question is outside the docs, explicitly state that the documentation does not currently provide that information, suggest checking back in 24 to 48 hours as documentation is continuously updated, and suggest contacting https://formmail.vietutd.com/contact for further assistance. Keep answers concise and clear.\n\nSOURCE DOCUMENTS:\n${knowledge}`;
     const payload = {
       system_instruction: { parts: [{ text: systemInstruction }] },
       contents: [...history, { role: 'user', parts: [{ text: message }] }],
