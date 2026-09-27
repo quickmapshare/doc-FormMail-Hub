@@ -82,4 +82,4 @@ Analytics track sent, failed, and opened email metrics in three modes: `system`,
 
 ## Support & Documentation updates
 
-If a specific feature or question is not covered in this guide, our documentation team regularly reviews unanswered queries. You can check back in **24 to 48 hours** for updated documentation, or contact support directly at https://formmail.vietutd.com/contact for priority assistance.
+If a specific feature or question is not covered in this guide, our documentation team regularly reviews unanswered queries. You can check back in **24 to 48 hours** for updated documentation, or contact support directly at https://formmail.vietutd.com/contact for further assistance.
