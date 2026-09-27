@@ -1,12 +1,12 @@
 const MAX_MESSAGE_LENGTH = 4000;
 const MAX_HISTORY_ITEMS = 10;
-const MODEL = 'gemini-3.5-flash-lite';
+// Sửa tên model chính xác của Google Gemini API
+const MODEL = 'gemini-3.5-flash-lite'; 
 
 const DOC_FILES = ['PRODUCT_RULES.md', 'USER_GUIDE.md'];
 const GITHUB_REPO = 'quickmapshare/doc-FormMail-Hub';
 const BRANCH = 'main';
 
-// Biến lưu con trỏ luân phiên (nằm ngoài hàm POST để duy trì giữa các lượt gọi)
 let globalKeyPointer = 0;
 
 const corsHeaders = {
@@ -24,7 +24,6 @@ function json(data, status = 200) {
   });
 }
 
-// Handle preflight CORS requests
 export async function OPTIONS() {
   return new Response(null, { status: 200, headers: corsHeaders });
 }
@@ -60,9 +59,7 @@ async function loadKnowledge() {
   }
 }
 
-// Handler for Vercel Serverless Function
 export async function POST(request) {
-  // 1. Tách danh sách 5 Key Free và Key Paid riêng biệt
   const freeKeys = [
     process.env.GEMINI_API_KEY_1,
     process.env.GEMINI_API_KEY_2,
@@ -100,30 +97,28 @@ export async function POST(request) {
     const knowledge = await loadKnowledge();
     const systemInstruction = `You are the official documentation assistant for FormMail Hub. Respond in the user's language (prefer English if the prompt is in English). Maintain a warm, helpful, and friendly tone.
 
-  Strictly use only the information provided in the two SOURCE DOCUMENTS below. Do not fabricate features, endpoints, pricing, policies, integrations, or instructions not present in the documentation.
-  
-  - FEATURE REQUESTS & SUGGESTIONS: If the user asks for, suggests, or inquires about a feature/integration that FormMail Hub does not currently support, respond warmly and receptively. Acknowledge their idea, clearly note that you have recorded their request to report it back to the product/development team, and briefly ask if they have any specific workflow or use case details they'd like to share.
-  - OUT OF SCOPE QUESTIONS: If a question is simply outside the docs (and not a feature request), explicitly state that the documentation does not currently provide that information, suggest checking back in 24 to 48 hours as documentation is continuously updated, and suggest contacting https://formmail.vietutd.com/contact for further assistance.
-  
-  Keep answers concise and clear. If a general technical question is broad or ambiguous, you may ask ONE brief, relevant follow-up question to clarify their setup and offer better guidance. Do not ask unnecessary questions for simple factual queries.
-  
-  SOURCE DOCUMENTS:
-  ${knowledge}`;
+Strictly use only the information provided in the two SOURCE DOCUMENTS below. Do not fabricate features, endpoints, pricing, policies, integrations, or instructions not present in the documentation.
+
+- FEATURE REQUESTS & SUGGESTIONS: If the user asks for, suggests, or inquires about a feature/integration that FormMail Hub does not currently support, respond warmly and receptively. Acknowledge their idea, clearly note that you have recorded their request to report it back to the product/development team, and briefly ask if they have any specific workflow or use case details they'd like to share.
+- OUT OF SCOPE QUESTIONS: If a question is simply outside the docs (and not a feature request), explicitly state that the documentation does not currently provide that information, suggest checking back in 24 to 48 hours as documentation is continuously updated, and suggest contacting https://formmail.vietutd.com/contact for further assistance.
+
+Keep answers concise and clear. If a general technical question is broad or ambiguous, you may ask ONE brief, relevant follow-up question to clarify their setup and offer better guidance. Do not ask unnecessary questions for simple factual queries.
+
+SOURCE DOCUMENTS:
+${knowledge}`;
+
     const payload = {
       system_instruction: { parts: [{ text: systemInstruction }] },
       contents: [...history, { role: 'user', parts: [{ text: message }] }],
       generationConfig: { temperature: 0.2, maxOutputTokens: 900 },
     };
 
-    // 2. Tạo danh sách Key ưu tiên cho LẦN GỌI NÀY theo dạng Luân Phiên (Round-Robin)
     const attemptKeys = [];
 
     if (freeKeys.length > 0) {
       const startIndex = globalKeyPointer % freeKeys.length;
-      // Cập nhật con trỏ cho request tiếp theo
       globalKeyPointer = (globalKeyPointer + 1) % freeKeys.length;
 
-      // Đưa các Key Free vào danh sách bắt đầu từ startIndex
       for (let i = 0; i < freeKeys.length; i++) {
         const index = (startIndex + i) % freeKeys.length;
         attemptKeys.push({
@@ -134,7 +129,6 @@ export async function POST(request) {
       }
     }
 
-    // Luôn luôn xếp Key Trả Phí ở VỊ TRÍ CUỐI CÙNG (Chỉ dùng khi cả 5 Key Free đều xịt)
     if (paidKey) {
       attemptKeys.push({
         key: paidKey,
@@ -146,7 +140,6 @@ export async function POST(request) {
     let lastErrorStatus = 502;
     let lastErrorMessage = '';
 
-    // 3. Thực hiện xoay vòng thử lần lượt theo thứ tự đã sắp xếp
     for (const item of attemptKeys) {
       const targetUrl = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${encodeURIComponent(item.key)}`;
 
@@ -168,15 +161,14 @@ export async function POST(request) {
         }
 
         if (!response.ok) {
-          // Bị 429 (Rate Limit / Quota) -> Bỏ qua, thử Key tiếp theo trong mảng
-          if (response.status === 429) {
-            console.warn(`[ROTATE] ${item.name} bị dính Limit 429. Đang chuyển sang Key tiếp theo...`);
-            lastErrorStatus = 429;
-            lastErrorMessage = result?.error?.message || 'Rate limit reached.';
+          // Bổ sung xoay vòng cho cả lỗi 429 (Rate Limit) và 403 (Invalid / Disabled Key)
+          if ([429, 403].includes(response.status)) {
+            console.warn(`[ROTATE] ${item.name} gặp lỗi (${response.status}). Đang chuyển sang Key tiếp theo...`);
+            lastErrorStatus = response.status;
+            lastErrorMessage = result?.error?.message || 'Key limit or auth issue.';
             continue;
           }
 
-          // Lỗi khác (400 Bad Request...) -> Dừng luôn
           console.error(`Gemini API Error Detail (${item.name}):`, result);
           return json({ error: result?.error?.message || 'Gemini is currently unable to process your request.' }, response.status);
         }
@@ -187,31 +179,23 @@ export async function POST(request) {
           continue;
         }
 
-        // Cảnh báo nếu phải dùng tới Key Trả Phí
         if (item.isPaid) {
           console.warn('⚠️ TOÀN BỘ KEY FREE ĐÃ BỊ DĨNH LIMIT! Đã kích hoạt Key dự phòng trả phí.');
         }
 
-        // Ghi log chi tiết Key nào đã xử lý thành công
         console.log(`[CHAT_LOG] (${item.name}) User: "${message}" | Bot: "${answer.replace(/\n/g, ' ')}"`);
 
-        // Gửi log về Discord
+        // Gửi Discord bất đồng bộ (không dùng await) + Cắt gọn tin nhắn < 2000 ký tự
         const discordUrl = process.env.DISCORD_WEBHOOK_URL;
         if (discordUrl) {
-          try {
-            await fetch(discordUrl, {
-              method: 'POST',
-              headers: { 'content-type': 'application/json' },
-              body: JSON.stringify({
-                content: `💬 **FormMail Hub Chat** *(${item.name})*\n👤 **User:** ${message}\n🤖 **Bot:** ${answer}`,
-              }),
-            });
-          } catch (err) {
-            console.error('Discord log error:', err);
-          }
+          const discordContent = `💬 **FormMail Hub Chat** *(${item.name})*\n👤 **User:** ${message}\n🤖 **Bot:** ${answer}`.slice(0, 1900);
+          fetch(discordUrl, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ content: discordContent }),
+          }).catch((err) => console.error('Discord log error:', err));
         }
 
-        // Trả kết quả thành công
         return json({ answer });
 
       } catch (fetchErr) {
@@ -221,7 +205,6 @@ export async function POST(request) {
       }
     }
 
-    // Nếu chạy hết mảng mà vẫn thất bại
     if (lastErrorStatus === 429) {
       return json({
         error: 'The AI assistant is currently receiving too many requests. Please wait a minute and try again.'
