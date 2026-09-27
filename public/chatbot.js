@@ -9,51 +9,66 @@
 
   const style = document.createElement('style');
   style.textContent = `
-      #fmm-chat-toggle {
+    #fmm-chat-toggle {
       position: fixed;
-      right: 24px;
-      bottom: 24px;
+      right: 22px;
+      bottom: 22px;
       z-index: 1000;
       border: 0;
       border-radius: 999px;
       background: #2563eb;
       color: #fff;
-      padding: 12px 20px;
-      font-weight: 600;
+      padding: 12px 18px;
+      font-weight: 700;
       font-size: 14px;
-      box-shadow: 0 4px 20px rgba(37, 99, 235, 0.35);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
       cursor: pointer;
       transition: all 0.2s ease-out;
     }
-    
     #fmm-chat-toggle:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(37, 99, 235, 0.5);
+      box-shadow: 0 8px 25px rgba(37, 99, 235, 0.4);
     }
-    #fmm-chat.open{display:flex;flex-direction:column}
-    #fmm-chat header{padding:14px 16px;background:#2563eb;color:#fff;font-weight:700;display:flex;justify-content:space-between;align-items:center}
-    #fmm-chat header button{background:transparent;color:#fff;border:0;font-size:20px;cursor:pointer}
-    #fmm-chat-log{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px}
+    #fmm-chat {
+      display: none;
+      position: fixed;
+      right: 22px;
+      bottom: 78px;
+      width: min(420px, calc(100vw - 32px));
+      height: min(600px, calc(100vh - 100px));
+      z-index: 1000;
+      background: var(--sl-color-bg, #fff);
+      color: var(--sl-color-text, #111);
+      border: 1px solid #94a3b8;
+      border-radius: 14px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+      overflow: hidden;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+    #fmm-chat.open { display: flex; flex-direction: column; }
+    #fmm-chat header { padding: 14px 16px; background: #2563eb; color: #fff; font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
+    #fmm-chat header button { background: transparent; color: #fff; border: 0; font-size: 20px; cursor: pointer; }
+    #fmm-chat-log { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 12px; }
     
     /* Style đẹp mắt cho tin nhắn & Markdown */
-    .fmm-msg{max-width:90%;padding:10px 14px;border-radius:12px;line-height:1.5;font-size:14px;word-break:break-word}
-    .fmm-user{align-self:flex-end;background:#2563eb;color:#fff;white-space:pre-wrap}
-    .fmm-bot{align-self:flex-start;background:#f1f5f9;color:#0f172a;border:1px solid #e2e8f0}
+    .fmm-msg { max-width: 90%; padding: 10px 14px; border-radius: 12px; line-height: 1.5; font-size: 14px; word-break: break-word; }
+    .fmm-user { align-self: flex-end; background: #2563eb; color: #fff; white-space: pre-wrap; }
+    .fmm-bot { align-self: flex-start; background: #f1f5f9; color: #0f172a; border: 1px solid #e2e8f0; }
     
     /* Format các phần tử Markdown inside Bot Message */
-    .fmm-bot p{margin:0 0 8px 0}.fmm-bot p:last-child{margin-bottom:0}
-    .fmm-bot h1,.fmm-bot h2,.fmm-bot h3,.fmm-bot h4{margin:12px 0 6px 0;font-size:15px;font-weight:700;color:#1e293b}
-    .fmm-bot ul,.fmm-bot ol{margin:6px 0;padding-left:20px}
-    .fmm-bot li{margin-bottom:4px}
-    .fmm-bot strong{font-weight:700;color:#0f172a}
-    .fmm-bot code{background:#e2e8f0;padding:2px 5px;border-radius:4px;font-family:monospace;font-size:13px}
-    .fmm-bot a{color:#2563eb;text-decoration:underline}
+    .fmm-bot p { margin: 0 0 8px 0; } .fmm-bot p:last-child { margin-bottom: 0; }
+    .fmm-bot h1, .fmm-bot h2, .fmm-bot h3, .fmm-bot h4 { margin: 12px 0 6px 0; font-size: 15px; font-weight: 700; color: #1e293b; }
+    .fmm-bot ul, .fmm-bot ol { margin: 6px 0; padding-left: 20px; }
+    .fmm-bot li { margin-bottom: 4px; }
+    .fmm-bot strong { font-weight: 700; color: #0f172a; }
+    .fmm-bot code { background: #e2e8f0; padding: 2px 5px; border-radius: 4px; font-family: monospace; font-size: 13px; }
+    .fmm-bot a { color: #2563eb; text-decoration: underline; }
     
-    .fmm-chat-form{display:flex;gap:8px;padding:10px;border-top:1px solid #cbd5e1;background:#fff}
-    .fmm-chat-form textarea{resize:none;flex:1;border:1px solid #94a3b8;border-radius:8px;padding:8px 10px;font:inherit;outline:none}
-    .fmm-chat-form textarea:focus{border-color:#2563eb}
-    .fmm-chat-form button{border:0;border-radius:8px;background:#2563eb;color:#fff;padding:0 14px;font-weight:600;cursor:pointer}
-    .fmm-chat-form button:disabled{opacity:.5}
+    .fmm-chat-form { display: flex; gap: 8px; padding: 10px; border-top: 1px solid #cbd5e1; background: #fff; }
+    .fmm-chat-form textarea { resize: none; flex: 1; border: 1px solid #94a3b8; border-radius: 8px; padding: 8px 10px; font: inherit; outline: none; }
+    .fmm-chat-form textarea:focus { border-color: #2563eb; }
+    .fmm-chat-form button { border: 0; border-radius: 8px; background: #2563eb; color: #fff; padding: 0 14px; font-weight: 600; cursor: pointer; }
+    .fmm-chat-form button:disabled { opacity: .5; }
   `;
   document.head.appendChild(style);
 
