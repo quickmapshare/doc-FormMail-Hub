@@ -1,15 +1,17 @@
 const MAX_MESSAGE_LENGTH = 4000;
 const MAX_HISTORY_ITEMS = 10;
-// Sửa tên model chính xác của Google Gemini API
-const MODEL = 'gemini-3.5-flash-lite'; 
+
+// Model mặc định
+const GROQ_MODEL = 'llama-3.3-70b-versatile';
+const GEMINI_MODEL = 'gemini-3.5-flash-lite'; 
 
 const DOC_FILES = ['PRODUCT_RULES.md', 'USER_GUIDE.md'];
 const GITHUB_REPO = 'quickmapshare/doc-FormMail-Hub';
 const BRANCH = 'main';
 
-let globalKeyPointer = 0;
+let globalGeminiPointer = 0;
 
-// 🎨 Bảng màu tươi sáng & nổi bật cho Discord Embeds
+// 🎨 Bảng màu tươi sáng cho Discord Embeds
 const PALETTE = [
   0x7c3aed, // Violet
   0x3b82f6, // Blue
@@ -23,7 +25,6 @@ const PALETTE = [
   0xf97316  // Orange
 ];
 
-// 🧮 Hàm chuyển đổi Session ID thành một màu cố định trong bảng màu
 function getSessionColor(sessionId) {
   let hash = 0;
   for (let i = 0; i < sessionId.length; i++) {
@@ -84,7 +85,16 @@ async function loadKnowledge() {
 }
 
 export async function POST(request) {
-  const freeKeys = [
+  // 1. Tải danh sách Groq API Keys (Ưu tiên số 1)
+  const groqKeys = [
+    process.env.GROQ_API_KEY_1,
+    process.env.GROQ_API_KEY_2,
+    process.env.GROQ_API_KEY,
+  ].filter(Boolean).map((k) => k.trim());
+  const uniqueGroqKeys = [...new Set(groqKeys)];
+
+  // 2. Tải danh sách Gemini Free Keys (Dự phòng số 1)
+  const freeGeminiKeys = [
     process.env.GEMINI_API_KEY_1,
     process.env.GEMINI_API_KEY_2,
     process.env.GEMINI_API_KEY_3,
@@ -92,10 +102,11 @@ export async function POST(request) {
     process.env.GEMINI_API_KEY_5,
   ].filter(Boolean).map((k) => k.trim());
 
-  const paidKey = process.env.GEMINI_API_KEY_6?.trim() || process.env.GEMINI_API_KEY?.trim();
+  // 3. Tải Gemini Paid Key (Dự phòng cuối cùng)
+  const paidGeminiKey = process.env.GEMINI_API_KEY_6?.trim() || process.env.GEMINI_API_KEY?.trim();
 
-  if (freeKeys.length === 0 && !paidKey) {
-    return json({ error: 'No Gemini API Keys are configured on Vercel.' }, 503);
+  if (uniqueGroqKeys.length === 0 && freeGeminiKeys.length === 0 && !paidGeminiKey) {
+    return json({ error: 'No AI API Keys (Groq or Gemini) are configured on Vercel.' }, 503);
   }
 
   let body;
@@ -110,7 +121,6 @@ export async function POST(request) {
     return json({ error: 'Message length must be between 1 and 4000 characters.' }, 400);
   }
 
-  // 🆔 Lấy Session ID từ request body (Nếu client không truyền, tạo mã 6 ký tự dự phòng)
   const sessionId = typeof body.sessionId === 'string' && body.sessionId.trim()
     ? body.sessionId.trim().slice(0, 20)
     : Math.random().toString(36).substring(2, 8);
@@ -136,32 +146,40 @@ Keep answers concise and clear. If a general technical question is broad or ambi
 SOURCE DOCUMENTS:
 ${knowledge}`;
 
-    const payload = {
-      system_instruction: { parts: [{ text: systemInstruction }] },
-      contents: [...history, { role: 'user', parts: [{ text: message }] }],
-      generationConfig: { temperature: 0.2, maxOutputTokens: 900 },
-    };
-
+    // Xây dựng danh sách chiến lược thử nghiệm (Groq -> Gemini Free -> Gemini Paid)
     const attemptKeys = [];
 
-    if (freeKeys.length > 0) {
-      const startIndex = globalKeyPointer % freeKeys.length;
-      globalKeyPointer = (globalKeyPointer + 1) % freeKeys.length;
+    // Thêm các Groq Keys vào đầu danh sách
+    for (let i = 0; i < uniqueGroqKeys.length; i++) {
+      attemptKeys.push({
+        provider: 'groq',
+        key: uniqueGroqKeys[i],
+        name: `Groq Key #${i + 1}`,
+      });
+    }
 
-      for (let i = 0; i < freeKeys.length; i++) {
-        const index = (startIndex + i) % freeKeys.length;
+    // Thêm các Gemini Free Keys (Xoay vòng Pointer)
+    if (freeGeminiKeys.length > 0) {
+      const startIndex = globalGeminiPointer % freeGeminiKeys.length;
+      globalGeminiPointer = (globalGeminiPointer + 1) % freeGeminiKeys.length;
+
+      for (let i = 0; i < freeGeminiKeys.length; i++) {
+        const index = (startIndex + i) % freeGeminiKeys.length;
         attemptKeys.push({
-          key: freeKeys[index],
-          name: `Free Key #${index + 1}`,
+          provider: 'gemini',
+          key: freeGeminiKeys[index],
+          name: `Gemini Free Key #${index + 1}`,
           isPaid: false,
         });
       }
     }
 
-    if (paidKey) {
+    // Thêm Gemini Paid Key dự phòng cuối cùng
+    if (paidGeminiKey) {
       attemptKeys.push({
-        key: paidKey,
-        name: 'Paid Key #6 (Backup)',
+        provider: 'gemini',
+        key: paidGeminiKey,
+        name: 'Gemini Paid Key #6 (Backup)',
         isPaid: true,
       });
     }
@@ -170,52 +188,110 @@ ${knowledge}`;
     let lastErrorMessage = '';
 
     for (const item of attemptKeys) {
-      const targetUrl = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${encodeURIComponent(item.key)}`;
-
       try {
-        const response = await fetch(targetUrl, {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
+        let response;
+        let answer = '';
 
-        const rawText = await response.text();
-        let result;
-        try {
-          result = JSON.parse(rawText);
-        } catch {
-          console.error(`Gemini response (${item.name}) is not valid JSON:`, rawText);
-          lastErrorMessage = 'Invalid response from AI service.';
-          continue;
-        }
+        if (item.provider === 'groq') {
+          // --- XỬ LÝ GỌI GROQ API (Chuẩn OpenAI Format) ---
+          const groqMessages = [
+            { role: 'system', content: systemInstruction },
+            ...history.map((h) => ({
+              role: h.role === 'model' ? 'assistant' : 'user',
+              content: h.parts?.[0]?.text || '',
+            })),
+            { role: 'user', content: message },
+          ];
 
-        if (!response.ok) {
-          // Bổ sung xoay vòng cho 429, 403 và các lỗi nghẽn/quá tải server Gemini (500, 502, 503, 504)
-          if ([429, 403, 500, 502, 503, 504].includes(response.status)) {
-            console.warn(`[ROTATE] ${item.name} gặp lỗi (${response.status}). Đang chuyển sang Key tiếp theo...`);
-            lastErrorStatus = response.status;
-            lastErrorMessage = result?.error?.message || `Gemini service error (${response.status}).`;
-            continue; // 👈 Chuyển sang Key tiếp theo ngay cả khi dính nghẽn mạng 503
+          response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${item.key}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              model: GROQ_MODEL,
+              messages: groqMessages,
+              temperature: 0.2,
+              max_tokens: 900,
+            }),
+          });
+
+          const rawText = await response.text();
+          let result;
+          try {
+            result = JSON.parse(rawText);
+          } catch {
+            console.error(`Groq response (${item.name}) không phải JSON:`, rawText);
+            lastErrorMessage = 'Phản hồi không hợp lệ từ Groq.';
+            continue;
           }
-        
-          console.error(`Gemini API Error Detail (${item.name}):`, result);
-          return json({ error: result?.error?.message || 'Gemini is currently unable to process your request.' }, response.status);
+
+          if (!response.ok) {
+            if ([429, 403, 500, 502, 503, 504].includes(response.status)) {
+              console.warn(`[ROTATE] ${item.name} (Groq) gặp lỗi (${response.status}). Chuyển sang Key tiếp theo...`);
+              lastErrorStatus = response.status;
+              lastErrorMessage = result?.error?.message || `Lỗi dịch vụ Groq (${response.status}).`;
+              continue;
+            }
+            console.error(`Lỗi Groq API (${item.name}):`, result);
+            return json({ error: result?.error?.message || 'Groq không thể xử lý yêu cầu.' }, response.status);
+          }
+
+          answer = result?.choices?.[0]?.message?.content?.trim();
+
+        } else if (item.provider === 'gemini') {
+          // --- XỬ LÝ GỌI GEMINI API ---
+          const targetUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${encodeURIComponent(item.key)}`;
+          
+          const geminiPayload = {
+            system_instruction: { parts: [{ text: systemInstruction }] },
+            contents: [...history, { role: 'user', parts: [{ text: message }] }],
+            generationConfig: { temperature: 0.2, maxOutputTokens: 900 },
+          };
+
+          response = await fetch(targetUrl, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify(geminiPayload),
+          });
+
+          const rawText = await response.text();
+          let result;
+          try {
+            result = JSON.parse(rawText);
+          } catch {
+            console.error(`Gemini response (${item.name}) không phải JSON:`, rawText);
+            lastErrorMessage = 'Phản hồi không hợp lệ từ Gemini.';
+            continue;
+          }
+
+          if (!response.ok) {
+            if ([429, 403, 500, 502, 503, 504].includes(response.status)) {
+              console.warn(`[ROTATE] ${item.name} (Gemini) gặp lỗi (${response.status}). Chuyển sang Key tiếp theo...`);
+              lastErrorStatus = response.status;
+              lastErrorMessage = result?.error?.message || `Lỗi dịch vụ Gemini (${response.status}).`;
+              continue;
+            }
+            console.error(`Lỗi Gemini API (${item.name}):`, result);
+            return json({ error: result?.error?.message || 'Gemini không thể xử lý yêu cầu.' }, response.status);
+          }
+
+          answer = result?.candidates?.[0]?.content?.parts?.map((p) => p.text || '').join('').trim();
         }
 
-        const answer = result?.candidates?.[0]?.content?.parts?.map((part) => part.text || '').join('').trim();
         if (!answer) {
-          lastErrorMessage = 'No answer received from Gemini.';
+          lastErrorMessage = 'Không nhận được câu trả lời từ AI.';
           continue;
         }
 
         if (item.isPaid) {
-          console.warn('⚠️ TOÀN BỘ KEY FREE ĐÃ BỊ DĨNH LIMIT! Đã kích hoạt Key dự phòng trả phí.');
+          console.warn('⚠️ TOÀN BỘ KEY FREE (GROQ & GEMINI) ĐÃ BỊ DĨNH LIMIT! Đã kích hoạt Key dự phòng trả phí.');
         }
 
-        // 📝 Console log bao gồm Session ID
         console.log(`[CHAT_LOG] [Session: ${sessionId}] (${item.name}) User: "${message}" | Bot: "${answer.replace(/\n/g, ' ')}"`);
 
-        // 🎨 Gửi log về Discord dưới dạng Rich Embed có màu theo Session
+        // 🎨 Gửi log về Discord
         const discordUrl = process.env.DISCORD_WEBHOOK_URL;
         if (discordUrl) {
           try {
@@ -224,7 +300,7 @@ ${knowledge}`;
               embeds: [
                 {
                   title: `💬 Session #${sessionId}`,
-                  color: getSessionColor(sessionId), // 👈 Đã đổi sang màu động theo Session
+                  color: getSessionColor(sessionId),
                   fields: [
                     {
                       name: '👤 User Message',
@@ -238,7 +314,7 @@ ${knowledge}`;
                     },
                   ],
                   footer: {
-                    text: `Key Used: ${item.name} | FormMail Hub Docs AI`,
+                    text: `Provider: ${item.name} | FormMail Hub Docs AI`,
                   },
                   timestamp: new Date().toISOString(),
                 },
@@ -249,17 +325,17 @@ ${knowledge}`;
               method: 'POST',
               headers: { 'content-type': 'application/json' },
               body: JSON.stringify(discordEmbedPayload),
-              signal: AbortSignal.timeout(3000), // Timeout 3s để tránh delay Vercel Serverless
+              signal: AbortSignal.timeout(3000),
             });
           } catch (err) {
-            console.error('Discord log error:', err.message);
+            console.error('Lỗi gửi Discord log:', err.message);
           }
         }
 
         return json({ answer });
 
       } catch (fetchErr) {
-        console.error(`Lỗi kết nối tới Gemini API (${item.name}):`, fetchErr);
+        console.error(`Lỗi kết nối tới ${item.name}:`, fetchErr);
         lastErrorMessage = fetchErr.message;
         continue;
       }
@@ -267,14 +343,14 @@ ${knowledge}`;
 
     if (lastErrorStatus === 429) {
       return json({
-        error: 'The AI assistant is currently receiving too many requests. Please wait a minute and try again.'
+        error: 'Hệ thống AI hiện đang nhận quá nhiều yêu cầu. Vui lòng thử lại sau ít phút.'
       }, 429);
     }
 
-    return json({ error: lastErrorMessage || 'Unable to process your request across all API keys.' }, 502);
+    return json({ error: lastErrorMessage || 'Không thể xử lý yêu cầu qua tất cả các API Key.' }, 502);
 
   } catch (error) {
     console.error('Server Internal Error:', error);
-    return json({ error: 'Unable to connect to the chatbot service at this time.', detail: error.message }, 502);
+    return json({ error: 'Không thể kết nối đến dịch vụ chatbot lúc này.', detail: error.message }, 502);
   }
 }
