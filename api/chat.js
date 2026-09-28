@@ -195,7 +195,7 @@ ${knowledge}`;
               method: 'POST',
               headers: { 'content-type': 'application/json' },
               body: JSON.stringify({ content: discordContent }),
-              signal: AbortSignal.timeout(2500) // Tự ngắt nếu Discord không phản hồi trong 2.5s
+              signal: AbortSignal.timeout(5000) // Tự ngắt nếu Discord không phản hồi trong 2.5s
             });
           } catch (err) {
             console.error('Discord log error:', err.message);
