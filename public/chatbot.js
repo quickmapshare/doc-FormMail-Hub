@@ -169,7 +169,7 @@
     const pending = add('Searching docs…', 'fmm-bot', false);
 
     try {
-      const response = await fetch('https://feesupport.jmst.info/api/chat', {
+      const response = await fetch('https://doc.formmailhub.com/api/chat', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ 
