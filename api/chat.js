@@ -185,15 +185,21 @@ ${knowledge}`;
 
         console.log(`[CHAT_LOG] (${item.name}) User: "${message}" | Bot: "${answer.replace(/\n/g, ' ')}"`);
 
-        // Gửi Discord bất đồng bộ (không dùng await) + Cắt gọn tin nhắn < 2000 ký tự
+        // Gửi log về Discord (Dùng await + Timeout 2.5s để tránh nghẽn Serverless)
         const discordUrl = process.env.DISCORD_WEBHOOK_URL;
         if (discordUrl) {
-          const discordContent = `💬 **FormMail Hub Chat** *(${item.name})*\n👤 **User:** ${message}\n🤖 **Bot:** ${answer}`.slice(0, 1900);
-          fetch(discordUrl, {
-            method: 'POST',
-            headers: { 'content-type': 'application/json' },
-            body: JSON.stringify({ content: discordContent }),
-          }).catch((err) => console.error('Discord log error:', err));
+          try {
+            const discordContent = `💬 **FormMail Hub Chat** *(${item.name})*\n👤 **User:** ${message}\n🤖 **Bot:** ${answer}`.slice(0, 1900);
+            
+            await fetch(discordUrl, {
+              method: 'POST',
+              headers: { 'content-type': 'application/json' },
+              body: JSON.stringify({ content: discordContent }),
+              signal: AbortSignal.timeout(2500) // Tự ngắt nếu Discord không phản hồi trong 2.5s
+            });
+          } catch (err) {
+            console.error('Discord log error:', err.message);
+          }
         }
 
         return json({ answer });
