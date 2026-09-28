@@ -190,14 +190,14 @@ ${knowledge}`;
         }
 
         if (!response.ok) {
-          // Bổ sung xoay vòng cho cả lỗi 429 (Rate Limit) và 403 (Invalid / Disabled Key)
-          if ([429, 403].includes(response.status)) {
+          // Bổ sung xoay vòng cho 429, 403 và các lỗi nghẽn/quá tải server Gemini (500, 502, 503, 504)
+          if ([429, 403, 500, 502, 503, 504].includes(response.status)) {
             console.warn(`[ROTATE] ${item.name} gặp lỗi (${response.status}). Đang chuyển sang Key tiếp theo...`);
             lastErrorStatus = response.status;
-            lastErrorMessage = result?.error?.message || 'Key limit or auth issue.';
-            continue;
+            lastErrorMessage = result?.error?.message || `Gemini service error (${response.status}).`;
+            continue; // 👈 Chuyển sang Key tiếp theo ngay cả khi dính nghẽn mạng 503
           }
-
+        
           console.error(`Gemini API Error Detail (${item.name}):`, result);
           return json({ error: result?.error?.message || 'Gemini is currently unable to process your request.' }, response.status);
         }
