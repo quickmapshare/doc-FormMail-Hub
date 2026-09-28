@@ -7,6 +7,13 @@
     document.head.appendChild(script);
   }
 
+  // 🆔 Khởi tạo hoặc lấy Session ID cố định cho tab hiện tại
+  let sessionId = sessionStorage.getItem('fmm_session_id');
+  if (!sessionId) {
+    sessionId = Math.random().toString(36).substring(2, 8); // Tạo chuỗi 6 ký tự ngẫu nhiên (ví dụ: "a8f9x2")
+    sessionStorage.setItem('fmm_session_id', sessionId);
+  }
+
   const style = document.createElement('style');
   style.textContent = `
     #fmm-chat-toggle {
@@ -135,11 +142,11 @@
     const pending = add('Searching docs…', 'fmm-bot', false);
 
     try {
-      // Trỏ trực tiếp tới Vercel Domain
+      // Trỏ trực tiếp tới Vercel Domain & gửi kèm sessionId
       const response = await fetch('https://doc.formmailhub.com/api/chat', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ message, history })
+        body: JSON.stringify({ message, history, sessionId }) // 👈 Đã thêm sessionId
       });
       const data = await response.json();
 
