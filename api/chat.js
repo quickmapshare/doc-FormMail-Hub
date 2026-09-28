@@ -1,8 +1,8 @@
 const MAX_MESSAGE_LENGTH = 4000;
 const MAX_HISTORY_ITEMS = 10;
 
-// Ví dụ cú pháp chuẩn trên Groq:
-const GROQ_MODEL = 'qwen-2.5-32b';
+// Model mặc định dùng làm Fallback nếu không lấy được danh sách động
+const DEFAULT_GROQ_MODEL = 'llama-3.3-70b-versatile';
 const GEMINI_MODEL = 'gemini-3.5-flash-lite'; 
 
 const DOC_FILES = ['PRODUCT_RULES.md', 'USER_GUIDE.md'];
@@ -10,6 +10,58 @@ const GITHUB_REPO = 'quickmapshare/doc-FormMail-Hub';
 const BRANCH = 'main';
 
 let globalGeminiPointer = 0;
+
+// --- Cache Model Groq để tránh gọi /v1/models liên tục ---
+let cachedGroqModel = null;
+let lastGroqModelFetch = 0;
+const CACHE_TTL = 10 * 60 * 1000; // 10 phút
+
+async function getLatestGroqModel(apiKey) {
+  const now = Date.now();
+  if (cachedGroqModel && (now - lastGroqModelFetch < CACHE_TTL)) {
+    return cachedGroqModel;
+  }
+
+  try {
+    const res = await fetch('https://api.groq.com/openai/v1/models', {
+      headers: { 'Authorization': `Bearer ${apiKey}` },
+      signal: AbortSignal.timeout(3000), // Timeout 3s
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      if (data && Array.isArray(data.data)) {
+        // Lọc bỏ các model không phải Chat (Whisper, Guard, Vision, Embed)
+        const chatModels = data.data.filter((m) => {
+          const id = m.id.toLowerCase();
+          return (
+            m.active !== false &&
+            !id.includes('whisper') &&
+            !id.includes('guard') &&
+            !id.includes('vision') &&
+            !id.includes('embed') &&
+            !id.includes('tts')
+          );
+        });
+
+        if (chatModels.length > 0) {
+          // Ưu tiên các model phổ biến như llama-3.3, qwen, llama-3.1
+          const preferred = chatModels.find(
+            (m) => m.id.includes('llama-3.3') || m.id.includes('qwen') || m.id.includes('llama-3.1')
+          );
+          cachedGroqModel = preferred ? preferred.id : chatModels[0].id;
+          lastGroqModelFetch = now;
+          console.log(`[GROQ_MODEL_AUTO] Đã chọn model: ${cachedGroqModel}`);
+          return cachedGroqModel;
+        }
+      }
+    }
+  } catch (err) {
+    console.error('Không thể tự động lấy danh sách Groq Model:', err.message);
+  }
+
+  return DEFAULT_GROQ_MODEL;
+}
 
 // 🎨 Bảng màu tươi sáng cho Discord Embeds
 const PALETTE = [
@@ -193,7 +245,9 @@ ${knowledge}`;
         let answer = '';
 
         if (item.provider === 'groq') {
-          // --- XỬ LÝ GỌI GROQ API (Chuẩn OpenAI Format) ---
+          // --- XỬ LÝ GỌI GROQ API (Tự động lấy Model mới nhất) ---
+          const activeGroqModel = await getLatestGroqModel(item.key);
+
           const groqMessages = [
             { role: 'system', content: systemInstruction },
             ...history.map((h) => ({
@@ -210,7 +264,7 @@ ${knowledge}`;
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              model: GROQ_MODEL,
+              model: activeGroqModel, // 👈 Điền model lấy động
               messages: groqMessages,
               temperature: 0.2,
               max_tokens: 900,
@@ -228,8 +282,13 @@ ${knowledge}`;
           }
 
           if (!response.ok) {
-            if ([429, 403, 500, 502, 503, 504].includes(response.status)) {
-              console.warn(`[ROTATE] ${item.name} (Groq) gặp lỗi (${response.status}). Chuyển sang Key tiếp theo...`);
+            const isModelNotFound = result?.error?.code === 'model_not_found';
+            if (isModelNotFound) {
+              cachedGroqModel = null; // Xóa cache cũ nếu model bị hỏng
+            }
+
+            if (isModelNotFound || [400, 404, 429, 403, 500, 502, 503, 504].includes(response.status)) {
+              console.warn(`[ROTATE] ${item.name} (Groq) gặp lỗi (${response.status} / ${result?.error?.code}). Chuyển sang Key tiếp theo...`);
               lastErrorStatus = response.status;
               lastErrorMessage = result?.error?.message || `Lỗi dịch vụ Groq (${response.status}).`;
               continue;
@@ -267,7 +326,7 @@ ${knowledge}`;
           }
 
           if (!response.ok) {
-            if ([429, 403, 500, 502, 503, 504].includes(response.status)) {
+            if ([400, 404, 429, 403, 500, 502, 503, 504].includes(response.status)) {
               console.warn(`[ROTATE] ${item.name} (Gemini) gặp lỗi (${response.status}). Chuyển sang Key tiếp theo...`);
               lastErrorStatus = response.status;
               lastErrorMessage = result?.error?.message || `Lỗi dịch vụ Gemini (${response.status}).`;
