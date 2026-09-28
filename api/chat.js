@@ -9,6 +9,30 @@ const BRANCH = 'main';
 
 let globalKeyPointer = 0;
 
+// 🎨 Bảng màu tươi sáng & nổi bật cho Discord Embeds
+const PALETTE = [
+  0x7c3aed, // Violet
+  0x3b82f6, // Blue
+  0x10b981, // Emerald
+  0xf59e0b, // Amber
+  0xec4899, // Pink
+  0x06b6d4, // Cyan
+  0xef4444, // Red
+  0x84cc16, // Lime
+  0x8b5cf6, // Purple
+  0xf97316  // Orange
+];
+
+// 🧮 Hàm chuyển đổi Session ID thành một màu cố định trong bảng màu
+function getSessionColor(sessionId) {
+  let hash = 0;
+  for (let i = 0; i < sessionId.length; i++) {
+    hash = sessionId.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const index = Math.abs(hash) % PALETTE.length;
+  return PALETTE[index];
+}
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
@@ -86,7 +110,7 @@ export async function POST(request) {
     return json({ error: 'Message length must be between 1 and 4000 characters.' }, 400);
   }
 
-  // 🆔 Bổ sung: Lấy Session ID từ request body (Nếu client không truyền, tạo mã 6 ký tự dự phòng)
+  // 🆔 Lấy Session ID từ request body (Nếu client không truyền, tạo mã 6 ký tự dự phòng)
   const sessionId = typeof body.sessionId === 'string' && body.sessionId.trim()
     ? body.sessionId.trim().slice(0, 20)
     : Math.random().toString(36).substring(2, 8);
@@ -191,7 +215,7 @@ ${knowledge}`;
         // 📝 Console log bao gồm Session ID
         console.log(`[CHAT_LOG] [Session: ${sessionId}] (${item.name}) User: "${message}" | Bot: "${answer.replace(/\n/g, ' ')}"`);
 
-        // 🎨 Gửi log về Discord dưới dạng Rich Embed
+        // 🎨 Gửi log về Discord dưới dạng Rich Embed có màu theo Session
         const discordUrl = process.env.DISCORD_WEBHOOK_URL;
         if (discordUrl) {
           try {
@@ -200,7 +224,7 @@ ${knowledge}`;
               embeds: [
                 {
                   title: `💬 Session #${sessionId}`,
-                  color: 0x7c3aed, // Màu tím Violet (124, 58, 237)
+                  color: getSessionColor(sessionId), // 👈 Đã đổi sang màu động theo Session
                   fields: [
                     {
                       name: '👤 User Message',
