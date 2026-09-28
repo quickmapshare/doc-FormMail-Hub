@@ -1,20 +1,23 @@
 const MAX_MESSAGE_LENGTH = 4000;
 const MAX_HISTORY_ITEMS = 10;
 
-// Model mặc định dùng làm Fallback nếu không lấy được danh sách động
+// Fallback Model nếu không lấy được danh sách động
 const DEFAULT_GROQ_MODEL = 'llama-3.3-70b-versatile';
+// ✅ Đã đổi tên Model chuẩn chính thức của Google Gemini
 const GEMINI_MODEL = 'gemini-3.5-flash-lite'; 
 
 const DOC_FILES = ['PRODUCT_RULES.md', 'USER_GUIDE.md'];
 const GITHUB_REPO = 'quickmapshare/doc-FormMail-Hub';
 const BRANCH = 'main';
 
+// Xoay vòng Pointer cho cả Groq và Gemini
+let globalGroqPointer = 0;
 let globalGeminiPointer = 0;
 
-// --- Cache Model Groq để tránh gọi /v1/models liên tục ---
+// Cache Model Groq trong 10 phút
 let cachedGroqModel = null;
 let lastGroqModelFetch = 0;
-const CACHE_TTL = 10 * 60 * 1000; // 10 phút
+const CACHE_TTL = 10 * 60 * 1000;
 
 async function getLatestGroqModel(apiKey) {
   const now = Date.now();
@@ -25,13 +28,12 @@ async function getLatestGroqModel(apiKey) {
   try {
     const res = await fetch('https://api.groq.com/openai/v1/models', {
       headers: { 'Authorization': `Bearer ${apiKey}` },
-      signal: AbortSignal.timeout(3000), // Timeout 3s
+      signal: AbortSignal.timeout(3000),
     });
 
     if (res.ok) {
       const data = await res.json();
       if (data && Array.isArray(data.data)) {
-        // Lọc bỏ các model không phải Chat (Whisper, Guard, Vision, Embed)
         const chatModels = data.data.filter((m) => {
           const id = m.id.toLowerCase();
           return (
@@ -45,7 +47,7 @@ async function getLatestGroqModel(apiKey) {
         });
 
         if (chatModels.length > 0) {
-          // Ưu tiên các model phổ biến như llama-3.3, qwen, llama-3.1
+          // Ưu tiên các model phổ biến
           const preferred = chatModels.find(
             (m) => m.id.includes('llama-3.3') || m.id.includes('qwen') || m.id.includes('llama-3.1')
           );
@@ -63,18 +65,9 @@ async function getLatestGroqModel(apiKey) {
   return DEFAULT_GROQ_MODEL;
 }
 
-// 🎨 Bảng màu tươi sáng cho Discord Embeds
 const PALETTE = [
-  0x7c3aed, // Violet
-  0x3b82f6, // Blue
-  0x10b981, // Emerald
-  0xf59e0b, // Amber
-  0xec4899, // Pink
-  0x06b6d4, // Cyan
-  0xef4444, // Red
-  0x84cc16, // Lime
-  0x8b5cf6, // Purple
-  0xf97316  // Orange
+  0x7c3aed, 0x3b82f6, 0x10b981, 0xf59e0b, 0xec4899,
+  0x06b6d4, 0xef4444, 0x84cc16, 0x8b5cf6, 0xf97316
 ];
 
 function getSessionColor(sessionId) {
@@ -82,8 +75,7 @@ function getSessionColor(sessionId) {
   for (let i = 0; i < sessionId.length; i++) {
     hash = sessionId.charCodeAt(i) + ((hash << 5) - hash);
   }
-  const index = Math.abs(hash) % PALETTE.length;
-  return PALETTE[index];
+  return PALETTE[Math.abs(hash) % PALETTE.length];
 }
 
 const corsHeaders = {
@@ -95,10 +87,7 @@ const corsHeaders = {
 };
 
 function json(data, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: corsHeaders,
-  });
+  return new Response(JSON.stringify(data), { status, headers: corsHeaders });
 }
 
 export async function OPTIONS() {
@@ -129,7 +118,8 @@ async function loadKnowledge() {
       })
     );
 
-    return validDocs.filter(Boolean).join('\n\n--- SOURCE DOCUMENT ---\n\n').slice(0, 90000);
+    // ✅ Tối ưu: Cắt giảm xuống 28.000 ký tự (~6.500 Tokens) để không bị cháy TPM Groq
+    return validDocs.filter(Boolean).join('\n\n--- SOURCE DOCUMENT ---\n\n').slice(0, 28000);
   } catch (err) {
     console.error('Error fetching GitHub documents:', err);
     return '';
@@ -137,7 +127,6 @@ async function loadKnowledge() {
 }
 
 export async function POST(request) {
-  // 1. Tải danh sách Groq API Keys (Ưu tiên số 1)
   const groqKeys = [
     process.env.GROQ_API_KEY_1,
     process.env.GROQ_API_KEY_2,
@@ -145,7 +134,6 @@ export async function POST(request) {
   ].filter(Boolean).map((k) => k.trim());
   const uniqueGroqKeys = [...new Set(groqKeys)];
 
-  // 2. Tải danh sách Gemini Free Keys (Dự phòng số 1)
   const freeGeminiKeys = [
     process.env.GEMINI_API_KEY_1,
     process.env.GEMINI_API_KEY_2,
@@ -154,7 +142,6 @@ export async function POST(request) {
     process.env.GEMINI_API_KEY_5,
   ].filter(Boolean).map((k) => k.trim());
 
-  // 3. Tải Gemini Paid Key (Dự phòng cuối cùng)
   const paidGeminiKey = process.env.GEMINI_API_KEY_6?.trim() || process.env.GEMINI_API_KEY?.trim();
 
   if (uniqueGroqKeys.length === 0 && freeGeminiKeys.length === 0 && !paidGeminiKey) {
@@ -198,25 +185,30 @@ Keep answers concise and clear. If a general technical question is broad or ambi
 SOURCE DOCUMENTS:
 ${knowledge}`;
 
-    // Xây dựng danh sách chiến lược thử nghiệm (Groq -> Gemini Free -> Gemini Paid)
     const attemptKeys = [];
 
-    // Thêm các Groq Keys vào đầu danh sách
-    for (let i = 0; i < uniqueGroqKeys.length; i++) {
-      attemptKeys.push({
-        provider: 'groq',
-        key: uniqueGroqKeys[i],
-        name: `Groq Key #${i + 1}`,
-      });
+    // ✅ 1. Thêm Groq Keys với cơ chế Xoay vòng (Round-Robin Pointer)
+    if (uniqueGroqKeys.length > 0) {
+      const startGroq = globalGroqPointer % uniqueGroqKeys.length;
+      globalGroqPointer = (globalGroqPointer + 1) % uniqueGroqKeys.length;
+
+      for (let i = 0; i < uniqueGroqKeys.length; i++) {
+        const index = (startGroq + i) % uniqueGroqKeys.length;
+        attemptKeys.push({
+          provider: 'groq',
+          key: uniqueGroqKeys[index],
+          name: `Groq Key #${index + 1}`,
+        });
+      }
     }
 
-    // Thêm các Gemini Free Keys (Xoay vòng Pointer)
+    // ✅ 2. Thêm Gemini Free Keys với cơ chế Xoay vòng Pointer
     if (freeGeminiKeys.length > 0) {
-      const startIndex = globalGeminiPointer % freeGeminiKeys.length;
+      const startGemini = globalGeminiPointer % freeGeminiKeys.length;
       globalGeminiPointer = (globalGeminiPointer + 1) % freeGeminiKeys.length;
 
       for (let i = 0; i < freeGeminiKeys.length; i++) {
-        const index = (startIndex + i) % freeGeminiKeys.length;
+        const index = (startGemini + i) % freeGeminiKeys.length;
         attemptKeys.push({
           provider: 'gemini',
           key: freeGeminiKeys[index],
@@ -226,7 +218,7 @@ ${knowledge}`;
       }
     }
 
-    // Thêm Gemini Paid Key dự phòng cuối cùng
+    // 3. Thêm Gemini Paid Key dự phòng cuối cùng
     if (paidGeminiKey) {
       attemptKeys.push({
         provider: 'gemini',
@@ -245,7 +237,6 @@ ${knowledge}`;
         let answer = '';
 
         if (item.provider === 'groq') {
-          // --- XỬ LÝ GỌI GROQ API (Tự động lấy Model mới nhất) ---
           const activeGroqModel = await getLatestGroqModel(item.key);
 
           const groqMessages = [
@@ -264,7 +255,7 @@ ${knowledge}`;
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              model: activeGroqModel, // 👈 Điền model lấy động
+              model: activeGroqModel,
               messages: groqMessages,
               temperature: 0.2,
               max_tokens: 900,
@@ -284,7 +275,7 @@ ${knowledge}`;
           if (!response.ok) {
             const isModelNotFound = result?.error?.code === 'model_not_found';
             if (isModelNotFound) {
-              cachedGroqModel = null; // Xóa cache cũ nếu model bị hỏng
+              cachedGroqModel = null;
             }
 
             if (isModelNotFound || [400, 404, 429, 403, 500, 502, 503, 504].includes(response.status)) {
@@ -300,7 +291,6 @@ ${knowledge}`;
           answer = result?.choices?.[0]?.message?.content?.trim();
 
         } else if (item.provider === 'gemini') {
-          // --- XỬ LÝ GỌI GEMINI API ---
           const targetUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${encodeURIComponent(item.key)}`;
           
           const geminiPayload = {
@@ -350,7 +340,7 @@ ${knowledge}`;
 
         console.log(`[CHAT_LOG] [Session: ${sessionId}] (${item.name}) User: "${message}" | Bot: "${answer.replace(/\n/g, ' ')}"`);
 
-        // 🎨 Gửi log về Discord
+        // Log Discord Embeds
         const discordUrl = process.env.DISCORD_WEBHOOK_URL;
         if (discordUrl) {
           try {
