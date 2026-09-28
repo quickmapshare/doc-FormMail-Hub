@@ -86,6 +86,11 @@ export async function POST(request) {
     return json({ error: 'Message length must be between 1 and 4000 characters.' }, 400);
   }
 
+  // 🆔 Bổ sung: Lấy Session ID từ request body (Nếu client không truyền, tạo mã 6 ký tự dự phòng)
+  const sessionId = typeof body.sessionId === 'string' && body.sessionId.trim()
+    ? body.sessionId.trim().slice(0, 20)
+    : Math.random().toString(36).substring(2, 8);
+
   const history = Array.isArray(body.history)
     ? body.history
         .filter((item) => item && ['user', 'model'].includes(item.role) && typeof item.text === 'string')
@@ -183,19 +188,44 @@ ${knowledge}`;
           console.warn('⚠️ TOÀN BỘ KEY FREE ĐÃ BỊ DĨNH LIMIT! Đã kích hoạt Key dự phòng trả phí.');
         }
 
-        console.log(`[CHAT_LOG] (${item.name}) User: "${message}" | Bot: "${answer.replace(/\n/g, ' ')}"`);
+        // 📝 Console log bao gồm Session ID
+        console.log(`[CHAT_LOG] [Session: ${sessionId}] (${item.name}) User: "${message}" | Bot: "${answer.replace(/\n/g, ' ')}"`);
 
-        // Gửi log về Discord (Dùng await + Timeout 2.5s để tránh nghẽn Serverless)
+        // 🎨 Gửi log về Discord dưới dạng Rich Embed
         const discordUrl = process.env.DISCORD_WEBHOOK_URL;
         if (discordUrl) {
           try {
-            const discordContent = `💬 **FormMail Hub Chat** *(${item.name})*\n👤 **User:** ${message}\n🤖 **Bot:** ${answer}`.slice(0, 1900);
-            
+            const discordEmbedPayload = {
+              username: 'FormMail Hub AI Bot',
+              embeds: [
+                {
+                  title: `💬 Session #${sessionId}`,
+                  color: 0x7c3aed, // Màu tím Violet (124, 58, 237)
+                  fields: [
+                    {
+                      name: '👤 User Message',
+                      value: message.length > 1024 ? message.slice(0, 1021) + '...' : message,
+                      inline: false,
+                    },
+                    {
+                      name: '🤖 Bot Response',
+                      value: answer.length > 1024 ? answer.slice(0, 1021) + '...' : answer,
+                      inline: false,
+                    },
+                  ],
+                  footer: {
+                    text: `Key Used: ${item.name} | FormMail Hub Docs AI`,
+                  },
+                  timestamp: new Date().toISOString(),
+                },
+              ],
+            };
+
             await fetch(discordUrl, {
               method: 'POST',
               headers: { 'content-type': 'application/json' },
-              body: JSON.stringify({ content: discordContent }),
-              signal: AbortSignal.timeout(5000) // Tự ngắt nếu Discord không phản hồi trong 2.5s
+              body: JSON.stringify(discordEmbedPayload),
+              signal: AbortSignal.timeout(3000), // Timeout 3s để tránh delay Vercel Serverless
             });
           } catch (err) {
             console.error('Discord log error:', err.message);
