@@ -1,9 +1,8 @@
 const MAX_MESSAGE_LENGTH = 4000;
 const MAX_HISTORY_ITEMS = 10;
 
-// Model mặc định
-// ✅ Sử dụng Model ID ổn định nhất trên Groq hiện tại
-const GROQ_MODEL = 'llama3-8b-8192';
+// Ví dụ cú pháp chuẩn trên Groq:
+const GROQ_MODEL = 'qwen-2.5-32b';
 const GEMINI_MODEL = 'gemini-3.5-flash-lite'; 
 
 const DOC_FILES = ['PRODUCT_RULES.md', 'USER_GUIDE.md'];
