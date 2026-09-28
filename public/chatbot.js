@@ -7,12 +7,36 @@
     document.head.appendChild(script);
   }
 
-  // 🆔 Khởi tạo hoặc lấy Session ID cố định cho tab hiện tại
-  let sessionId = sessionStorage.getItem('fmm_session_id');
-  if (!sessionId) {
-    sessionId = Math.random().toString(36).substring(2, 8); // Tạo chuỗi 6 ký tự ngẫu nhiên (ví dụ: "a8f9x2")
-    sessionStorage.setItem('fmm_session_id', sessionId);
-  }
+  // 🆔 Hàm lấy hoặc tạo Session ID an toàn tuyệt đối (Ưu tiên bộ nhớ RAM -> sessionStorage)
+  const getOrCreateSessionId = () => {
+    // 1. Kiểm tra trong bộ nhớ RAM toàn cục
+    if (window.__fmm_session_id) {
+      return window.__fmm_session_id;
+    }
+
+    // 2. Thử lấy từ sessionStorage
+    let savedId = null;
+    try {
+      savedId = sessionStorage.getItem('fmm_session_id');
+    } catch (e) {
+      console.warn('[FormMail Hub] sessionStorage storage restricted:', e);
+    }
+
+    if (savedId) {
+      window.__fmm_session_id = savedId;
+      return savedId;
+    }
+
+    // 3. Nếu chưa có, tạo mã 6 ký tự mới
+    const newId = Math.random().toString(36).substring(2, 8);
+    window.__fmm_session_id = newId;
+
+    try {
+      sessionStorage.setItem('fmm_session_id', newId);
+    } catch (e) {}
+
+    return newId;
+  };
 
   const style = document.createElement('style');
   style.textContent = `
@@ -108,7 +132,6 @@
     if (window.marked && typeof window.marked.parse === 'function') {
       return window.marked.parse(text, { breaks: true });
     }
-    // Fallback nếu thư viện chưa kịp load xong
     return text
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
       .replace(/### (.*)/g, '<h3>$1</h3>')
@@ -135,6 +158,10 @@
     const message = input.value.trim();
     if (!message || send.disabled) return;
 
+    // Lấy Session ID hiện tại mỗi khi submit
+    const currentSessionId = getOrCreateSessionId();
+    console.log('[FormMail Hub AI] Sending message with Session ID:', currentSessionId);
+
     add(message, 'fmm-user', false);
     input.value = '';
     send.disabled = true;
@@ -142,11 +169,14 @@
     const pending = add('Searching docs…', 'fmm-bot', false);
 
     try {
-      // Trỏ trực tiếp tới Vercel Domain & gửi kèm sessionId
       const response = await fetch('https://doc.formmailhub.com/api/chat', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ message, history, sessionId }) // 👈 Đã thêm sessionId
+        body: JSON.stringify({ 
+          message, 
+          history, 
+          sessionId: currentSessionId 
+        })
       });
       const data = await response.json();
 
