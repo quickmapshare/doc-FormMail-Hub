@@ -13,7 +13,7 @@ export default defineConfig({
             head: [
                 { tag: 'script', attrs: { async: true, src: 'https://www.googletagmanager.com/gtag/js?id=G-05MV4LHN6P' } },
                 { tag: 'script', content: `window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', 'G-05MV4LHN6P');` },
-                { tag: 'script', attrs: { defer: true, src: '/chatbot.js' } },
+                { tag: 'script', attrs: { src: 'https://snapask.pages.dev/widget.js', 'data-bot-id': 'u9lq5geq5om3fdn', 'data-theme': 'light', async: true } },
             ],
             social: [{ icon: 'external', label: 'Google Workspace', href: 'https://workspace.google.com/marketplace/app/formmail_hub/409227874327' }],
             sidebar: [
