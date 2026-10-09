@@ -53,34 +53,45 @@ When you connect a new form to FormMail Hub, you can instantly verify that submi
              v
 [ Banner: "Waiting for your first submission" ]
              |
-     +-------+-------+
-     |               |
-     v               v
-[ Click 'Open form' ] [ Click 'Refresh' ]
-     |
-     v
-[ Submit Sample Response ]
-     |
-     v
-[ System SMTP Delivers Submission Alert to Admin Inbox ]
-     |
-     v
-[ Banner Automatically Dismisses (~1 min) ]
+     +-------+---------------------------------------+
+     |                                               |
+     v                                               v
+[ Step 1: Turn on Notifications & Save ]    [ Step 2: Open Form (Locked until Step 1) ]
+     |                                               |
+     v (Step 1 Complete ✓)                           v
+     +---------------------------------------------->+
+                                                     |
+                                                     v
+                                            [ Click 'Open form' ]
+                                                     |
+                                                     v
+                                            [ Submit Sample Response ]
+                                                     |
+                                                     v
+                                            [ System SMTP Delivers Alert ]
+                                                     |
+                                                     v
+                                            [ Banner Automatically Dismisses (~1 min) ]
 ```
 
-### The "Waiting for your first submission" Prompt
-When a connected form has not yet received any form submissions, FormMail Hub displays an onboarding notification banner in the administrative dashboard:
+### The 2-Step "Waiting for your first submission" Guided Setup
+When a connected form has not yet received any submissions, FormMail Hub displays an interactive 2-step onboarding banner in the **System Notifications** dashboard to guarantee that your alert settings are saved before you perform a test run:
 
-> **Waiting for your first submission**  
-> *"Your form is connected. Submit one test response yourself to see notifications in action — it shows up here within about a minute."*
+- **Step 1: Turn on notifications & save**  
+  *“Turn on notifications below, choose who receives them, then click ‘Save Configuration’.”*  
+  *(A checkmark ✓ confirms once notifications are active).*
+- **Step 2: Submit a test response**  
+  *“Submit one test response to your form — it shows up here within about a minute.”*  
+  *(Note: The **Open form** button remains locked until Step 1 is saved, ensuring that your test submission will trigger an email notification).*
 
 ### Step-by-Step First Submission Test:
 1. **Open FormMail Hub:** Launch the add-on sidebar in Google Forms™ or Google Sheets™ and click **"Go Beyond"** or **"Open Dashboard"**.
 2. **Review Notifications View:** Navigate to **System Notifications**.
-3. **Click 'Open form':** Click the **"Open form"** button located directly inside the notification banner to launch your live Google Form in a new browser tab.
-4. **Submit a Test Response:** Complete the form fields with sample test data and click **Submit**.
-5. **Verify Your Inbox:** Built-in System SMTP immediately delivers a submission notification email to the Form Admin inbox with the submitted responses.
-6. **Automatic Confirmation:** Return to your FormMail Hub dashboard. Click **"Refresh"** (or wait approximately one minute); the prompt automatically disappears as soon as your first submission is detected, confirming your integration is live and operating smoothly.
+3. **Complete Step 1 (Enable & Save):** Toggle **Enable Notifications** to ON, check the Form Admin and any desired Team Members to receive alerts, and click **"Save Configuration"**. A checkmark confirms that notifications are turned on.
+4. **Complete Step 2 (Open Form):** Once Step 1 is saved, the **"Open form"** button unlocks. Click it to launch your live Google Form in a new browser tab.
+5. **Submit a Test Response:** Complete the form fields with sample test data and click **Submit**.
+6. **Verify Your Inbox:** Built-in System SMTP immediately delivers a submission notification email to the Form Admin inbox with the submitted responses.
+7. **Automatic Confirmation:** Return to your FormMail Hub dashboard. Click **"Refresh"** (or wait approximately one minute); the prompt automatically disappears as soon as your first submission is detected, confirming your integration is live and operating smoothly.
 
 ---
 
