@@ -36,11 +36,55 @@ FormMail Hub operates via an independent external cloud platform engine coupled 
 ### Architecture Overview
 - **Independent Cloud Platform Engine:** FormMail Hub operates on a powerful, independent external cloud backend platform specifically built to overcome Google Workspace's native execution limits, quotas, and trigger constraints.
 - **Data Ingestion Bridges:** All 3 Google Forms entry add-ons (*Form Confirmation Emails*, *Form to Email*, *Form Notifications SMTP*) and the 1 Google Sheets add-on (*FormMail Hub*) act strictly as data ingestion bridges/entry points that push submission events and configuration data to the FormMail Hub cloud platform.
-- **Full-Featured Google Sheets Management Client:** The **\"FormMail Hub\" Google Sheets add-on** acts as the primary full-featured management client. Because a single Google Spreadsheet can host multiple Form Responses tabs, connecting via the Sheets add-on uses only 1 connection slot while scaling across multiple forms, and provides the interface to launch proactive bulk email Campaigns processed by our cloud platform engine.
+- **Full-Featured Google Sheets Management Client:** The **"FormMail Hub" Google Sheets add-on** acts as the primary full-featured management client. Because a single Google Spreadsheet can host multiple Form Responses tabs, connecting via the Sheets add-on uses only 1 connection slot while scaling across multiple forms, and provides the interface to launch proactive bulk email Campaigns processed by our cloud platform engine.
 
 ---
 
-## 2. Roles & Permissions Architecture
+## 2. Quickstart: Verifying Your Form Connection & First Test Submission
+
+When you connect a new form to FormMail Hub, you can instantly verify that submission event delivery is working before sharing your form publicly.
+
+```
+[ Form Connected via Add-on ]
+             |
+             v
+[ Open Dashboard -> Notifications ]
+             |
+             v
+[ Banner: "Waiting for your first submission" ]
+             |
+     +-------+-------+
+     |               |
+     v               v
+[ Click 'Open form' ] [ Click 'Refresh' ]
+     |
+     v
+[ Submit Sample Response ]
+     |
+     v
+[ System SMTP Delivers Submission Alert to Admin Inbox ]
+     |
+     v
+[ Banner Automatically Dismisses (~1 min) ]
+```
+
+### The "Waiting for your first submission" Prompt
+When a connected form has not yet received any form submissions, FormMail Hub displays an onboarding notification banner in the administrative dashboard:
+
+> **Waiting for your first submission**  
+> *"Your form is connected. Submit one test response yourself to see notifications in action — it shows up here within about a minute."*
+
+### Step-by-Step First Submission Test:
+1. **Open FormMail Hub:** Launch the add-on sidebar in Google Forms™ or Google Sheets™ and click **"Go Beyond"** or **"Open Dashboard"**.
+2. **Review Notifications View:** Navigate to **System Notifications**.
+3. **Click 'Open form':** Click the **"Open form"** button located directly inside the notification banner to launch your live Google Form in a new browser tab.
+4. **Submit a Test Response:** Complete the form fields with sample test data and click **Submit**.
+5. **Verify Your Inbox:** Built-in System SMTP immediately delivers a submission notification email to the Form Admin inbox with the submitted responses.
+6. **Automatic Confirmation:** Return to your FormMail Hub dashboard. Click **"Refresh"** (or wait approximately one minute); the prompt automatically disappears as soon as your first submission is detected, confirming your integration is live and operating smoothly.
+
+---
+
+## 3. Roles & Permissions Architecture
 
 FormMail Hub maintains strict permission boundaries between administrators and team members:
 
@@ -49,7 +93,7 @@ FormMail Hub maintains strict permission boundaries between administrators and t
 
 ---
 
-## 3. Delivery Infrastructure & Custom SMTP Requirement
+## 4. Delivery Infrastructure & Custom SMTP Requirement
 
 FormMail Hub separates internal administrative alerts from client-facing custom outreach:
 
@@ -87,7 +131,7 @@ Admins **MUST** configure and test custom SMTP settings before unlocking Templat
 
 ---
 
-## 4. Auto-Responders, Conditional Rules, Delayed Delivery & Dynamic Tags
+## 5. Auto-Responders, Conditional Rules, Delayed Delivery & Dynamic Tags
 
 Once custom SMTP settings are configured and tested by the Admin to unlock feature tabs:
 
@@ -106,7 +150,7 @@ Templates parse submission fields into dynamic tags supporting `{Tag}`, `{{Tag}}
 
 ---
 
-## 5. Event Ticketing, Staff Scanning & Attendance Engine
+## 6. Event Ticketing, Staff Scanning & Attendance Engine
 
 FormMail Hub includes an integrated QR ticketing and attendance tracking system.
 
@@ -132,7 +176,7 @@ Upon every successful scan, two real-time email receipts are dispatched:
 
 ---
 
-## 6. Broadcast Campaigns & Lead List Management
+## 7. Broadcast Campaigns & Lead List Management
 
 Proactive bulk email marketing to form respondents is powered exclusively by the **FormMail Hub Google Sheets add-on**.
 
@@ -151,7 +195,7 @@ To send a proactive campaign to form respondents, follow this exact workflow:
 
 ---
 
-## 7. Granular Subscription Management & Unsubscribe Scopes
+## 8. Granular Subscription Management & Unsubscribe Scopes
 
 FormMail Hub manages unsubscribes across 3 distinct scopes:
 - **Form-Specific Respondent Unsubscribe:** Inserting `{Unsubscribe link}` in custom templates and campaigns unsubscribes respondents strictly from future emails related to that specific Form.
@@ -160,7 +204,7 @@ FormMail Hub manages unsubscribes across 3 distinct scopes:
 
 ---
 
-## 8. Official Resources, Compliance & Support
+## 9. Official Resources, Compliance & Support
 
 - **App Marketplace:** [Google Workspace Marketplace Listing](https://workspace.google.com/marketplace/app/formmail_hub/409227874327)
 - **Live Demo:** Test workflows on the official [Live Demo Form](https://docs.google.com/forms/d/e/1FAIpQLSc2lkYREd5ePz521uYfBDeumOOoPKeBP87i1aSpwokHdFMIHw/viewform)
