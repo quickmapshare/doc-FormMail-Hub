@@ -1,11 +1,11 @@
 ---
 title: Frequently Asked Questions & Operational Q&A
-description: Comprehensive answers to common questions about email notifications, conditional routing, auto-responders, delayed delivery, bulk marketing campaigns, QR code check-in, and delivery analytics in FormMail Hub.
+description: Comprehensive answers to common questions about email notifications, conditional routing, auto-responders, delayed delivery, bulk marketing campaigns, QR code check-in, plans, pricing, and delivery analytics in FormMail Hub.
 ---
 
 import { Card, CardGrid } from '@astrojs/starlight/components';
 
-This guide addresses the most frequent questions regarding setup, delivery routing, conditional rules, delivery delays, bulk campaigns, zero-login QR attendance, and subscription management in **FormMail Hub**.
+This guide addresses the most frequent questions regarding setup, delivery routing, conditional rules, delivery delays, bulk campaigns, zero-login QR attendance, subscription tiers, and subscription management in **FormMail Hub**.
 
 To test any feature live or experience automated triggers firsthand, submit our [Live Demo Form](https://docs.google.com/forms/d/e/1FAIpQLSc2lkYREd5ePz521uYfBDeumOOoPKeBP87i1aSpwokHdFMIHw/viewform) or install the add-on from the [Google Workspace Marketplace Listing](https://workspace.google.com/marketplace/app/formmail_hub/409227874327).
 
@@ -89,7 +89,22 @@ To test any feature live or experience automated triggers firsthand, submit our 
 
 ---
 
-## 4. Analytics, Daily Reports & Subscription Management
+## 4. Plans, Pricing & Subscription FAQ
+
+### Q: What is the difference between the Free and Pro plans?
+**A:** 
+- **Free Plan ($0):** Includes up to 5 email templates, 6 email rules, 100 daily system notifications, 200 daily auto-responders, and 300 daily campaign dispatches. Emails include a polite "FormMail Hub" footer badge.
+- **Pro Plan ($5/month or $39/year):** Unlocks **unlimited** templates, **unlimited** rules, **unlimited** daily sends (bounded only by your SMTP provider), removes the email footer entirely (100% white-label), and fully unlocks **Conditional Logic**, **QR Attendance Tickets**, and **Team Member Management**.
+
+### Q: How does cancellation and billing work?
+**A:** You can cancel your subscription at any time with zero penalties. Upon cancellation, your Pro benefits remain active until the end of your current billing period (month or year). FormMail Hub operates under a standard no-refunds policy.
+
+### Q: Are there any team, lifetime, or educational discount plans?
+**A:** To keep our pricing as low, fair, and straightforward as possible for everyone, we offer two simple options: **$5/month** or **$39/year** ($3.25/month). We do not offer separate team tiers or lifetime licenses.
+
+---
+
+## 5. Analytics, Daily Reports & Subscription Management
 
 ### Q: What performance analytics and reports does FormMail Hub provide?
 **A:** FormMail Hub tracks daily and cumulative performance stats for every form, categorized into three distinct execution modes:
@@ -107,7 +122,7 @@ Additionally, an automated **Daily Summary Report** is emailed via System SMTP t
 
 ---
 
-## 5. SMTP Transport & Security FAQ
+## 6. SMTP Transport & Security FAQ
 
 ### Q: Why are the Templates, Rules, Campaigns, and Analytics tabs locked in the sidebar?
 **A:** FormMail Hub requires custom SMTP for customer-facing emails. Admins **MUST** configure and test custom SMTP settings under **Settings > SMTP Config** before unlocking Templates, Rules, Campaigns, or Analytics. Until custom SMTP is verified with a successful test connection, these tabs remain strictly locked.
@@ -120,7 +135,7 @@ Additionally, an automated **Daily Summary Report** is emailed via System SMTP t
 
 ---
 
-## 6. Official Resources & Enterprise Support
+## 7. Official Resources & Enterprise Support
 
 <CardGrid>
   <Card title="Google Workspace Marketplace" icon="add-document">
