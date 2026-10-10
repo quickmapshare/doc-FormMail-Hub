@@ -1,92 +1,32 @@
 ---
-title: Broadcast Campaigns & Lead List Management Guide
-description: Master creating, segmenting, and dispatching bulk email campaigns using the FormMail Hub Google Sheets management client.
+title: Send email campaigns from Google Sheets
+description: Send a bulk email to selected Google Form respondents from the FormMail Hub Google Sheets add-on, using a template and filter conditions.
 ---
 
-While real-time transactional auto-responders deliver single emails upon form completion, **FormMail Hub's Broadcast Campaign Engine** enables Administrators to send targeted bulk communications to collected respondents.
+A campaign sends one template to the respondents in your responses spreadsheet who match your conditions. You start it yourself, from the **FormMail Hub add-on in Google Sheets™**. Campaigns cannot be started from the Google Forms add-on.
 
-To practice configuring templates and response rules before launching a campaign, test submissions on our official [Live Demo Form](https://docs.google.com/forms/d/e/1FAIpQLSc2lkYREd5ePz521uYfBDeumOOoPKeBP87i1aSpwokHdFMIHw/viewform) or install the add-on via the [Google Workspace Marketplace Listing](https://workspace.google.com/marketplace/app/formmail_hub/409227874327).
+:::note[Before you start]
+- Link your form to a Google Sheet (in Google Forms: **Responses → Link to Sheets**).
+- [Connect your SMTP](/guides/smtp-setup/) and [create the template](/guides/template-customization/) you want to send.
+:::
 
----
+## Set up the campaign
 
-## 1. Prerequisites & Platform Constraints
+1. In **Manage Rules**, create a rule with the campaign template, the respondent's email field as recipient, and conditions that select who should receive it. See [Rules and conditions](/guides/conditional-logic/).
+2. Open **Campaigns**, select the rule and turn on **Enable as Campaign**. You can also set an **End Date** for the campaign.
 
-Before launching a broadcast campaign, the following requirements must be met:
+## Send it
 
-1. **Custom SMTP Requirement & UI Lock State:** Admins **MUST** configure and test custom SMTP settings before unlocking Templates, Rules, Campaigns, or Analytics. Until custom SMTP is active, these feature tabs remain strictly locked in the UI.
-2. **Google Sheets Add-on Exclusivity:** Bulk sending (Campaigns) is **ONLY** available when launched from the **FormMail Hub Google Sheets add-on**. It is not accessible from Google Forms entry add-ons.
+1. Open the responses spreadsheet and start the FormMail Hub add-on (**Extensions → FormMail Hub**).
+2. Switch to the **Campaign** view.
+3. Choose your campaign and click **Dispatch**.
 
----
+FormMail Hub sends the emails in the background through your SMTP. Respondents who have unsubscribed from this form are skipped.
 
-## 2. Campaign Creation & Dispatch Workflow
+## Good practice
 
-To send a proactive campaign to form respondents, the Admin follows this exact step-by-step workflow:
+- Include `{Unsubscribe link}` in campaign templates.
+- Test the conditions on a copy of the sheet, or with a condition that matches only your own response, before sending to everyone.
+- Large campaigns can reach your provider's daily limit. Use a sending service for large lists. See [sending limits](/guides/smtp-setup/#sending-limits).
 
-```
-+-----------------------------------------------------------------------------------+
-| 1. Admin creates a campaign template                                             |
-+-----------------------------------------------------------------------------------+
-                                          |
-                                          v
-+-----------------------------------------------------------------------------------+
-| 2. Admin configures filtering rules to target respondents in responses Sheet     |
-+-----------------------------------------------------------------------------------+
-                                          |
-                                          v
-+-----------------------------------------------------------------------------------+
-| 3. Admin enables the rule as an active campaign                                   |
-+-----------------------------------------------------------------------------------+
-                                          |
-                                          v
-+-----------------------------------------------------------------------------------+
-| 4. Within FormMail Hub Google Sheets add-on interface on responses sheet,        |
-|    Admin switches to Campaign view                                                |
-+-----------------------------------------------------------------------------------+
-                                          |
-                                          v
-+-----------------------------------------------------------------------------------+
-| 5. Admin selects the synchronized campaign name                                  |
-+-----------------------------------------------------------------------------------+
-                                          |
-                                          v
-+-----------------------------------------------------------------------------------+
-| 6. Admin clicks 'Dispatch' button to initiate bulk email dispatch                |
-+-----------------------------------------------------------------------------------+
-```
-
-### Detailed Workflow Steps:
-1. **Admin creates a campaign template:** The Admin navigates to the template builder, drafts the message content, and saves the template.
-2. **Admin configures filtering rules to target respondents in responses Google Sheet:** In rule settings, set targeting criteria against the backing responses Google Sheet™.
-3. **Admin enables the rule as an active campaign:** Toggle the rule state to active to synchronize it for campaign dispatch.
-4. **Switch to Campaign View:** Within the FormMail Hub Google Sheets add-on interface on the responses sheet, the Admin switches to the **Campaign** view.
-5. **Select Synchronized Campaign Name:** The Admin selects the synchronized campaign name from the dropdown list.
-6. **Click 'Dispatch':** The Admin clicks the **'Dispatch'** button to initiate the bulk email dispatch processed by the FormMail Hub cloud platform engine.
-
----
-
-## 3. Compliance & Dynamic Tags
-
-- **Dynamic Tag Syntax:** Dynamic template tags support `{Tag}`, `{{Tag}}`, and `${Tag}` enclosure formats. The valid built-in system tags are strictly `{Form title}`, `{All fields}`, `{Linked form}`, `{Unsubscribe link}`, `{QR Code}`, `{Verify Link}`, `{Check-in Scanner}`, `{Check-out Scanner}`, and `{Full Scanner}`, alongside any dynamic form question field title.
-- **Security Isolation:** Scanner authorization tags (`{Check-in Scanner}`, `{Check-out Scanner}`, `{Full Scanner}`) are populated strictly in staff/team emails and automatically stripped from respondent campaign emails to guarantee security isolation.
-- **QR Code Tickets in Campaigns:** For event ticketing or verification broadcasts, Admins can include `{QR Code}` or `{Verify Link}` in campaign templates. The cloud platform engine embeds a secure visual QR code ticket or clickable link for instant real-time attendee validation.
-- **Granular Unsubscribe Scopes:** Every marketing campaign includes `{Unsubscribe link}` to maintain compliance with our [Terms of Service](https://formmail.vietutd.com/terms-of-service) and [Privacy Policy](https://formmail.vietutd.com/privacy-policy). Unsubscribe mechanics operate across 3 strict backend scopes:
-  - **Form-Specific Respondent Unsubscribe:** Clicking `{Unsubscribe link}` in campaign emails unsubscribes the respondent strictly from future emails related to that specific Form.
-  - **Form-Specific System Daily Report Unsubscribe:** Unsubscribe links in daily reports stop summary emails for that specific Form.
-  - **User-Level SMTP Error Alert Unsubscribe:** Unsubscribe links in SMTP failure alerts stop failure warnings across all forms for that user.
-- **Suppression Enforcement:** When an opt-out event is processed, the recipient address is flagged and automatically excluded from future campaign dispatches, returning an `OPT_OUT_SKIPPED` log status.
-
----
-
-## 4. Monitoring Dispatch Performance
-
-Once **Dispatch** is clicked, the Admin can monitor batch processing and analytics within the Google Sheets add-on management client:
-
-- **Delivered Count:** Messages accepted by downstream mail servers.
-- **Bounces & Errors:** Tracked via hard (`BOUNCED_HARD`) and soft (`BOUNCED_SOFT`) status codes.
-- **Opt-Out Counts:** Total unsubscribes recorded for the campaign run.
-
-For questions regarding deliverability or campaign limits, reach out via [Support & Contact](https://formmail.vietutd.com/contact).
-
----
-
-*Google Forms™ and Google Sheets™ are trademarks of Google LLC.*
+The Free plan sends up to 300 campaign emails per day. See [Plans & pricing](/guides/plans-and-pricing/).

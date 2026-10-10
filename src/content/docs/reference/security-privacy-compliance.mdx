@@ -1,142 +1,37 @@
 ---
-title: Security, Privacy & OAuth Authorization Reference
-description: Complete technical reference covering Google Workspace OAuth scopes, data storage architecture, GDPR/CAN-SPAM compliance, transport encryption, and enterprise security policies in FormMail Hub.
+title: Security and privacy
+description: How FormMail Hub handles your SMTP password, form answers, check-in links and unsubscribe requests.
 ---
 
-This technical reference provides an exhaustive breakdown of the security model, privacy architecture, required OAuth authorization scopes, data retention policies, and regulatory compliance standards across the **FormMail Hub** ecosystem.
+This page explains in plain terms what FormMail Hub stores and how it protects it. The legal terms are in the [Privacy Policy](https://formmail.vietutd.com/privacy-policy) and [Terms of Service](https://formmail.vietutd.com/terms-of-service).
 
-For full legal and regulatory details, refer to our official [Privacy Policy](https://formmail.vietutd.com/privacy-policy) and [Terms of Service](https://formmail.vietutd.com/terms-of-service). You can install the application from the [Google Workspace Marketplace Listing](https://workspace.google.com/marketplace/app/formmail_hub/409227874327).
+## What is stored
 
----
+- **Your form answers** stay in your Google Form and responses spreadsheet. FormMail Hub reads each submission to send the emails you configured.
+- **Your settings** (templates, rules, team members and campaign settings) are stored by FormMail Hub so it can send emails on your behalf.
+- **Your SMTP password or API key** is encrypted (AES-256) before it is saved, and is only used to send your emails.
+- **Statistics**: daily counts of emails sent, opened and failed for each form.
+- **Check-in records**: ticket status, time and the staff member who scanned. Each record is kept for 30 days after its last change.
+- **Unsubscribe requests**, so that people who opted out are not emailed again.
 
-## 1. Google Workspace OAuth Scopes & Authorization Matrix
+## Access control
 
-FormMail Hub operates within the secure Google Workspace runtime environment using the principle of least privilege. Depending on whether the application is initialized from an entry-point Google Forms™ add-on or the core Google Sheets™ application, specific OAuth 2.0 scopes are requested during installation.
+- Only the first editor who connects a form (its admin) can change its FormMail Hub settings. See [Team members](/guides/team-management/).
+- Scanner and check-in links are digitally signed, so they cannot be altered or guessed. A scanner link authorizes one browser for 7 days.
+- An employee's self check-in link only works for their own record.
 
-### Required OAuth Scopes Catalog
+## Unsubscribing
 
-| Scope URI | Permission Level | Technical Justification | System Access Boundaries |
-| :--- | :--- | :--- | :--- |
-| `https://www.googleapis.com/auth/forms.currentonly` | Read/Write (Container) | Reads form questions, titles, and configures `onFormSubmit` triggers for the current active form. | Restricted strictly to the specific Google Form where the add-on is executed. Cannot access other forms in Drive. |
-| `https://www.googleapis.com/auth/spreadsheets` | Read/Write | Manages response rows, updates suppression tables, reads subscriber databases, and writes audit logs in backing sheets. | Operates on the connected Google Sheet associated with form responses. Required for Core Campaign Engine operations. |
-| `https://www.googleapis.com/auth/script.external_request` | Network Egress | Executes secure TLS socket connections to user-configured custom SMTP servers (e.g., Amazon SES, SendGrid, Gmail). | Outbound network traffic restricted to custom SMTP server connection endpoints. |
-| `https://www.googleapis.com/auth/script.send_mail` | Email Send | Enables native fallback email dispatch using Google Workspace relay quotas when custom SMTP is not enabled. | Used strictly for user-configured email rules and triggers. No silent background emailing. |
-| `https://www.googleapis.com/auth/userinfo.email` | Identity Read | Identifies the active administrative account for subscription license validation and workspace domain binding. | Reads primary email address of the active user session only. No profile modification access. |
+| Who | Link | Effect |
+| --- | --- | --- |
+| Respondents | `{Unsubscribe link}` in your templates | No more emails from that form to that address |
+| Form admin | Link in the daily report | No more daily reports for that form |
+| Form admin | Link in SMTP error alerts | No more SMTP error alerts, for all forms |
 
-### Entry Point vs. Core App Scope Profile
+Add `{Unsubscribe link}` to any email you send to respondents, and especially to campaigns. Depending on your country, the law may require it.
 
-```
-+-----------------------------------------------------------------------------------+
-|                        ENTRY-POINT FORMS ADD-ONS                                  |
-|        ("Form Confirmation Emails", "Form to Email", "Form Notifications SMTP")   |
-+-----------------------------------------------------------------------------------+
-| Scopes Required: forms.currentonly, script.external_request, script.send_mail     |
-| Access Boundary: Form response event metadata, single-submission triggers         |
-+-----------------------------------------------------------------------------------+
-                                          |
-                                          v (Upgrading / Accessing Dashboard)
-+-----------------------------------------------------------------------------------+
-|                           CORE GOOGLE SHEETS ADD-ON                               |
-|                                ("FormMail Hub")                                   |
-+-----------------------------------------------------------------------------------+
-| Scopes Required: spreadsheets, forms.currentonly, script.external_request, etc.   |
-| Access Boundary: Tabular response dataset, subscriber index, Campaign Engine       |
-+-----------------------------------------------------------------------------------+
-```
+## Your responsibilities
 
----
+You decide who receives your emails and what they contain. Only email people who gave you their address, and follow the rules of your SMTP provider.
 
-## 2. Data Storage, Locality & Persistence Model
-
-FormMail Hub employs a decentralized, zero-third-party database architecture for form response storage. Personal Identifiable Information (PII) submitted by form respondents remains within your organization's Google Workspace security boundary.
-
-### Data Residency Breakdown
-
-- **Form Response Data:** Stored exclusively inside your Google Account's backing Google Sheet™ or Google Form™. FormMail Hub does **not** copy, mirror, or store form submission text on external proprietary servers.
-- **SMTP & Configuration Metadata:** Encrypted and stored in Google Workspace `PropertiesService` (UserProperties and ScriptProperties) associated with your Google account. Credentials are accessible only by authorized runtime execution scripts.
-- **Audit Logs:** Written directly to a dedicated sheet tab (`FormMailHub_AuditLog`) within your backing Google Sheet, granting your organization complete ownership and control over diagnostic historical data.
-- **Transient Memory Context:** During runtime execution (`onFormSubmit` trigger or scheduled batch campaign run), submission payloads pass through volatile serverless execution threads in Google Cloud Apps Script infrastructure, exiting memory immediately after dispatch.
-
----
-
-## 3. Regulatory Compliance Frameworks & Unsubscribe Mechanics
-
-FormMail Hub provides built-in tools to help organizations comply with global privacy laws, RFC email standards, and modern inbox provider sender requirements.
-
-### Granular Opt-Out Scopes
-Opt-out management operates across 3 strict scopes tracked by our Cloud Backend endpoints:
-1. **Form-Specific Respondent Unsubscribe:** Inserting `{Unsubscribe link}` in custom email templates (Auto-responders and Campaign emails) allows respondents to unsubscribe strictly from future emails related to that specific Google Form.
-2. **Form-Specific System Daily Report Unsubscribe:** Daily summary report emails sent to Admins/Team Members feature an opt-out link and RFC 8058 `List-Unsubscribe` / `List-Unsubscribe-Post: List-Unsubscribe=One-Click` headers scoped strictly to that specific Form (halting daily summary alerts for that form only).
-3. **User-Level SMTP Error Alert Unsubscribe:** SMTP failure alert notifications sent to the Admin include an unsubscribe link scoped to the User level (stopping connection failure alerts across all forms managed by that user account).
-
-### RFC 8058 & Email Deliverability Compliance
-- **One-Click Unsubscribe Headers:** In compliance with 2024+ email authentication requirements (including Google and Yahoo sender guidelines), both submission-triggered template notifications (when `{Unsubscribe link}` is included) and administrative daily reports automatically include:
-  ```http
-  List-Unsubscribe: <https://hub.formmailhub.com/unsubscribe/...>
-  List-Unsubscribe-Post: List-Unsubscribe=One-Click
-  ```
-  This enables compatible email clients (such as Gmail, Apple Mail, and Yahoo) to display a native one-click unsubscribe action without opening the email body or navigating external web pages.
-
-### GDPR (General Data Protection Regulation) Compliance
-- **Right to Access & Rectification:** Form responses reside entirely in user-owned Google Sheets. Administrators can edit, export, or delete respondent records at any time without third-party intervention.
-- **Right to be Forgotten (Data Erasure):** When a user requests removal, deleting their row from the Google Sheet or adding their address to the **Suppression Registry** (`Settings > Suppression List`) permanently halts all transactional and broadcast communications.
-- **Data Minimization:** Dynamic tags evaluate only the fields explicitly requested in email templates, ignoring non-pertinent submission data.
-- **Privacy Agreement:** View our complete [Privacy Policy](https://formmail.vietutd.com/privacy-policy) for data processor disclosures.
-
-### CAN-SPAM Act Compliance
-Every marketing broadcast campaign dispatched via the Core Google Sheets Add-on enforces mandatory CAN-SPAM requirements:
-1. **Mandatory Unsubscribe Link:** Broadcast dispatches automatically include an unsubscribe link in the email body or footer (`{Unsubscribe link}`).
-2. **Automated Opt-Out Processing:** Clicking the unsubscribe link routes the recipient to an instant confirmation endpoint, marking their record as `SUPPRESSED`.
-3. **Suppression Enforcement:** Future campaign jobs query the suppression registry prior to dispatch, returning an `OPT_OUT_SKIPPED` log status for unsubscribed recipients.
-4. **Terms of Service:** Campaign practices must adhere to our [Terms of Service](https://formmail.vietutd.com/terms-of-service).
-
----
-
-## 4. Network Security & Encryption Protocols
-
-All communication channels utilized by FormMail Hub implement industry-standard encryption standards:
-
-```
-[ Form Response Event ]
-          |
-          +---> Custom SMTP Routing ---> Port 587 (STARTTLS) / Port 465 (Implicit SSL)
-          |
-          +---> Internal System Relay -> Dedicated Secure System Infrastructure
-```
-
-- **Transport Layer Security:** All custom SMTP server connections require **TLS 1.2 or STARTTLS** encryption.
-- **Property Storage Security:** Custom SMTP passwords and API Keys (such as AWS SES IAM credentials or SendGrid API Keys) are encrypted at rest using Google Workspace secure property storage (`PropertiesService`).
-
----
-
-## 5. Ecosystem Feature Availability & Security Boundaries
-
-As detailed across the product architecture, capabilities are partitioned based on entry points to preserve application security and resource isolation:
-
-| Security & Operational Capability | Entry-Point Forms Add-ons<br/>*(Confirmation, Form to Email, SMTP)* | Core Google Sheets Add-on<br/>*(FormMail Hub)* |
-| :--- | :---: | :---: |
-| **Trigger Auto-responder Execution** | Enabled | Enabled |
-| **Custom SMTP Authentication** | Enabled | Enabled |
-| **Audit Log Storage** | Recent Memory Buffer | Full Persistent Spreadsheet Logs |
-| **Subscriber Database Storage Access** | Isolated Trigger Context | Full Spreadsheet Cell Access |
-| **Broadcast Campaign Engine (Bulk Sending)** | ⛔ **DISABLED** | ✅ **FULLY ENABLED** |
-
----
-
-## 6. Enterprise Admin Controls & Domain Deployment
-
-Google Workspace Super Administrators can manage FormMail Hub deployment centrally across their entire enterprise domain:
-
-### Domain-Wide Installation Instructions
-1. Log into the **Google Workspace Admin Console** (`admin.google.com`).
-2. Navigate to **Apps** > **Google Workspace Marketplace apps** > **Apps list**.
-3. Search for **FormMail Hub** or navigate to the [Google Workspace Marketplace Listing](https://workspace.google.com/marketplace/app/formmail_hub/409227874327) and select **Domain Install**.
-4. Review and grant requested OAuth scopes for all organizational units (OUs) or selected groups.
-5. Once installed, the add-on becomes available in Google Forms and Google Sheets for all authorized domain users without requiring individual OAuth consent prompts.
-
-### Technical Support & Compliance Contact
-For enterprise compliance audits or security inquiries, reach out to our team via [Support & Contact](https://formmail.vietutd.com/contact).
-
----
-
-*Google Forms™, Google Sheets™, Google Cloud™, and Gmail™ are trademarks of Google LLC.*
+Security question or report? [Contact us](https://formmail.vietutd.com/contact).

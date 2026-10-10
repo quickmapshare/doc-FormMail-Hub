@@ -1,151 +1,38 @@
 ---
-title: Analytics, Multi-Mode Metric Tracking & Daily Summary Reports Guide
-description: Complete guide to FormMail Hub's multi-mode email tracking engine, real-time dashboard analytics, automated daily summary reports, and granular per-form unsubscribe controls.
+title: Analytics and daily reports
+description: See how many emails each form sent, opened and failed in FormMail Hub, and receive a daily summary report by email.
 ---
 
-FormMail Hub provides built-in email tracking, delivery analytics, and automated daily reporting to give administrators clear visibility into operational notifications, customer auto-responders, and broadcast campaign performance.
+FormMail Hub counts every email it sends for each form, every day, and sends the form admin a summary each morning.
 
-All email transactions are tracked per form on a daily basis across three distinct execution modes. Test form submission triggers on our [Live Demo Form](https://docs.google.com/forms/d/e/1FAIpQLSc2lkYREd5ePz521uYfBDeumOOoPKeBP87i1aSpwokHdFMIHw/viewform) or install the add-on directly from the [Google Workspace Marketplace Listing](https://workspace.google.com/marketplace/app/formmail_hub/409227874327).
+## The Analytics page
 
----
+Open **Analytics** and choose a form. Like Templates and Rules, this page unlocks after [SMTP is connected](/guides/smtp-setup/).
 
-## 1. Prerequisites & UI Access Requirements
+You see today's usage against your [plan's daily limits](/guides/plans-and-pricing/), and totals for:
 
-To access the Analytics dashboard tab and view detailed email metrics:
+- **Form submissions** received.
+- **Submission alerts**: sent, failed, and success rate.
+- **Rule emails**: triggered, sent, opened and failed.
+- **Campaign emails**: campaigns run and emails sent.
 
-- **Custom SMTP Requirement & UI Lock State:** Admins **MUST** configure and test custom SMTP settings before unlocking Templates, Rules, Campaigns, or Analytics. Until custom SMTP is active, these feature tabs remain strictly locked in the UI.
-- **Built-in System SMTP Scope:** Built-in System SMTP is **STRICTLY** restricted to sending system alerts (submission notifications, daily activity reports, and SMTP connection error alerts) to the Form Admin and selected Team Members. System SMTP **CANNOT** be used for custom templates, rule-based notifications, or respondent auto-responders.
+Figures are split into three kinds of email:
 
----
+| Kind | What it includes |
+| --- | --- |
+| System | Submission alerts, daily reports and error alerts sent by FormMail Hub |
+| Automation | Emails sent by your rules when someone submits the form |
+| Campaign | Bulk emails you dispatch from Google Sheets |
 
-## 2. Multi-Mode Metric Tracking Engine
+Opens are counted when the recipient's email app loads images. Some apps block images, so the real number of opens can be higher.
 
-FormMail Hub captures every email transaction—categorized into three core delivery metrics—and aggregates them per connected Google Form™ on a daily basis.
+## Daily summary report
 
-```
-+-----------------------------------------------------------------------------------+
-|                        FORMMAIL HUB TRACKING ENGINE                               |
-+-----------------------------------------------------------------------------------+
-                                  |
-          +-----------------------+-----------------------+
-          |                                               |
-          v                                               v
-+-----------------------------------+           +-----------------------------------+
-|       METRICS TRACKED             |           |       EXECUTION MODES             |
-+-----------------------------------+           +-----------------------------------+
-| - emails_sent   (Delivered count) |           | 1. system: Operational alerts,    |
-| - emails_failed (Terminal errors) |           |    daily reports, SMTP errors     |
-| - emails_opened (Tracking pixel)  |           | 2. automation: Auto-responders &  |
-|                                   |           |    submission-triggered rules     |
-|                                   |           | 3. campaign: Bulk emails from     |
-|                                   |           |    Google Sheets add-on           |
-+-----------------------------------+           +-----------------------------------+
-```
+Shortly after midnight in each form's time zone, the form admin receives an email summarizing the previous day's numbers for that form.
 
-### Metrics Tracked per Form
-- **`emails_sent`**: Total messages successfully delivered to target mail transfer agents and custom SMTP servers.
-- **`emails_failed`**: Total permanent delivery failures, unresolvable connection errors, or authentication failures recorded strictly when all retry attempts have been exhausted.
-- **`emails_opened`**: Total email opens recorded via privacy-compliant tracking pixels.
+Each report has an unsubscribe link that stops reports **for that form only**. Reports for your other forms continue.
 
-> **Retry & Failure Logging Mechanism:** If an email encounters a temporary network issue, the cloud engine retries the message automatically. The `emails_failed` metric is incremented **strictly on the final attempt** if all retry attempts fail, preventing temporary retries from distorting daily statistics.
+## Other email preferences
 
-### 3 Execution Modes
-1. **`system`**: Automated operational alerts, daily summary reports, and SMTP connection error notifications dispatched via built-in System SMTP.
-2. **`automation`**: Submission-triggered auto-responders, multi-condition rule emails, and staff ticket notifications dispatched via custom SMTP.
-3. **`campaign`**: Proactive bulk marketing and informational broadcasts dispatched from the Google Sheets™ add-on management client.
-
----
-
-## 3. Form Dashboard Analytics Interface
-
-Within the FormMail Hub user interface, the **Analytics** dashboard corresponding to each active Form displays real-time and historical aggregated statistics.
-
-```
-+-----------------------------------------------------------------------------------+
-|                       FORM ANALYTICS DASHBOARD INTERFACE                          |
-+-----------------------------------------------------------------------------------+
-| Form: "Customer Registration 2026"                Timezone: America/New_York      |
-+-----------------------------------------------------------------------------------+
-| MODE          | EMAILS SENT (emails_sent) | ERRORS (emails_failed) | OPENS (emails_opened) |
-+---------------+---------------------------+------------------------+----------------------+
-| system        | 14                        | 0                      | N/A                  |
-| automation    | 480                       | 2                      | 394                  |
-| campaign      | 2,150                     | 18                     | 1,420                |
-+---------------+---------------------------+------------------------+----------------------+
-| TOTAL         | 2,644                     | 20                     | 1,814                |
-+-----------------------------------------------------------------------------------+
-```
-
-### Dashboard Capabilities
-- **Mode-Segmented Breakdown:** Real-time visibility into whether email volume stems from background operational alerts (`system`), form submission triggers (`automation`), or bulk outreach (`campaign`).
-- **Error Diagnostics:** Immediate visibility into `emails_failed` to pinpoint SMTP credential issues, recipient bounces, or quota limits.
-- **Engagement Insights:** Live calculation of open rates across marketing campaigns and customer auto-responders.
-
----
-
-## 4. Per-Form Daily Summary Reports & Timezone Support
-
-To keep administrators informed without requiring manual dashboard logins, FormMail Hub automatically generates and delivers daily summary emails.
-
-```
-[ Daily Midnight Boundary (00:00 in Form's Configured Timezone) ]
-                              |
-                              v
-   [ Cloud Engine Normalizes Timezone & Aggregates Daily Metrics ]
-                              |
-                              v
-[ System SMTP Dispatches Daily Report to Form Admin for Active Form ]
-                              |
-                              +----------------------+----------------------+
-                              |                                             |
-                              v                                             v
-               [ Admin Reviews Daily Metrics ]        [ Form-Specific Unsubscribe Link ]
-                                                                     |
-                                                                     v
-                                                  [ Opts Out Strictly for That Form ]
-                                                  [ Other Active Forms Continue Reporting ]
-                                                                     |
-                                                                     v
-                                                  [ Instant Confirmation Email Sent ]
-```
-
-### Automated Dispatch Mechanics
-- **Schedule:** At the start of a new day (**00:00 according to each form's configured timezone**), the system automatically generates and dispatches a Daily Summary Report email via System SMTP to the Form Admin for each active Form, summarizing the previous day's email statistics.
-- **Comprehensive Daily Summary:** Detailed breakdown of the previous day's `emails_sent`, `emails_failed`, and `emails_opened`, categorized across `system`, `automation`, and `campaign` execution modes.
-- **Quota-Free Delivery:** Delivered via built-in System SMTP, ensuring that daily reports consume 0% of your custom SMTP sending quota.
-
-### Timezone Handling
-FormMail Hub features automated timezone normalization ensuring accurate midnight report scheduling across global regions:
-- **Canonical Timezone Names:** Full support for canonical timezones (e.g., `America/New_York`, `Europe/London`, `Asia/Ho_Chi_Minh`, `Asia/Tokyo`).
-- **Offset Formats:** Accepts standard offset notations such as `+07:00`, `-05:00`, `GMT+7`, or `UTC+7`.
-
-### Granular Per-Form Unsubscribe Control & Instant Confirmation
-Admins managing multiple forms can independently opt out of daily reports for high-volume or non-critical forms without disabling reports globally:
-- **Embedded Unsubscribe Link:** Every daily report includes a dedicated form-specific unsubscribe link.
-- **Scope Isolation:** Unsubscribing stops daily reports **strictly for that specific form**, keeping daily summary reports active for all other forms.
-- **Instant Preference Confirmation Notice:** Whenever you update your daily report preference (enable or disable), FormMail Hub automatically delivers an instant confirmation email notice to your administrator inbox via System SMTP verifying the updated status and providing a 1-click link to manage preferences anytime.
-
----
-
-## 5. Granular Opt-Out & Compliance Matrix
-
-FormMail Hub manages unsubscribes across three strict, independent scopes:
-
-| Scope Level | Target Audience | Trigger Context | System Action |
-| :--- | :--- | :--- | :--- |
-| **Form-Specific Respondent Unsubscribe** | Form Respondents | `{Unsubscribe link}` clicked in Auto-responders or Campaigns | Unsubscribes respondent's email address strictly from future emails related to that specific Form. |
-| **Form-Specific System Daily Report Unsubscribe** | Form Admin / Team | Unsubscribe link in Daily Summary Report email | Stops daily summary report emails strictly for that specific Form, and sends an instant preference confirmation notice. |
-| **User-Level SMTP Error Alert Unsubscribe** | Form Admin | Unsubscribe link in SMTP failure warning email | Stops SMTP connection failure notifications across all forms managed by that user account. |
-
----
-
-## 6. Official Resources & Technical Support
-
-- **Add-on Installation:** [Google Workspace Marketplace Listing](https://workspace.google.com/marketplace/app/formmail_hub/409227874327)
-- **Live Sandbox:** [Interactive Live Demo Form](https://docs.google.com/forms/d/e/1FAIpQLSc2lkYREd5ePz521uYfBDeumOOoPKeBP87i1aSpwokHdFMIHw/viewform)
-- **Support Desk:** [Contact & Support](https://formmail.vietutd.com/contact)
-- **Legal Compliance:** [Privacy Policy](https://formmail.vietutd.com/privacy-policy) | [Terms of Service](https://formmail.vietutd.com/terms-of-service)
-
----
-
-*Google Forms™, Google Sheets™, and Gmail™ are trademarks of Google LLC.*
+- **Respondents** can stop emails from a form through `{Unsubscribe link}` in your templates. It applies to that form only.
+- **SMTP error alerts** are sent to the admin when your SMTP connection fails. Their unsubscribe link stops these alerts for all your forms.

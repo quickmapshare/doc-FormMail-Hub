@@ -1,194 +1,60 @@
 ---
-title: Office PC Kiosk & Automated Self-Attendance Setup Guide
-description: Complete step-by-step implementation guide to setting up automated employee self-attendance on office desktop PCs using click-to-verify links in FormMail Hub without cameras or manual staff pre-registration.
+title: Employee attendance from the office computer
+description: Let employees clock in and out from their own office computer with a Google Form and FormMail Hub links. No QR scanner, camera or staff accounts needed.
 ---
 
-This step-by-step implementation guide details how organizations can set up direct self-service attendance for employees on their office computers using click-to-verify links without requiring manual team member pre-registration, physical QR codes, or camera scanners.
+Each employee fills in a Google Form once. They receive an email with two links: one that authorizes their office computer's browser, and one they click every day to check in and out. You and the employee get an email receipt for each action.
 
-By combining Google Forms™ configuration, Custom SMTP delivery, and dynamic authorization (`{Full Scanner}`) with direct verification links (`{Verify Link}`), any employee can authorize their office desktop browser once and perform frictionless daily clock-in and clock-out actions.
+You need: a [connected SMTP](/guides/smtp-setup/). Everything else works on the Free plan.
 
-To test form submission triggers before rolling out your office attendance system, explore our interactive [Live Demo Form](https://docs.google.com/forms/d/e/1FAIpQLSc2lkYREd5ePz521uYfBDeumOOoPKeBP87i1aSpwokHdFMIHw/viewform) or install the add-on directly via the [Google Workspace Marketplace Listing](https://workspace.google.com/marketplace/app/formmail_hub/409227874327).
+## 1. Create the registration form
 
----
+1. Create a Google Form with the employee's name and email address.
+2. In **Settings**, turn on **Limit to 1 response** so each employee has exactly one attendance record.
+3. Connect the form to FormMail Hub. See [Get started](/guides/formmailhub/).
 
-## 1. System Architecture: Automated Self-Service Attendance
+## 2. Create the attendance email
 
-The internal automated self-service attendance model eliminates administrative friction by delivering both authorization and execution links directly to form submitters:
+[Create a template](/guides/template-customization/) that contains `{Full Scanner}` and then `{Verify Link}`, with short instructions. For example:
 
-```
-+-----------------------------------------------------------------------------------+
-|                            ADMIN SETUP & CONFIGURATION                            |
-|  1. Admin sets Google Form "Limit to 1 response" (single unique ticket per user)  |
-|  2. Admin configures & tests Custom SMTP to unlock Templates & Rules tabs         |
-|  3. Admin creates template containing {Full Scanner} followed by {Verify Link}    |
-|  4. Admin configures auto-responder rule targeting submitter ({Email})           |
-+-----------------------------------------------------------------------------------+
-                                          |
-                                          v
-+-----------------------------------------------------------------------------------+
-|                   EMPLOYEE OFFICE PC ONE-TIME AUTHORIZATION                       |
-|  1. Employee submits Google Form and receives auto-responder confirmation email   |
-|  2. Employee opens email in main browser and clicks {Full Scanner} link once      |
-|  3. Cloud platform sets 7-day rolling authorization on office browser             |
-+-----------------------------------------------------------------------------------+
-                                          |
-                                          v
-+-----------------------------------------------------------------------------------+
-|                        DAILY ATTENDANCE EXECUTION WORKFLOW                        |
-|  1. Arrival: Employee clicks {Verify Link} in email / bookmark -> Check-In        |
-|  2. Departure: Employee clicks {Verify Link} prior to leaving -> Check-Out        |
-|  3. Backend verifies permissions, updates attendance state (IN/OUT), and refreshes|
-|     data retention for 30 days                                                    |
-+-----------------------------------------------------------------------------------+
-                                          |
-                                          v
-+-----------------------------------------------------------------------------------+
-|                    AUTOMATED DUAL REAL-TIME RECEIPT DISPATCH                      |
-|  Receipt 1: Instant confirmation email sent to Employee (UTC timestamp & ref ID)  |
-|  Receipt 2: Activity audit log email sent to Employee & CC'd to Form Admin        |
-+-----------------------------------------------------------------------------------+
+```text
+Hi {Full name},
+
+Step 1 (once): on your office computer, open this link to authorize your browser:
+{Full Scanner}
+
+Step 2 (every day): open this link to check in when you arrive and check out when you leave.
+Bookmark it in the same browser:
+{Verify Link}
 ```
 
----
+When `{Full Scanner}` is sent to the person who submitted the form, it only allows them to check **their own** record in and out. You do not need to add employees as team members.
 
-## 2. Step-by-Step Implementation Guide
+## 3. Send it automatically
 
-Follow these 7 steps to configure and deploy the camera-free self-attendance workflow:
+[Create a rule](/guides/conditional-logic/) of type **Always Notify** that sends this template to the employee's email field.
 
-### Step 1: Configure Google Form
-1. Open Google Forms™ and create the employee registration/attendance form (e.g., asking for Employee Name, Department, and Work Email).
-2. In Google Forms **Settings > Responses**, enable **"Limit to 1 response"**. This ensures each employee holds a single unique reference ticket code.
-3. Connect the form to FormMail Hub via the Google Forms™ entry add-on or Google Sheets™ add-on.
+## 4. What employees do
 
-> **Primary Connector Rule:** Only the first user among the form's editors who connects that form to FormMail Hub is granted exclusive rights to configure settings, templates, rules, and triggers.
+1. Open the email on their office computer and click the **Step 1** link once, in the browser they normally use. That browser is now authorized for 7 days. Opening the link again renews it.
+2. Each day, open the **Step 2** link (or the bookmark) and click **Check In** on arrival, then **Check Out** before leaving.
 
-### Step 2: Configure Custom SMTP
-1. In the FormMail Hub UI sidebar, navigate to **Settings > SMTP Config**.
-2. Configure and test your Custom SMTP provider (such as **Gmail™ App Password**, **Amazon SES**, **SendGrid**, or corporate SMTP relay).
-3. Click **Test Connection** to verify delivery.
+The system refuses a second check-in before a check-out, and a check-out before a check-in. If someone opens another person's link, they can see the record but cannot change it.
 
-> **Mandatory SMTP Prerequisite & UI Lock State:** Admins **MUST** configure and test custom SMTP settings before unlocking Templates, Rules, Campaigns, or Analytics. Until custom SMTP is active, these feature tabs remain strictly locked in the UI. Built-in System SMTP is strictly restricted to internal administrative alerts.
+## 5. Receipts and records
 
-### Step 3: Create Self-Attendance Template (Must Be Created First)
-1. Go to **Email Templates** > **+ Create New Template**.
-2. Set **Template Name** (e.g., `Employee Daily Attendance Pass`).
-3. Set **Subject Line** (e.g., `Your Daily Attendance Portal - {Form title}`).
-4. Build the email body with the mandatory dynamic tags in sequence:
-   - `{Full Scanner}`: Grants dual check-in/check-out permissions to the employee's office PC browser upon first click.
-   - `{Verify Link}`: Direct clickable verification link used daily by the employee to trigger Check-in and Check-out actions.
-   - `{Form title}`: Form title identifier.
-   - `{Unsubscribe Link}`: Form-specific opt-out link.
-5. Add clear step-by-step instructions in the email body:
-   - **Step 1:** Click the `{Full Scanner}` link once to authorize this browser device.
-   - **Step 2:** Use the `{Verify Link}` (or bookmark it) daily to perform Check-in upon arrival and Check-out upon departure.
+After every check-in or check-out:
 
-#### Sample Self-Attendance HTML Template
-```html
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8fafc; color: #1e293b; padding: 20px; }
-    .card { max-width: 540px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 28px; }
-    .header { text-align: center; border-bottom: 2px solid #2563eb; padding-bottom: 14px; margin-bottom: 20px; }
-    .step-box { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; padding: 16px; margin: 16px 0; }
-    .action-box { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 20px; text-align: center; margin: 16px 0; }
-    .btn { display: inline-block; background-color: #2563eb; color: #ffffff !important; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 15px; }
-    .footer { text-align: center; font-size: 11px; color: #64748b; margin-top: 24px; }
-  </style>
-</head>
-<body>
-  <div class="card">
-    <div class="header">
-      <h2 style="margin: 0; color: #1e40af;">Daily Attendance Portal</h2>
-      <p style="margin: 4px 0 0 0; color: #64748b; font-size: 13px;">{Form title}</p>
-    </div>
-    
-    <p>Hello,</p>
-    <p>Use this personalized portal for your daily office arrival check-in and departure check-out.</p>
+- The employee receives a confirmation with the time and the location when available.
+- An audit email is sent to the employee with a copy to the form admin.
 
-    <div class="step-box">
-      <strong style="color: #1e40af;">Step 1: One-Time Office PC Browser Authorization</strong>
-      <p style="font-size: 13px; margin: 8px 0;">Click the authorization link below once on your main office desktop browser (valid for 7 days rolling):</p>
-      <p style="word-break: break-all; font-size: 12px;"><a href="{Full Scanner}">{Full Scanner}</a></p>
-    </div>
+Each record is kept for 30 days after its last change.
 
-    <div class="action-box">
-      <strong style="color: #0f172a;">Step 2: Daily Check-In & Check-Out</strong>
-      <p style="font-size: 13px; color: #475569; margin: 8px 0 16px 0;">Click the button below upon arrival and departure (or bookmark the destination link):</p>
-      <a href="{Verify Link}" class="btn">Record Check-In / Check-Out</a>
-    </div>
+## Troubleshooting
 
-    <div class="footer">
-      <p>Powered by FormMail Hub • <a href="{Unsubscribe Link}">Unsubscribe</a></p>
-    </div>
-  </div>
-</body>
-</html>
-```
-
-### Step 4: Configure Email Auto-responder Rule
-1. Navigate to **Email Rules** > **+ Add Rule**.
-2. Set trigger type to **Auto-responder** (triggered upon form submission).
-3. Set condition: When a form submission occurs, send the template created in Step 3 directly to the form submitter (`{Email}`).
-4. Select your verified Custom SMTP transport.
-5. Save and activate the rule.
-
-> **Note on Team Member Pre-Registration:** Adding employees as Team Members is **no longer required** for self-attendance. The authorization token is dynamically generated and sent directly to the submitter via `{Full Scanner}`.
-
-### Step 5: Employee Office PC One-Time Authorization
-1. The employee submits the Google Form and receives the confirmation email on their office computer.
-2. The employee opens the email in their main office browser and clicks the `{Full Scanner}` link once.
-3. FormMail Hub grants device permissions, setting a secure 7-day rolling authorization on that browser.
-
-> **Browser Session Isolation Note:** Because authorization relies on a secure browser session set during link activation, opening the link in one browser (e.g., an in-app email previewer) will **NOT** authorize a different browser (e.g., standard Google Chrome or Edge). Employees **MUST** open or copy/paste the authorization link directly into the exact browser application used for daily verification.
-
-### Step 6: Daily Attendance Execution Workflow
-1. On working days, the employee opens their authorized office desktop browser.
-2. **Arrival:** The employee clicks `{Verify Link}` from their email (or saved bookmark) to perform Check-in.
-3. **Departure:** The employee clicks `{Verify Link}` prior to leaving to perform Check-out.
-4. The cloud platform verifies authorization, updates ticket state (`IN` or `OUT`), and refreshes data retention for **30 days**.
-
-### Step 7: Automated Dual Real-Time Receipts
-Upon every successful Check-in or Check-out action, two real-time receipts are dispatched immediately:
-1. **Employee Attendance Receipt:** Sent immediately to the employee confirming their updated status (`Checked In` or `Checked Out`), complete with Event/Form Name, Reference ID, Location (if applicable), and UTC timestamp.
-2. **Admin Audit Trail Email:** Dispatched immediately to the employee and **CC'd directly to the Form Admin** recording an audit trail containing attendee identity, ticket reference code, operator identity, and scan timestamp.
-
----
-
-## 3. Real-Time Concurrency & 30-Day Retention Rules
-
-The state engine enforces strict concurrency and status transitions:
-
-| Action | Current Ticket State | Engine Execution & Concurrency Behavior | Data Retention Result |
-| :--- | :--- | :--- | :--- |
-| **Check-in** | `OUT` or Initial Unscanned | Validates permission, sets status to `IN`, logs operator email & timestamp. | Refreshes for 30 Days |
-| **Check-in** | `IN` | **Rejected duplicate check-in** (prevents duplicate clock-ins). | Unchanged (retains existing state) |
-| **Check-out** | `IN` | Validates active `IN` state, updates status to `OUT`, logs operator & timestamp. | Refreshes for 30 Days |
-| **Check-out** | `OUT` or Initial Unscanned | Rejected (ticket must be in `IN` state before checking out). | Unchanged |
-
----
-
-## 4. Diagnostic & Troubleshooting Reference
-
-| Symptom / Error | Root Cause | Technical Remediation |
-| :--- | :--- | :--- |
-| **Templates and Rules tabs locked in UI** | Custom SMTP not configured or connection test unverified. | Go to **Settings > SMTP Config**, input custom credentials, and click **Test Connection** to unlock the UI. |
-| **\"Unauthorized Device\" error on click** | Browser authorization missing or opened in a different browser. | Copy the `{Full Scanner}` link from the email and paste it directly into the office PC browser address bar to activate authorization. |
-| **Duplicate ticket submissions per employee** | \"Limit to 1 response\" disabled in Google Forms. | Enable **\"Limit to 1 response\"** in Google Forms Settings. The backend tracks canonical ticket state automatically. |
-| **Duplicate Check-in rejected** | Employee is already clocked in (`IN` state). | The system detected status `IN`. If the employee is departing, select the **Check-Out** action button. |
-| **Dynamic tag renders raw text** | Malformed tag syntax. | Use verified single-pass tags: `{Full Scanner}`, `{Verify Link}`, `{Form title}`, `{Unsubscribe Link}`. |
-
----
-
-## 5. Official Resources & Enterprise Support
-
-- **Add-on Installation:** [Google Workspace Marketplace Listing](https://workspace.google.com/marketplace/app/formmail_hub/409227874327)
-- **Interactive Sandbox:** [Live Demo Form](https://docs.google.com/forms/d/e/1FAIpQLSc2lkYREd5ePz521uYfBDeumOOoPKeBP87i1aSpwokHdFMIHw/viewform)
-- **Technical Support:** [Support & Contact Desk](https://formmail.vietutd.com/contact)
-- **Security & Privacy:** Review our [Privacy Policy](https://formmail.vietutd.com/privacy-policy) and [Terms of Service](https://formmail.vietutd.com/terms-of-service)
-
----
-
-*Google Forms™, Google Sheets™, and Gmail™ are trademarks of Google LLC.*
+| Problem | Fix |
+| --- | --- |
+| The page says the device is not authorized | Open the Step 1 link again, in the same browser used for Step 2. Links opened inside an email app authorize only that app. |
+| "Self Check-in Restricted" | The browser was authorized by another employee's link. Each employee should use their own computer and links. |
+| An employee has two records | Turn on **Limit to 1 response** in the form settings. |
+| Tags appear as plain text in the email | Check the spelling, for example `{Full Scanner}` and `{Verify Link}`. |

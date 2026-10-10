@@ -1,165 +1,56 @@
 ---
-title: Dynamic Tags & HTML Email Template Customization Guide
-description: Master FormMail Hub's template engine, dynamic question placeholders, supported enclosure formats, digital QR code tickets, camera-free staff verification, staff scanner authorization tags, and responsive HTML email design.
+title: Email templates and dynamic tags
+description: Create email templates in FormMail Hub and insert form answers, QR tickets, check-in links and unsubscribe links with dynamic tags.
 ---
 
-Standard transactional email triggers often feel generic or rigid. **FormMail Hub's Template & Dynamic Variable Engine** empowers you to create beautifully styled, personalized, and mobile-responsive email notifications and auto-responders that reflect your brand identity.
+A template is the subject and body of an email you want to send. Templates are used by [rules](/guides/conditional-logic/) (sent when someone submits the form) and by [campaigns](/guides/email-campaigns/).
 
-By utilizing dynamic placeholders and custom HTML/CSS, you can construct targeted communications tailored to each form submission. Test template formatting on our official [Live Demo Form](https://docs.google.com/forms/d/e/1FAIpQLSc2lkYREd5ePz521uYfBDeumOOoPKeBP87i1aSpwokHdFMIHw/viewform) or install the add-on via the [Google Workspace Marketplace Listing](https://workspace.google.com/marketplace/app/formmail_hub/409227874327).
+:::note[Before you start]
+[Connect your SMTP](/guides/smtp-setup/) first. The Email Templates page unlocks after the SMTP test succeeds.
+:::
 
----
+## Create a template
 
-## 1. Dynamic Tag System Overview
+1. Open **Email Templates** and click **Create** (new template).
+2. Enter a **Template Name** (only you see it), the email **Subject** and the **Body**.
+3. Pick a design theme, or keep **Plain Text**. Ten themes are available, from business to newsletter styles.
+4. Save. The template is ready to use in a rule.
 
-FormMail Hub extracts form responses immediately upon submission, mapping them to dynamic tags. When an email trigger or broadcast campaign is initiated by the cloud platform engine, these tags are dynamically replaced with actual user input or built-in system metadata.
+The Free plan allows 5 templates per form. Pro removes this limit. See [Plans & pricing](/guides/plans-and-pricing/).
 
-### Supported Enclosure Syntax
-The template parser evaluates tags using three valid enclosure formats:
-- Single Braces: `{Tag}`
-- Double Braces: `{{Tag}}`
-- Variable Expressions: `${Tag}`
+A template that is used by an active rule cannot be deleted. Remove it from the rule first.
 
-### How Field Mapping Works
-- **Form Question Field Tags:** Any question defined in your Google Forms™ automatically becomes a dynamic tag matching the exact question text (e.g., a question titled `"First Name"` can be referenced as `{First Name}`, `{{First Name}}`, or `${First Name}`).
-- **Case Sensitivity:** Tags match form field question labels exactly.
-- **Dynamic Resiliency:** If you rename a form question in Google Forms™, FormMail Hub updates internal mappings accordingly.
+## Dynamic tags
 
----
+Tags are replaced with real values when the email is sent. You can write a tag as `{Tag}`, `{{Tag}}` or `${Tag}`.
 
-## 2. Dynamic Tag Reference
+### Form answers
 
-Below is the verified catalog of dynamic tags supported in FormMail Hub templates:
+Write the exact title of any question in braces. For a question titled *First name*, `{First name}` inserts the respondent's answer.
 
-### Verified Dynamic Tags Catalog
+### Built-in tags
 
-| Dynamic Tag | Source Data / Description | Example Output Value | Context / Audience Target |
-| :--- | :--- | :--- | :--- |
-| `{Question Title}` | Dynamically retrieves the response answer for any form field question label. | `Jane` (for question field `{First Name}`) | All Templates |
-| `{Form title}` | The official name of the connected Google Form™. | `Customer Onboarding Intake` | All Templates |
-| `{All fields}` | Renders a full summary table of all form questions and submitted answers. | *(Formatted table of all responses)* | All Templates |
-| `{Linked form}` | Generates the direct URL link to the connected Google Form™. | `https://docs.google.com/forms/...` | All Templates |
-| `{Unsubscribe link}` | Generates an automated opt-out / unsubscribe URL for compliance. | `https://hub.formmailhub.com/unsubscribe/...` | Respondent Templates & Campaigns |
-| `{QR Code}` | Generates a secure visual QR code ticket image along with a direct manual verification link. | `[Embedded QR Ticket Image + Manual Link]` | Respondent Auto-responders, Campaigns & Staff Notifications |
-| `{Verify Link}` | Generates a direct clickable manual verification link for instant camera-free check-in. | `https://hub.formmailhub.com/qr-verify?t=...` | Respondent Tickets, Self-Attendance & Staff Alerts |
-| `{Check-in Scanner}` | Generates a personalized zero-login link for staff check-in scanning (`checkin` mode, 7-day validity). | `https://hub.formmailhub.com/qr-auth?t=...` | Staff / Team Emails Only |
-| `{Check-out Scanner}` | Generates a personalized zero-login link for staff check-out scanning (`checkout` mode, 7-day validity). | `https://hub.formmailhub.com/qr-auth?t=...` | Staff / Team Emails Only |
-| `{Full Scanner}` | Generates a personalized zero-login link for dual scanning / browser authorization (`both` mode, 7-day validity). | `https://hub.formmailhub.com/qr-auth?t=...` | Staff Emails & Submitter Self-Attendance |
+| Tag | Inserts |
+| --- | --- |
+| `{Form title}` | The title of the form |
+| `{Linked form}` | A link to the form |
+| `{All fields}` | A table of every question and answer |
+| `{Unsubscribe link}` | A link that stops future emails from this form to the recipient |
+| `{QR Code}` | A QR ticket image, used for [check-in](/tutorials/qr-event-ticketing/) |
+| `{Verify Link}` | The same ticket as a clickable link, for check-in without a camera |
+| `{Check-in Scanner}` | A link that lets the recipient's browser check tickets in |
+| `{Check-out Scanner}` | A link that lets the recipient's browser check tickets out |
+| `{Full Scanner}` | A link that allows both check-in and check-out |
 
-> **Strict Dynamic Tag Rule:** Dynamic template tags strictly support `{Tag}`, `{{Tag}}`, and `${Tag}` enclosure formats. The valid built-in system tags are strictly `{Form title}`, `{Linked form}`, `{All fields}`, `{Unsubscribe link}`, `{QR Code}`, `{Verify Link}`, `{Check-in Scanner}`, `{Check-out Scanner}`, and `{Full Scanner}`, alongside any dynamic form question field title.
+The three scanner tags behave differently depending on who receives the email:
 
-> **Audience Targeting & Self-Attendance Scope:** Scanner authorization tags (`{Check-in Scanner}`, `{Check-out Scanner}`, `{Full Scanner}`) are routed to Staff/Team Members for event verification. For internal automated employee self-attendance, `{Full Scanner}` followed by `{Verify Link}` can be included in auto-responder templates sent directly to form submitters, allowing employees to authorize their office PC browser without manual team member pre-registration.
+- **Team members** get a staff link that lets them scan anyone's ticket for that form.
+- **The respondent** gets a link that lets them check only their own ticket in and out. This is how [office attendance](/tutorials/office-pc-kiosk-attendance/) works.
 
-> **Custom SMTP Requirement:** Admins MUST configure and test custom SMTP settings before unlocking Templates, Rules, Campaigns, or Analytics. Until custom SMTP is active, these feature tabs remain strictly locked in the UI.
+Opening a scanner link authorizes that browser for 7 days. After that, open the link again.
 
----
+## Tips
 
-## 3. Digital QR Code Tickets & Staff Scanner Mechanics
-
-Admins can combine ticket delivery and staff authorization tags to run event ticketing, check-in, and employee attendance workflows.
-
-### A. Digital QR Code Tickets & Camera-Free Verification (`{QR Code}` & `{Verify Link}`)
-- **Embedded Visual Code & Direct Link:** The `{QR Code}` dynamic tag renders a visual QR code image alongside a direct manual verification link, while `{Verify Link}` renders a standalone clickable link.
-- **Dual Audience Usage:** These dynamic tags can be populated in both respondent tickets and staff/team member notification emails.
-- **Camera-Free Verification:** Authorized users or staff members can perform attendee check-in either by scanning the visual QR code with their authorized device camera or by clicking the manual verification link (`{Verify Link}`) directly inside their notification email without requiring a camera scanner.
-- **Real-Time Audit:** The verification screen confirms ticket authenticity, submission timestamp, respondent details, and reference code in real-time.
-
-### B. Personalized Scanner & Device Authorization Links (`{Check-in Scanner}`, `{Check-out Scanner}`, `{Full Scanner}`)
-- **Zero-Login Authentication:** Scanner links encode authorized mode (`checkin`, `checkout`, or `both`) with a **7-day expiration token**.
-- **Instant Device Authorization:** Clicking the link authorizes the user's mobile or desktop browser (valid for **7 days**) for browser-based scanning or click-to-verify attendance without password logins.
-
-> **Important: Browser Session Isolation Note**  
-> Because authorization relies on a secure browser session set during link activation, opening the link in one browser (e.g., an in-app email viewer inside Gmail or Outlook) will **NOT** authorize a different browser (e.g., default mobile browser or standalone camera scanner app). Users **MUST** copy and paste the authorization link directly into the exact browser application used for daily verification.
-
----
-
-## 4. Visual & HTML Code Editors
-
-FormMail Hub provides authoring modes for designing email templates:
-
-### Mode A: Rich Text / WYSIWYG Editor
-Ideal for non-technical users who want to craft clean, professional emails quickly without touching raw code.
-- **Formatting Options:** Bold, italic, underline, list bullets, text alignment, and font coloring.
-- **Tag Inserter:** Menu allowing instant insertion of dynamic question field tags into the subject line or message body.
-
-### Mode B: Advanced HTML / Code Editor
-Built for developers and marketers who require full custom branding, complex table structures, dark-mode styling, and embedded CSS.
-- **Full Control:** Supports standard HTML elements (`<div>`, `<table>`, `<img>`, `<a>`, `<span>`).
-- **Inline CSS Injection:** Mail client engines (e.g., Outlook, Gmail, Apple Mail) render HTML best when CSS styles are applied inline.
-
----
-
-## 5. Step-by-Step Guide: Designing an Onboarding Auto-Responder
-
-Follow these steps to construct a personalized auto-responder email template:
-
-1. Launch **FormMail Hub** in Google Forms™ or Google Sheets™.
-2. Configure and test Custom SMTP under **Settings > SMTP Config** to unlock locked UI feature tabs.
-3. Go to **Email Templates** > **+ Create New Template**.
-4. Set the **Template Name** (e.g., `Client Onboarding Welcome`).
-5. Set the **Email Subject**:
-   ```text
-   Welcome to {Form title}, {First Name}!
-   ```
-6. Switch to the **HTML Code Editor** and paste the responsive HTML layout:
-
-```html
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <style>
-    body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f8fafc; color: #334155; margin: 0; padding: 20px; }
-    .card { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 8px; border: 1px solid #e2e8f0; overflow: hidden; }
-    .header { background-color: #2563eb; color: #ffffff; padding: 24px; text-align: center; }
-    .content { padding: 32px; }
-    .footer { background-color: #f1f5f9; padding: 16px; text-align: center; font-size: 12px; color: #64748b; }
-  </style>
-</head>
-<body>
-  <div class="card">
-    <div class="header">
-      <h1 style="margin:0; font-size:22px;">Welcome Aboard, {First Name}!</h1>
-    </div>
-    <div class="content">
-      <p>Hello <strong>{First Name}</strong>,</p>
-      <p>Thank you for submitting your intake for {Form title}.</p>
-      <p>Our team is currently reviewing your submission details and will follow up shortly.</p>
-      <div style="text-align: center; margin-top: 20px;">
-        <p><strong>Your Verification Pass:</strong></p>
-        {QR Code}
-        <p style="margin-top: 10px;"><a href="{Verify Link}">Manual Verification Link</a></p>
-      </div>
-    </div>
-    <div class="footer">
-      <p>Sent via FormMail Hub. <a href="{Unsubscribe link}">Unsubscribe</a></p>
-    </div>
-  </div>
-</body>
-</html>
-```
-
-7. Click **Save Template**.
-8. Navigate to **Email Rules**, attach this template to your trigger rule, and select your verified **Custom SMTP** route.
-
----
-
-## 6. Testing & Verification Workflows
-
-Before deploying a template to live users, verify variable substitution and layout rendering:
-
-- **Send Test Submission Email:** Click **Send Test Email** in the template editor to dispatch a sample email populated with test question data.
-- **Mobile Responsiveness Verification:** Open test emails on both mobile devices and desktop clients (Outlook, Gmail, Apple Mail) to check for proper padding and scaling.
-- **Dynamic Tag Audit:** Confirm that dynamic question field tags (e.g., `{First Name}`) and system tags (e.g., `{Form title}`, `{All fields}`, `{Unsubscribe link}`, `{QR Code}`, `{Verify Link}`) resolve correctly.
-
----
-
-## 7. Official Resources & Contact
-
-- **Technical Support:** Submit inquiries via [Support & Contact](https://formmail.vietutd.com/contact).
-- **Marketplace Listing:** Install the official add-on from the [Google Workspace Marketplace Listing](https://workspace.google.com/marketplace/app/formmail_hub/409227874327).
-- **Interactive Sandbox:** Try our [Live Demo Form](https://docs.google.com/forms/d/e/1FAIpQLSc2lkYREd5ePz521uYfBDeumOOoPKeBP87i1aSpwokHdFMIHw/viewform).
-- **Legal Agreements:** Review our [Privacy Policy](https://formmail.vietutd.com/privacy-policy) and [Terms of Service](https://formmail.vietutd.com/terms-of-service).
-
----
-
-*Google Forms™ and Gmail™ are trademarks of Google LLC.*
+- Copy question titles exactly, including capital letters and punctuation. A tag that does not match any question is not replaced.
+- Add `{Unsubscribe link}` to emails you send to respondents, especially campaigns.
+- Send yourself a test submission after creating a rule, to check the result before sharing the form.

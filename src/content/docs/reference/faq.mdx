@@ -1,169 +1,65 @@
 ---
-title: Frequently Asked Questions & Operational Q&A
-description: Comprehensive answers to common questions about email notifications, conditional routing, auto-responders, delayed delivery, bulk marketing campaigns, QR code check-in, plans, pricing, and delivery analytics in FormMail Hub.
+title: Frequently asked questions
+description: Short answers about FormMail Hub alerts, auto-replies, SMTP, campaigns, QR check-in, plans and integrations.
 ---
 
-import { Card, CardGrid } from '@astrojs/starlight/components';
+## Getting started
 
-This guide addresses the most frequent questions regarding setup, delivery routing, conditional rules, delivery delays, bulk campaigns, zero-login QR attendance, subscription tiers, and subscription management in **FormMail Hub**.
+### How do I get an email every time someone submits my form?
+Open **Submission Notifications**, turn notifications on, tick the recipients and click **Save Configuration**. No SMTP is needed for these alerts. See [Get started](/guides/formmailhub/).
 
-To test any feature live or experience automated triggers firsthand, submit our [Live Demo Form](https://docs.google.com/forms/d/e/1FAIpQLSc2lkYREd5ePz521uYfBDeumOOoPKeBP87i1aSpwokHdFMIHw/viewform) or install the add-on from the [Google Workspace Marketplace Listing](https://workspace.google.com/marketplace/app/formmail_hub/409227874327).
+### How do I send a confirmation email to the person who filled in the form?
+[Connect your SMTP](/guides/smtp-setup/), [create a template](/guides/template-customization/), then [create a rule](/guides/conditional-logic/) that sends it to the respondent's email field.
 
----
+### Why are Email Templates, Manage Rules, Campaigns and Analytics unavailable?
+They unlock after you connect your SMTP and the test email succeeds. Connecting SMTP is free on every plan.
 
-## 1. General & Email Automation FAQ
+### Why can't another editor of my form change its settings?
+The first editor who connects a form becomes its admin, and only the admin can change it. Other people can be added as [team members](/guides/team-management/) to receive emails.
 
-### Q: How do I send an email notification every time a new form submission is received?
-**A:** This is the simplest and most essential feature for Form Admins. 
-1. Access your FormMail Hub dashboard via the add-on sidebar (**"Go Beyond"** in Google Forms™ / **"Open Dashboard"** in Google Sheets™).
-2. Navigate to **System Notifications**.
-3. Toggle notifications **ON**, select yourself (Admin) and any desired Team Members to receive alerts, and click **Save Configuration**.
-4. Every new submission will instantly trigger an internal email notification sent via built-in System SMTP to the designated recipients without consuming your personal email quota.
+## Sending
 
-### Q: How do I test that my form connection and submission alerts are working correctly?
-**A:** FormMail Hub makes testing immediate and reliable with a guided 2-step onboarding prompt. When you open **System Notifications** for a newly connected form that hasn't received any submissions yet, a 2-step verification banner appears:
-> **Waiting for your first submission**  
-> - **Step 1:** Turn on notifications below, choose who receives them, then click “Save Configuration”.  
-> - **Step 2:** Submit one test response to your form — it shows up here within about a minute.
+### Can the respondent's email be sent from FormMail Hub's own address?
+No. FormMail Hub's own mail server only sends submission alerts, daily reports and error alerts to you and your team. Emails to respondents go through your SMTP so they come from your address.
 
-1. **Complete Step 1:** Turn on notifications, select the Admin and any desired Team Members, and click **"Save Configuration"**. A checkmark confirms that notifications are turned on.
-2. **Complete Step 2:** The **"Open form"** button unlocks (it stays locked until Step 1 is saved to guarantee that your test submission will trigger an alert). Click **Open form** to open your live form in a new tab.
-3. Complete and submit a sample response on your Google Form™.
-4. Check your inbox; you will immediately receive the submission alert email sent via built-in System SMTP.
-5. Return to your dashboard and click **Refresh** (or wait about a minute); the waiting prompt will automatically dismiss once the system detects your first submission.
+### Can I send different emails depending on the answers?
+Yes. Create one rule per case, each with its own conditions and template. See [Rules and conditions](/guides/conditional-logic/).
 
-### Q: How can I route submissions to different team members based on specific response conditions?
-**A:** 
-1. Configure and test your **Custom SMTP** provider under **Settings > SMTP Config** (unlocks the *Templates*, *Rules*, *Campaigns*, and *Analytics* tabs).
-2. Create custom Email Templates under **Email Templates**.
-3. Go to **Email Rules** > **Conditional Rules** and configure multi-condition routing rules based on the respondent's form answers (e.g., Department equals "Support" or Budget > 5000).
-4. Emails will be dynamically dispatched under your custom sender domain and transport.
+### Can I delay an email or send it at a fixed time?
+Yes. A rule can wait seconds, minutes, hours or days, or send at a fixed date and time in the form's time zone.
 
-### Q: How do I send custom confirmation emails and instructions directly to the form respondent?
-**A:** 
-1. Create a custom Email Template containing your instructions, brand styling, and dynamic tags (such as `{First Name}`, `{Form title}`, or `{All fields}`).
-2. Create an **Auto-responder Rule** triggered on form submission.
-3. Set the target recipient field to the dynamic email tag submitted by the respondent (e.g., `{Email}`).
-4. When respondents complete the form, FormMail Hub immediately sends them their customized confirmation email.
+### How do I email all, or some, respondents at once?
+Use a [campaign](/guides/email-campaigns/), started from the FormMail Hub add-on in Google Sheets.
 
-### Q: Can I set a delay or schedule specific dates/times for emails triggered by form submission rules?
-**A:** **Yes.** When setting up Auto-responder or conditional routing rules, you can configure flexible execution timing. You can specify relative delay intervals in **seconds**, **minutes**, **hours**, or **days**, or select a fixed date and time (**Scheduled mode**). The cloud backend platform automatically adjusts the scheduled timestamp using your Form's configured timezone and safely skips execution if the target scheduled time has already elapsed at the time of submission.
+### Does FormMail Hub support webhooks, Slack, Zapier or other integrations?
+No. FormMail Hub sends emails and handles QR check-in. It does not forward submissions to webhooks or other apps.
 
----
+## QR check-in
 
-## 2. Campaigns & Google Sheets Management Client
+### Do staff need an account or an app to scan tickets?
+No. Staff open a scanner link once in their phone's browser, then scan with the camera. See [QR event tickets](/tutorials/qr-event-ticketing/).
 
-### Q: Can I proactively send bulk email notifications or campaigns to all form respondents?
-**A:** **Yes.** Bulk email dispatches (**Campaigns**) are launched exclusively via the **FormMail Hub Google Sheets add-on** while your Google Sheet is open.
+### Can people check in without a camera?
+Yes. Every ticket also has a link (`{Verify Link}`) that opens the same check-in page.
 
-```
-+-----------------------------------------------------------------------------------+
-|                           CAMPAIGN CREATION & DISPATCH FLOW                       |
-| 1. Admin creates a campaign template in FormMail Hub                              |
-| 2. Admin configures filtering rules to target specific respondents in Sheet       |
-| 3. Admin enables the rule as an active campaign                                   |
-| 4. In Sheets add-on on responses sheet, Admin switches to Campaign view           |
-| 5. Admin selects the synchronized campaign name                                   |
-| 6. Admin clicks 'Dispatch' to execute bulk email dispatch via cloud platform      |
-+-----------------------------------------------------------------------------------+
-```
+### Can a guest be checked in twice?
+No. A second check-in is refused until the guest has been checked out.
 
-### Q: Why is bulk sending only available in the Google Sheets add-on?
-**A:** Google Sheets acts as the full-featured management client and data ledger for your respondent records. Because a single Google Spreadsheet can host multiple Form Responses tabs, connecting via the Sheets add-on uses only **1 connection slot** while scaling across multiple forms, providing the interface to filter rows and dispatch bulk campaigns efficiently.
+### What else can check-in be used for?
+Office or class attendance, and lending equipment or books. See [Employee attendance](/tutorials/office-pc-kiosk-attendance/).
 
----
+## Plans
 
-## 3. QR Code Ticketing & Attendance Check-in FAQ
+### What is the difference between Free and Pro?
+All features are on both plans. Pro ($5/month or $39/year) removes the daily email limits, the template and rule limits, and the FormMail Hub footer. See [Plans & pricing](/guides/plans-and-pricing/).
 
-### Q: Is the QR Code and Link Check-in feature easy to set up and operate?
-**A:** **Yes.** Setup is straightforward and requires no complex hardware or mobile app installations:
-1. **Dispatch Authorization Links:** Send personalized scanner links (`{Check-in Scanner}`, `{Check-out Scanner}`, or `{Full Scanner}`) to staff or respondents to activate 7-day scanner permissions directly on their web browser.
-2. **Include Passes in Confirmation Emails:** Include a `{QR Code}` (visual QR code + embedded link) or direct clickable `{Verify Link}` in the respondent's confirmation email.
-3. **Execute Verification:** Upon arrival, staff scan the QR code with their mobile camera, or respondents/staff click the direct `{Verify Link}` on an authorized device. Real-time confirmation receipts and audit logs are automatically emailed to the respondent, Form Admin, and designated team members.
+### What happens when I cancel Pro?
+You keep Pro until the end of the period you have paid for. Payments are not refunded.
 
-### Q: What are the main practical applications for the Check-in system?
-**A:** The Check-in feature can be applied across several operational workflows:
-- **Event ticketing and entry access control:** Issuing digital entry passes and scanning tickets at entry gates.
-- **Workplace and academic classroom attendance tracking:** Tracking employee shift clock-ins or student lecture attendance.
-- **Office PC Kiosk Attendance:** Allowing employees to verify daily check-in and check-out directly from their office desktop browser without physical scanners.
-- **Equipment, asset, or library book loan and return management:** Recording asset checkout and checkin status transitions.
+## Privacy
 
-### Q: Can check-in be performed without a camera scanner?
-**A:** **Yes.** Both attendees and staff can perform verification without a camera by clicking the direct manual verification link (`{Verify Link}`) rendered in their notification or confirmation emails on any authorized browser.
+### Can people stop receiving emails?
+Yes. Add `{Unsubscribe link}` to your templates. It stops future emails from that form to that person.
 
-### Q: How does the system prevent duplicate check-ins?
-**A:** When an authorized user or staff member accesses the verification link, the platform verifies permissions and updates the ticket's explicit state (`IN` or `OUT`). If a ticket status is already `IN`, duplicate check-in attempts are rejected with a conflict alert on screen. Every state change extends the record's retention to **30 days** without deleting data.
-
-### Q: How do automated dual real-time attendance receipts work?
-**A:** Upon every successful Check-in or Check-out event, the engine dispatches two independent, real-time email notifications:
-1. **Attendee Attendance Email:** Dispatched to the ticket holder confirming their updated status (`Checked In` or `Checked Out`), Event Name, Reference ID, Location (if applicable), and UTC timestamp.
-2. **Staff/Admin Audit Log Email:** Dispatched directly to the operator/user and **CC'd to the Form Owner** recording an audit trail containing attendee identity, ticket reference code, operator identity, and scan timestamp.
-
----
-
-## 4. Plans, Pricing & Subscription FAQ
-
-### Q: What is the difference between the Free and Pro plans?
-**A:** 
-- **Free Plan ($0):** Includes up to 5 email templates, 6 email rules, 100 daily system notifications, 200 daily auto-responders, and 300 daily campaign dispatches. Emails include a polite "FormMail Hub" footer badge.
-- **Pro Plan ($5/month or $39/year):** Unlocks **unlimited** templates, **unlimited** rules, **unlimited** daily sends (bounded only by your SMTP provider), removes the email footer entirely (100% white-label), and fully unlocks **Conditional Logic**, **QR Attendance Tickets**, and **Team Member Management**.
-
-### Q: How does cancellation and billing work?
-**A:** You can cancel your subscription at any time with zero penalties. Upon cancellation, your Pro benefits remain active until the end of your current billing period (month or year). FormMail Hub operates under a standard no-refunds policy.
-
-### Q: Are there any team, lifetime, or educational discount plans?
-**A:** To keep our pricing as low, fair, and straightforward as possible for everyone, we offer two simple options: **$5/month** or **$39/year** ($3.25/month). We do not offer separate team tiers or lifetime licenses.
-
----
-
-## 5. Analytics, Daily Reports & Subscription Management
-
-### Q: What performance analytics and reports does FormMail Hub provide?
-**A:** FormMail Hub tracks daily and cumulative performance stats for every form, categorized into three distinct execution modes:
-- `system`: Automated operational alerts, daily reports, and SMTP connection error alerts.
-- `automation`: Submission-triggered auto-responders and rule-based emails.
-- `campaign`: Proactive bulk emails dispatched from the Google Sheets add-on.
-
-Additionally, an automated **Daily Summary Report** is emailed via System SMTP to the Form Admin at **00:00 (according to each form's configured timezone)** for each active Form, summarizing the previous day's metrics.
-
-### Q: How can Form Admins and respondents manage email preferences and prevent unwanted emails?
-**A:** FormMail Hub provides precise, multi-tiered subscription control across 3 granular scopes:
-- **Form-Specific Respondent Unsubscribe:** Custom email templates can include the `{Unsubscribe link}` tag. Clicking this link allows respondents to unsubscribe strictly from future emails related to that specific Form.
-- **Form-Specific System Daily Report Unsubscribe:** Daily summary report emails sent to Admins include an unsubscribe link that stops daily reports strictly for that specific Form, keeping daily summary reports active for other forms.
-- **User-Level SMTP Error Alert Unsubscribe:** SMTP error alert emails sent to Admins include an unsubscribe link scoped to the user account level, stopping SMTP failure alerts across all forms managed under that account.
-
----
-
-## 6. SMTP Transport & Security FAQ
-
-### Q: Why are the Templates, Rules, Campaigns, and Analytics tabs locked in the sidebar?
-**A:** FormMail Hub requires custom SMTP for customer-facing emails. Admins **MUST** configure and test custom SMTP settings under **Settings > SMTP Config** before unlocking Templates, Rules, Campaigns, or Analytics. Until custom SMTP is verified with a successful test connection, these tabs remain strictly locked.
-
-### Q: Can I use built-in System SMTP to send custom auto-responders to respondents?
-**A:** **No.** Built-in System SMTP is strictly restricted to internal administrative alerts (submission notifications, daily summary reports, and SMTP connection error alerts) sent to the Form Admin and selected Team Members. Custom auto-responders and campaign broadcasts must route through verified Custom SMTP.
-
-### Q: Does FormMail Hub support webhooks, Zapier, or third-party CRM integrations?
-**A:** **No.** FormMail Hub operates strictly as an email receiving, processing, dispatching, and QR attendance tracking engine. It **DOES NOT** support webhooks, HTTP POST forwarding, external API calls, or third-party integrations (such as Slack, Microsoft Teams, Discord, Zapier, or external CRMs).
-
----
-
-## 7. Official Resources & Enterprise Support
-
-<CardGrid>
-  <Card title="Google Workspace Marketplace" icon="add-document">
-    Install FormMail Hub for Google Forms™ and Google Sheets™ from the [Marketplace Listing](https://workspace.google.com/marketplace/app/formmail_hub/409227874327).
-  </Card>
-  <Card title="Interactive Live Demo" icon="laptop">
-    Test form submissions and QR passes on our [Live Demo Form](https://docs.google.com/forms/d/e/1FAIpQLSc2lkYREd5ePz521uYfBDeumOOoPKeBP87i1aSpwokHdFMIHw/viewform).
-  </Card>
-  <Card title="Technical Support Desk" icon="information">
-    Have technical or configuration questions? Contact our team at [Support & Contact](https://formmail.vietutd.com/contact).
-  </Card>
-  <Card title="Privacy & Security" icon="shield">
-    Review our security architecture and terms in the [Privacy Policy](https://formmail.vietutd.com/privacy-policy) and [Terms of Service](https://formmail.vietutd.com/terms-of-service).
-  </Card>
-</CardGrid>
-
----
-
-*Google Forms™, Google Sheets™, and Gmail™ are trademarks of Google LLC.*
+### Where can I read the privacy policy?
+See [Security and privacy](/reference/security-privacy-compliance/), the [Privacy Policy](https://formmail.vietutd.com/privacy-policy) and the [Terms of Service](https://formmail.vietutd.com/terms-of-service).

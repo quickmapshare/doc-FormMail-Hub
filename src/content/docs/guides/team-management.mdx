@@ -1,106 +1,32 @@
 ---
-title: Team Member Management, Staff Scanning & Notification Routing Guide
-description: Guide to managing team members, understanding the Primary Connector Admin role, setting up event staff scanners, personalized zero-login scanner authentication, 30-day rolling retention attendance tracking, and routing submission alerts in FormMail Hub.
+title: Team members and permissions
+description: Add team members in FormMail Hub to receive submission alerts, get copies of emails and scan QR tickets. Learn what the form admin and team members can do.
 ---
 
-Managing form submission alerts and event attendance in organizational settings requires delivering notifications to designated team members and authorizing staff scanners without exposing system configurations or consuming personal email daily limits.
+Team members are people who receive emails about a form. They do not get access to its settings.
 
-Get started by installing the add-on from the [Google Workspace Marketplace Listing](https://workspace.google.com/marketplace/app/formmail_hub/409227874327) or testing triggers on our [Live Demo Form](https://docs.google.com/forms/d/e/1FAIpQLSc2lkYREd5ePz521uYfBDeumOOoPKeBP87i1aSpwokHdFMIHw/viewform).
+## Who can do what
 
----
+The first editor of a form who connects it to FormMail Hub becomes its **admin** (shown as *Owner*). Other editors of the Google Form do not get access to its FormMail Hub settings.
 
-## 1. Role & Permissions Architecture
+| Action | Admin | Team member |
+| --- | --- | --- |
+| Change SMTP, templates, rules and campaigns | ✅ | ❌ |
+| Add or remove team members | ✅ | ❌ |
+| Receive submission alerts and email copies | ✅ | ✅ |
+| Scan QR tickets with a scanner link | ✅ | ✅ |
+| Send campaigns from Google Sheets | ✅ | ❌ |
 
-FormMail Hub enforces strict role boundaries across all form and event management workflows:
+## Add a team member
 
-### Primary Connector / Admin Role
-Only the **first user among the form's editors who connects that form to FormMail Hub** is granted exclusive rights to configure settings, templates, rules, custom SMTP, staff assignments, and triggers for that form. Co-editors on the form or sheet do not automatically receive administrative rights.
+1. Open **Team Members** and click **Add Member**.
+2. Enter the email address and click **Send Invitation**.
+3. The person receives an email and clicks the link to confirm the address.
 
-### Team Member & Event Staff Scanner Role
-Team members are added so the Admin can select who receives email notifications upon form submission and who is authorized to act as event staff scanners. Team members **DO NOT** have edit or configuration permissions.
+The status changes from **Pending** to **Verified**. Only verified members can receive alerts or appear in a rule's recipients. If the invitation got lost, click **Resend Email**.
 
-| Capability / Action | Primary Connector (Admin) | Team Members / Staff |
-| :--- | :---: | :---: |
-| **Granted Exclusive Rights (First Form Editor to Connect)** | ✅ | ❌ |
-| **Configure System & Custom SMTP Settings** | ✅ | ❌ |
-| **Create & Edit Email Templates & Rules** | ✅ | ❌ |
-| **Add / Remove Team Member Email Addresses** | ✅ | ❌ |
-| **Receive Selected Email Submission Alerts** | ✅ | ✅ |
-| **Act as Authorized Event Staff Scanners** | ✅ | ✅ |
-| **Launch Bulk Campaigns (Sheets Add-on)** | ✅ | ❌ |
+## What team members receive
 
----
-
-## 2. Personalized Staff Scanner Authentication & Zero-Login Links
-
-When routing team notifications for event management, FormMail Hub provides automated zero-login scanner links to streamline staff check-in and check-out workflows.
-
-### Personalized Authorization Links
-When routing team notifications, the platform generates personalized, secure Authorization Links using dedicated dynamic tags:
-- `{Check-in Scanner}`: Authorizes device for check-in scanning (`checkin` mode).
-- `{Check-out Scanner}`: Authorizes device for check-out scanning (`checkout` mode).
-- `{Full Scanner}`: Authorizes device for both check-in and check-out scanning (`both` mode).
-
-> **Security & Audience Isolation:** Scanner authorization links (`{Check-in Scanner}`, `{Check-out Scanner}`, `{Full Scanner}`) are populated strictly in staff/team member email notifications and automatically stripped from respondent emails to guarantee security isolation.
-
-### Zero-Login Device Authorization Mechanics
-- **Secure 1-Click Authorization:** Each link contains a secure authorization token valid for **7 days**.
-- **Password-Free Operation:** Clicking the link instantly authorizes the staff member's browser for **7 days** for seamless scanning without requiring account passwords or complex logins.
-
-> **Warning: Browser Session Isolation Note**  
-> Because authorization relies on a secure browser session set during link activation, opening the link in one browser (e.g., an in-app email viewer inside Gmail or Outlook) will **NOT** authorize a different browser (e.g., default mobile browser or standalone camera scanner app). Staff **MUST** copy and paste the Auth link directly into the exact browser application used for scanning QR codes.
-
----
-
-## 3. Real-Time Check-in/Check-out State Engine & 30-Day Retention
-
-When an authorized staff member scans an attendee's QR code ticket or clicks the direct verification link, the FormMail Hub cloud platform engine processes the event through a real-time state engine.
-
-### Concurrency Control & 30-Day Rolling Retention
-- **Verification & State Update:** Verifies device permissions and updates ticket explicit state (`IN` or `OUT`). Every state change extends the record's retention to **30 days** without deleting data.
-- **Check-in Enforcement:** Rejects duplicate scans if the ticket status is already `IN`. Sets status to `IN`, logs check-in operator email and timestamp, and refreshes retention for 30 days.
-- **Check-out Enforcement:** Validates that the ticket is currently in `IN` state before updating status to `OUT`. Logs check-out operator email and timestamp, and refreshes data retention for 30 days without deleting the record.
-
-### Automated Dual Real-Time Attendance Receipts
-Upon every successful Check-in or Check-out scan, the engine dispatches two independent real-time email notifications:
-1. **Attendee Attendance Email:** Dispatched directly to the ticket holder confirming their updated status (Checked In / Checked Out), complete with Event Name, Reference ID, and UTC timestamp.
-2. **Staff Activity Log Email:** Dispatched directly to the scanning Staff member (and CC'd to the Form Owner) recording an audit trail containing attendee identity, ticket reference code, staff email identity, and scan timestamp.
-
----
-
-## 4. Notification Delivery Infrastructure
-
-FormMail Hub handles internal team notifications separately from customer-facing custom email triggers:
-
-### Built-in System SMTP Scope
-Built-in System SMTP is **STRICTLY** restricted to sending system alerts (submission notifications, daily activity reports, and SMTP connection error alerts) to the Form Admin and selected Team Members. System SMTP **CANNOT** be used for custom templates, rule-based notifications, or respondent auto-responders.
-
-### Custom Team Notification Routing
-If the Admin wishes to send custom templates or rule-based notifications to team members:
-- Admins **MUST** configure and test custom SMTP settings before unlocking Templates, Rules, Campaigns, or Analytics. Until custom SMTP is active, these feature tabs remain strictly locked in the UI.
-- Once unlocked, the Admin can set up multi-condition rules routing custom templates (including scanner authorization links) to specific team members based on submission values using custom SMTP.
-
----
-
-## 5. Adding Team Members (Admin Workflow)
-
-Only the Primary Connector (Admin) can manage the team member roster:
-
-1. Launch FormMail Hub and open your dashboard via the add-on sidebar (**"Go Beyond"** in Google Forms™ / **"Open Dashboard"** in Google Sheets™).
-2. Navigate to **Team Members** in the dashboard navigation.
-3. Enter the email address of the team member (e.g., `colleague@yourcompany.com`).
-4. Click **Add Team Member**.
-
-Once added, the team member's address becomes selectable by the Admin for receiving notification alerts and authorized scanner links.
-
----
-
-## 6. Official Resources & Enterprise Support
-
-- **Help Desk:** Reach our support team via [Support & Contact](https://formmail.vietutd.com/contact).
-- **Marketplace Listing:** Install via [Google Workspace Marketplace](https://workspace.google.com/marketplace/app/formmail_hub/409227874327).
-- **Compliance & Legal:** View our [Privacy Policy](https://formmail.vietutd.com/privacy-policy) and [Terms of Service](https://formmail.vietutd.com/terms-of-service).
-
----
-
-*Google Forms™ and Google Sheets™ are trademarks of Google LLC.*
+- **Submission alerts**: on the Submission Notifications page, tick the members who should be alerted about new submissions.
+- **Copies of rule emails**: add them under *Internal Recipients (CC)* in a [rule](/guides/conditional-logic/).
+- **Scanner links**: put `{Check-in Scanner}`, `{Check-out Scanner}` or `{Full Scanner}` in an email sent to them, and they can [scan tickets](/tutorials/qr-event-ticketing/) from their phone without an account.

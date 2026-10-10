@@ -1,188 +1,52 @@
 ---
-title: Error Codes, Delivery Logs & Diagnostic Reference
-description: Complete technical reference for FormMail Hub delivery status codes, SMTP response errors, retry mechanics, submitter email validation, and log diagnostics.
+title: Troubleshooting
+description: Fix common FormMail Hub problems with SMTP, missing emails, plan limits, rules, campaigns and QR check-in.
 ---
 
-This technical reference provides an exhaustive mapping of internal delivery status codes, standard SMTP response codes, retry and failure recording mechanics, submitter email validation behavior, and step-by-step diagnostic procedures for FormMail Hub.
+Find the message or symptom you see, then follow the fix. If nothing helps, [contact support](https://formmail.vietutd.com/contact) with the form name and the time it happened.
 
-If you encounter persistent delivery failures after following this guide, contact technical support directly via [Support & Contact](https://formmail.vietutd.com/contact). You can also test standard form submit behavior using our official [Live Demo Form](https://docs.google.com/forms/d/e/1FAIpQLSc2lkYREd5ePz521uYfBDeumOOoPKeBP87i1aSpwokHdFMIHw/viewform).
+## Emails are not arriving
 
----
+| Symptom | Fix |
+| --- | --- |
+| No submission alert | On **Submission Notifications**, check that notifications are on, recipients are ticked, and **Save Configuration** was clicked. Check the spam folder. |
+| A team member gets nothing | Their status in **Team Members** must be **Verified**. Use **Resend Email** if the invitation was lost. |
+| Respondents get nothing | The rule must use the right **Customer Email Field**, and its conditions must match the answers. Submit a test response that clearly matches. |
+| Emails stopped in the middle of the day | You may have reached a [Free plan daily limit](/guides/plans-and-pricing/). Check today's usage on **Analytics**. |
+| One person never receives emails | They may have used the unsubscribe link for this form. |
 
-## 1. Internal Delivery Status Codes & Retry Lifecycle
+## SMTP
 
-When a Google Form submission triggers an automated email or dynamic broadcast, FormMail Hub processes the job through its external cloud queue engine. Outbound email jobs undergo automated retries for transient errors before concluding execution.
+| Message or symptom | Fix |
+| --- | --- |
+| Test fails with an authentication error | Check the username. For Gmail, use a new 16-character App Password, not your normal password. See [Connect your SMTP](/guides/smtp-setup/). |
+| Test times out | Check the host. Use port 587, or 465 if your provider requires SSL. |
+| "Your SMTP account uses an API Key. Please enter a verified sender email." | In the rule's **Sender Email**, enter an address verified with your provider (SendGrid, Amazon SES and similar). |
+| You receive SMTP error alerts | Your password changed or the provider blocked sending. Update the settings in **SMTP Config** and send a new test. |
+| Templates, Rules, Campaigns and Analytics are unavailable | Connect SMTP and send a successful test. |
 
-```
-[ Outgoing Email Queued ]
-            |
-            v
-[ Attempt Delivery via SMTP Relay ]
-            |
-    +-------+-------+
-    |               |
-    v (Success)     v (Failure / Error)
-[ Mark DELIVERED ]  |
-                    v
-          [ Check Remaining Attempts ]
-                    |
-          +---------+---------+
-          |                   |
-          v (More attempts)   v (Last Attempt Exhausted)
-   [ Auto-Retry Delay ]   [ Record metric: emails_failed ]
-   (No failure recorded   [ Send SMTP Error Alert to Owner ]
-    in daily stats yet)   (Subject to 1-hour cooldown)
-```
+## Limits
 
-| Status Code | Severity | Description | Queue & Retry Behavior | Recommended Remediation |
-| :--- | :--- | :--- | :--- | :--- |
-| `DELIVERED` | Info | Email successfully accepted by the downstream SMTP host. | Execution Complete. | None required. |
-| `QUEUED` | Info | Message is buffered in the outbound cloud queue awaiting dispatch. | Active job in worker queue. | Allow process to finish; verify queue depth if delay exceeds 5 mins. |
-| `BOUNCED_HARD` | Error | Permanent failure; recipient address does not exist or domain host rejected address. | Fails terminally; records `emails_failed` on final attempt. | Verify respondent email spelling; ensure email regex compliance (`user@domain.com`). |
-| `BOUNCED_SOFT` | Warning | Temporary failure (mailbox full, greylisting, or remote host throttling). | Auto-retries across exponential backoff intervals. | If condition persists after retries are exhausted, check destination domain MX records. |
-| `FAILED_SMTP_AUTH` | Error | Invalid SMTP credentials or authentication mechanism failure. | Retries exhausted; dispatches SMTP alert to Admin on final attempt. | Update SMTP username/password or generate a fresh 16-character Gmail App Password. |
-| `FAILED_SMTP_CONNECT` | Error | Connection to remote SMTP host timed out or port was unreachable. | Retries up to configured max attempts before terminal fail. | Confirm host IP/domain and verify network firewall permits outbound connection on ports 587 or 465. |
-| `RATE_LIMITED` | Warning | Daily sending quota or provider rate limit reached (e.g., Gmail daily quota). | Pauses dispatch; retries during next available window. | Switch sending route to Custom SMTP (Amazon SES, SendGrid) or wait for quota reset. |
-| `TEMPLATE_ERROR` | Error | Dynamic tag syntax malformed or unresolvable tag reference. | Dispatch skipped to avoid rendering raw tag errors to end users. | Inspect template syntax; verify tag names match form field question labels. |
-| `OPT_OUT_SKIPPED` | Info | Recipient previously unsubscribed via automated unsubscribe link. | Dispatch intentionally bypassed to maintain CAN-SPAM/GDPR compliance. | No action required. Contact is automatically suppressed. |
+| Message | Fix |
+| --- | --- |
+| "Quota limit reached: You can only create up to 6 rules on the Free plan." | Delete an unused rule for this form, or upgrade to Pro. |
+| "Quota limit reached: You can only create up to 5 email templates on the Free plan." | Delete an unused template for this form, or upgrade to Pro. |
+| "Failed to delete the template. It might be linked to an active rule." | Change or delete the rules that use this template first. |
 
-> **Failure Metric Tracking Rule:** The `emails_failed` counter in daily statistics is strictly incremented **only on the final attempt** after all allowed queue retry attempts have failed completely. This prevents temporary network blips from distorting daily error metrics.
+## Rules and campaigns
 
----
+| Message or symptom | Fix |
+| --- | --- |
+| "No active team members found." under Internal Recipients | Add team members and wait until they are **Verified**. |
+| "No Automation Rules found!" on the Campaigns page | Create the rule for the campaign in **Manage Rules** first. See [Email campaigns](/guides/email-campaigns/). |
+| A scheduled email was never sent | The submission arrived after the scheduled time, so it was skipped. |
+| A tag appears as plain text | The tag does not match a question title exactly. Copy the title from the form. |
 
-## 2. Submitter Email Extraction & Format Validation
+## QR check-in
 
-To prevent dispatch errors caused by invalid respondent input, FormMail Hub enforces strict email format validation when mapping form question fields:
-
-- **Regex Validation:** Mapped respondent email values must match the standard email pattern (`^[^\s@]+@[^\s@]+\.[^\s@]+$`).
-- **Invalid Data Handling:** If a form response contains non-email data (e.g., phone numbers or text) in the mapped email field, the system issues a warning log and automatically falls back to the form's default `SYSTEM_EMAIL` / `responder_email` capture.
-- **Dynamic Resiliency:** The engine inspects both field IDs and question titles to locate valid email addresses accurately.
-
----
-
-## 3. Standard SMTP Response Codes Catalog
-
-FormMail Hub captures raw response strings returned by custom SMTP servers (Amazon SES, SendGrid, Mailgun, custom relays) and standard Google Workspace SMTP servers (`smtp.gmail.com`).
-
-### 2xx Success Responses
-- **`250 2.1.0 OK`**: Message accepted for delivery by the downstream mail transfer agent (MTA).
-- **`235 2.7.0 Authentication successful`**: Credentials verified successfully with the remote host.
-
-### 4xx Temporary Failures
-- **`421 4.7.0 Try again later`**: Service temporarily unavailable (frequently caused by grey-listing or transient server overload).
-  - *Action:* System auto-retries. If persistent, check destination MTA status.
-- **`451 4.4.0 DNS query failed`**: The sending relay could not resolve MX records for the recipient's domain.
-  - *Action:* Confirm DNS health for recipient domain.
-- **`452 4.2.2 Mailbox full`**: Recipient mailbox has exceeded storage quota.
-  - *Action:* Soft bounce handling; notify respondent through alternative channel if critical.
-
-### 5xx Permanent Failures
-- **`535 5.7.8 Authentication credentials invalid`**: SMTP username or password rejected.
-  - *Action:* Re-authenticate credentials under **Settings > SMTP Config**. For Gmail/Workspace accounts, ensure 2-Step Verification is enabled and an **App Password** is used instead of your normal account password.
-- **`550 5.1.1 User unknown / Invalid recipient`**: Recipient address does not exist on target domain.
-  - *Action:* Address marked invalid.
-- **`550 5.7.1 Message rejected due to DMARC / SPF policy`**: Sender domain failed domain authentication verification at recipient inbound gateway.
-  - *Action:* Verify SPF (`v=spf1 ...`) and DKIM TXT/CNAME records in your DNS manager. Ensure the `From` header address matches your authenticated domain identity.
-- **`554 5.2.0 Transaction failed - Spam content detected`**: Remote spam filter flagged message body or subject line.
-  - *Action:* Audit email body HTML; remove aggressive trigger words, shorteners, or unauthenticated links.
-
----
-
-## 4. Trigger & Execution System Errors
-
-Errors occurring within the Google Workspace runtime environment or form submit trigger hooks are mapped below:
-
-| Error Key | Meaning | Primary Cause | Resolution Strategy |
-| :--- | :--- | :--- | :--- |
-| `ERR_AUTH_SCOPE` | Missing required OAuth permissions. | Workspace scopes modified or authorization revoked. | Re-open FormMail Hub add-on sidebar and complete the account re-authorization prompt. |
-| `ERR_FORM_ID_NOT_FOUND` | Detached form instance. | Form container moved or copy created without resetting trigger bindings. | Re-bind FormMail Hub in the new Google Form via **Settings > Re-link Form**. |
-| `ERR_MAX_EXECUTION_TIME` | Apps Script execution limit hit (6 minutes). | High submission spike processed synchronously. | The external cloud platform engine processes queues independently, eliminating Apps Script timeout limits. |
-| `ERR_QUOTA_EXCEEDED` | Google Workspace daily email quota exhausted. | Form triggered using default Google relay without Custom SMTP. | Configure a Custom SMTP integration (e.g., Amazon SES or SendGrid) to bypass Google limits. |
-| `ERR_TAG_PARSING_FAILED` | Dynamic tag evaluator failure. | Corrupted bracket syntax (e.g., `{Question Name` missing closing brace `}`). | Correct syntax in the email template editor. |
-
----
-
-## 5. Audit Log Field Schema
-
-The FormMail Hub Audit Log tracks all submission and email event data in JSON format for debugging and compliance auditing.
-
-### Log Entry Structure
-```json
-{
-  "eventId": "evt_987f6a5b4c",
-  "timestamp": "2026-03-31T14:32:01.120Z",
-  "formId": "1FAIpQLSc...",
-  "submissionId": "sub_1234567890",
-  "recipient": "client@example.com",
-  "routeType": "CUSTOM_SMTP_SES",
-  "smtpHost": "email-smtp.us-east-1.amazonaws.com",
-  "status": "DELIVERED",
-  "responseCode": 250,
-  "responseMessage": "2.0.0 OK 0100018e...",
-  "latencyMs": 342,
-  "tagsEvaluated": {
-    "First Name": "Jane",
-    "Company": "Acme Corp"
-  },
-  "retryCount": 0
-}
-```
-
----
-
-## 6. Step-by-Step Diagnostic & Recovery Matrix
-
-```
-[ Email Not Received ]
-         |
-         v
-Check Audit Log Status Code
-         |
-         +---> Status: FAILED_SMTP_AUTH  --> Go to Step A: Re-verify Credentials & App Passwords
-         |
-         +---> Status: BOUNCED_HARD      --> Go to Step B: Validate Recipient Email Address
-         |
-         +---> Status: RATE_LIMITED      --> Go to Step C: Configure Custom SMTP Provider
-         |
-         +---> Status: DELIVERED (Spam)  --> Go to Step D: Verify Domain SPF / DKIM / DMARC
-```
-
-### Remediation Steps
-
-#### Step A: Re-verify Credentials & App Passwords
-1. Open **FormMail Hub > Settings > SMTP Config**.
-2. If using Gmail/Workspace, confirm **2-Step Verification** is active in Google Account settings.
-3. Generate a brand new 16-character **App Password** and paste it into the password field without spaces.
-4. Click **Test Connection** to verify response code `235` and unlock UI tabs.
-
-#### Step B: Validate Recipient Email Address
-1. Check the dynamic tag assigned to the recipient field (e.g., `{Email Address}`).
-2. Verify that the form question uses Google Forms **Response Validation** configured to require a valid email format (`Text > Email`).
-3. Ensure submitted values conform to standard format (`user@domain.com`).
-
-#### Step C: Configure Custom SMTP Provider
-1. Connect an external email infrastructure provider (Amazon SES, SendGrid, Mailgun) under **Settings > SMTP Config**.
-2. Ensure production mode access is granted if using AWS SES (exit sandbox mode).
-
-#### Step D: Verify Domain SPF / DKIM / DMARC
-1. Run a domain check on your sending domain via a DNS diagnostic tool.
-2. Confirm SPF record includes your SMTP provider:
-   ```txt
-   v=spf1 include:amazonses.com ~all
-   ```
-3. Ensure DKIM keys are active and DMARC record is published at `_dmarc.yourdomain.com`.
-
----
-
-## 7. Official Support & Resources
-
-If technical diagnostics do not resolve your issue, access our official resources:
-
-- **Help Desk:** [Support & Contact](https://formmail.vietutd.com/contact)
-- **Add-on Installation:** [Google Workspace Marketplace Listing](https://workspace.google.com/marketplace/app/formmail_hub/409227874327)
-- **Interactive Sandbox:** [Live Demo Form](https://docs.google.com/forms/d/e/1FAIpQLSc2lkYREd5ePz521uYfBDeumOOoPKeBP87i1aSpwokHdFMIHw/viewform)
-- **Legal Policies:** [Privacy Policy](https://formmail.vietutd.com/privacy-policy) | [Terms of Service](https://formmail.vietutd.com/terms-of-service)
-
----
-
-*Google Forms™ and Gmail™ are trademarks of Google LLC.*
+| Message or symptom | Fix |
+| --- | --- |
+| "INVALID QR TICKET" | The code is damaged or did not come from this form. Use the link in the guest's email instead. |
+| No Check In / Check Out buttons | This browser is not authorized. Open the scanner link again in the same browser. Links opened inside an email app only authorize that app. |
+| "Self Check-in Restricted" | The browser was authorized by a different person's link. Each person should use their own links. |
+| Check-in refused | The guest is already checked in. Check them out first if needed. |

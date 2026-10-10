@@ -1,51 +1,57 @@
-name: AI Auto Update Docs
+name: AI Docs Update Proposal
 
+# Nhận diff từ repo FormMail Hub (repository_dispatch) rồi để AI ĐỀ XUẤT sửa tài liệu.
+# Kết quả là một Pull Request để duyệt; không còn push thẳng lên main (từ 2026-10-10).
 on:
   repository_dispatch:
     types: [source_updated]
   workflow_dispatch:
 
-# 1. ÉP QUYỀN GHI TRỰC TIẾP Ở ĐÂY (Vượt qua mọi cài đặt Settings)
 permissions:
   contents: write
+  pull-requests: write
+
+concurrency:
+  group: ai-docs-update
+  cancel-in-progress: false
 
 jobs:
-  update-docs:
+  propose-docs:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repo
+      - name: Checkout
         uses: actions/checkout@v4
-        with:
-          # THAY DÒNG NÀY: Dùng Token cá nhân thay vì Token của Bot
-          token: ${{ secrets.DOCS_PAT }}
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
-      - name: Install Dependencies
+      - name: Install dependencies
         run: pip install google-genai
 
-      - name: Run AI Update Script
+      - name: Ask AI for documentation changes
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           CODE_DIFF: ${{ github.event.client_payload.code_diff }}
         run: python .github/scripts/update_docs.py
 
-      - name: Commit and Push Changes
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          
-          # ĐÃ SỬA: Stage TẤT CẢ các thay đổi (bao gồm cả PRODUCT_RULES.md ở thư mục gốc và thư mục docs/)
-          git add -A
-          
-          # Kiểm tra nếu có thay đổi thì mới commit
-          git diff --quiet && git diff --staged --quiet || git commit -m "docs: AI auto-generated new pages & updates [English]"
-          
-          # Kéo bản mới nhất trên GitHub về và gộp lại (Lúc này working tree đã sạch nên rebase sẽ không bị lỗi nữa)
-          git pull --rebase origin main
-          
-          # 3. Ép push bằng token có quyền write
-          git push origin HEAD:main
+      - name: Open or update pull request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          # PAT để PR do bot tạo vẫn kích hoạt build preview của Cloudflare Pages
+          token: ${{ secrets.DOCS_PAT }}
+          branch: bot/docs-update
+          delete-branch: true
+          add-paths: src/content/docs/**
+          commit-message: "docs: AI đề xuất cập nhật tài liệu theo thay đổi mã nguồn"
+          title: "docs: AI đề xuất cập nhật tài liệu"
+          body: |
+            AI đề xuất sửa các trang tài liệu bị ảnh hưởng bởi thay đổi mã nguồn gần nhất của FormMail Hub.
+
+            Kiểm tra trước khi merge:
+            - Nội dung đúng với sản phẩm hiện tại và `PRODUCT_RULES.md`.
+            - Không có thông tin nhạy cảm (key, mật khẩu, email nội bộ).
+            - Không có câu quảng cáo phóng đại.
+
+            Merge = xuất bản lên doc.formmailhub.com. Đóng PR nếu không cần sửa.
