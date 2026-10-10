@@ -14,7 +14,7 @@
 7. Campaign Creation & Dispatch Workflow: To send a proactive campaign to form respondents, the Admin creates a campaign template, configures filtering rules to target specific respondents in the responses Google Sheet, and enables the rule as an active campaign. Then, within the FormMail Hub Google Sheets add-on interface on the responses sheet, the Admin switches to the Campaign view, selects the synchronized campaign name, and clicks the 'Dispatch' button to initiate the bulk email dispatch.
 
 ## SMTP & Transport Scope
-8. Custom SMTP Requirement & UI Lock State: Admins MUST configure and test custom SMTP settings before unlocking Templates, Rules, Campaigns, or Analytics. Until custom SMTP is active, these feature tabs remain strictly locked in the UI.
+8. Custom SMTP Requirement & UI Lock State: Admins MUST configure and test custom SMTP settings before unlocking Templates, Rules, Campaigns, or Analytics. Until custom SMTP is active, these menu items stay unavailable and link to the SMTP Config page. Connecting SMTP is free on every plan.
 9. Built-in System SMTP & System Notifications Scope: Built-in System SMTP is STRICTLY restricted to sending system alerts (submission notifications, daily activity reports, and SMTP connection error alerts) to the Form Admin and selected Team Members. System SMTP CANNOT be used for custom templates, rule-based notifications, or respondent auto-responders.
 
 ## Analytics, Daily Reporting & Multi-Mode Tracking Scope
@@ -127,9 +127,20 @@ A: FormMail Hub provides precise, multi-tiered subscription control:
 22. Email & QR Attendance Scope (NO WEBHOOKS): FormMail Hub operates strictly as an email receiving, processing, dispatching, and QR attendance tracking engine based on admin-defined rules. It DOES NOT support webhooks, HTTP POST forwarding, external API calls, or third-party integrations (such as Slack, Microsoft Teams, Discord, Zapier, CRMs, or custom endpoints).
 23. Strict Code-First Reality: Documentation must ONLY reflect existing, verified functionality present in the provided source code and PRODUCT_RULES.md. Writers MUST NOT invent, extrapolate, or draft guides for theoretical features, future roadmaps, or non-existent integrations.
 
+## Plans & Limits (source: getPlanQuotas in src/utils/auth.js; decision of 2026-10-09)
+29. Every feature is available on the Free plan, including custom SMTP, conditional rules, delays, QR tickets and check-in, team members, campaigns, analytics and daily reports. Do NOT describe any of these as Pro-only.
+30. Free plan limits: 5 email templates per form, 6 rules per form, 100 system notifications per day, 200 automation (rule) emails per day, 300 campaign emails per day, and a "FormMail Hub" footer in emails. Daily limits are counted per account across all forms. Emails over a daily limit are skipped, not postponed.
+31. Pro plan: $5/month or $39/year via PayPal. Removes the template, rule and daily email limits set by FormMail Hub, and removes the footer. The SMTP provider's own sending limits still apply, so never call Pro "unlimited" without that caveat. Cancel anytime; Pro stays active until the end of the paid period; no refunds.
+32. Scanner tags depend on the recipient: in emails to team members, {Check-in Scanner}, {Check-out Scanner} and {Full Scanner} authorize the browser to scan any ticket of that form; in emails to the respondent, they authorize self check-in for the respondent's own ticket only. Authorization lasts 7 days from opening the link.
+
+## Documentation Site Rules
+33. The documentation site has a fixed set of pages. Update existing pages only; never create new pages, rename files, or change URLs. New pages are added by a human.
+34. Write short, factual pages for Form Admins. No marketing superlatives ("enterprise-grade", "unlimited", "bypasses all limits") and no claims that are not in these rules or in the code diff.
+35. Do not repeat the same diagram, table or section across pages; link to the page that covers it.
+
 ## Official Links & Resources
-24. Google Workspace Marketplace Listing: https://workspace.google.com/marketplace/app/formmail_hub/409227874327
-25. Privacy Policy: https://formmail.vietutd.com/privacy-policy
-26. Terms of Service: https://formmail.vietutd.com/terms-of-service
-27. Live Demo Form: https://docs.google.com/forms/d/e/1FAIpQLSc2lkYREd5ePz521uYfBDeumOOoPKeBP87i1aSpwokHdFMIHw/viewform
-28. Support & Contact: https://formmail.vietutd.com/contact
+36. Google Workspace Marketplace Listing: https://workspace.google.com/marketplace/app/formmail_hub/409227874327
+37. Privacy Policy: https://formmail.vietutd.com/privacy-policy
+38. Terms of Service: https://formmail.vietutd.com/terms-of-service
+39. Live Demo Form: https://docs.google.com/forms/d/e/1FAIpQLSc2lkYREd5ePz521uYfBDeumOOoPKeBP87i1aSpwokHdFMIHw/viewform
+40. Support & Contact: https://formmail.vietutd.com/contact

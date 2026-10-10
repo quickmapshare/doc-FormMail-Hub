@@ -1,110 +1,56 @@
 ---
-title: Custom SMTP & Domain Authentication Guide
-description: Complete guide for configuring Custom SMTP providers in FormMail Hub, understanding mandatory SMTP UI lock prerequisites, and setting up SPF, DKIM, and DMARC verification.
+title: Connect your SMTP
+description: Connect Gmail, Google Workspace, Amazon SES, SendGrid, Mailgun or your own mail server so FormMail Hub can send your templates, rules and campaigns.
 ---
 
-FormMail Hub utilizes a flexible dual-transport model to deliver administrative system alerts and client-facing custom outreach via its independent cloud platform engine.
+FormMail Hub sends your own emails (templates, auto-replies, rules and campaigns) through an email account you connect with SMTP. Emails then come from your address, and your provider's sending limits apply. Connecting SMTP is **free on every plan**.
 
-Understanding when Custom SMTP is required—and testing credentials to unlock feature tabs—is essential for leveraging full platform capabilities. You can test form submit workflows on our [Live Demo Form](https://docs.google.com/forms/d/e/1FAIpQLSc2lkYREd5ePz521uYfBDeumOOoPKeBP87i1aSpwokHdFMIHw/viewform) or install the add-on directly via the [Google Workspace Marketplace Listing](https://workspace.google.com/marketplace/app/formmail_hub/409227874327).
+Until SMTP is connected and tested, the **Templates**, **Rules**, **Campaigns** and **Analytics** pages stay unavailable. Submission alerts to you and your team do not need SMTP.
 
----
+## Connect and test
 
-## 1. Built-in System SMTP Scope vs. Custom SMTP Requirement
+1. In the dashboard, open **SMTP Config**.
+2. Fill in **SMTP Server (Host)**, **Port**, **Username** and **SMTP Password / Token** using the table below, then click **Save Settings**.
+3. Under **Connection Test**, enter the sender address and an address to receive the test, then click **Send Test**.
 
-```
-+-----------------------------------------------------------------------------------+
-|                        DELIVERY SYSTEM CONFIGURATION PATH                         |
-+-----------------------------------------------------------------------------------+
-                                  |
-          +-----------------------+-----------------------+
-          |                                               |
-          v                                               v
-+-----------------------------------+           +-----------------------------------+
-|     BUILT-IN SYSTEM SMTP RELAY    |           |    CUSTOM SMTP INTEGRATION        |
-+-----------------------------------+           +-----------------------------------+
-| - RESTRICTED strictly to system   |           | - MANDATORY setup & test BEFORE   |
-|   alerts (submission alerts,      |           |   unlocking Templates, Rules,     |
-|   daily reports, SMTP error alerts)|           |   Campaigns, or Analytics         |
-|   to Admin & Team Members         |           | - Feature tabs strictly locked in |
-| - CANNOT send custom templates or |           |   UI until Custom SMTP is active  |
-|   respondent auto-responders      |           | - Responders, rules, campaigns    |
-+-----------------------------------+           +-----------------------------------+
-```
+When the test email arrives, the status changes to **Verified & Ready** and the other pages unlock.
 
-### Built-in System SMTP Scope
-Built-in System SMTP is **STRICTLY** restricted to sending system alerts (submission notifications, daily activity reports, and SMTP connection error alerts) to the Form Admin and selected Team Members. System SMTP **CANNOT** be used for custom templates, rule-based notifications, or respondent auto-responders.
+## Settings for common providers
 
-### Absolute Custom SMTP Requirement & UI Lock State
-Admins **MUST** configure and test custom SMTP settings before unlocking Templates, Rules, Campaigns, or Analytics. Until custom SMTP is active, these feature tabs remain strictly locked in the UI.
+| Provider | Host | Port | Username | Password |
+| --- | --- | --- | --- | --- |
+| Gmail / Google Workspace | `smtp.gmail.com` | 587 or 465 | your full email address | a 16-character **App Password** |
+| Amazon SES | `email-smtp.<region>.amazonaws.com` | 587 | SES SMTP username | SES SMTP password |
+| SendGrid | `smtp.sendgrid.net` | 587 | `apikey` | your API key |
+| Mailgun | `smtp.mailgun.org` | 587 | your SMTP login | your SMTP password |
+| Your own server | from your host | 587 or 465 | from your host | from your host |
 
----
+### Gmail App Password
 
-## 2. Step-by-Step Provider Setup Guides
+Gmail does not accept your normal password over SMTP. You need an App Password:
 
-### Provider A: Google Workspace & Gmail™ App Passwords
-To send emails under your Google identity without hitting native Apps Script restrictions, generate a Google App Password.
+1. Turn on 2-Step Verification in your [Google Account security settings](https://myaccount.google.com/security).
+2. Search for **App passwords**, create one named "FormMail Hub", and copy the 16-character code.
+3. Paste it into **SMTP Password / Token** without spaces.
 
-1. **Enable 2-Step Verification:** Go to Google Account Security (`myaccount.google.com/security`) and ensure 2-Step Verification is **ON**.
-2. **Generate App Password:** Search for **App Passwords**, enter `FormMail Hub`, and copy the generated 16-character secret key.
-3. **Configure & Test in FormMail Hub:**
-   - Navigate to **Settings > SMTP Config**.
-   - **Host:** `smtp.gmail.com`
-   - **Port:** `587` (TLS) or `465` (SSL)
-   - **Username:** Your full Gmail/Workspace email address.
-   - **Password:** The 16-character App Password (without spaces).
-   - **Test Connection:** Click **Test Connection** to verify settings and unlock the UI tabs (Templates, Rules, Campaigns, Analytics).
+If App passwords is missing on a Google Workspace account, your administrator may have turned it off.
 
-### Provider B: Amazon SES (Simple Email Service)
-1. **Verify Identity:** In the AWS SES Console, create and verify your sending domain identity via CNAME records.
-2. **Generate SMTP Credentials:** Navigate to **SES > Account Level Settings > SMTP Settings** and click **Create SMTP Credentials**.
-3. **Request Production Access:** Request exit from the AWS SES Sandbox environment.
-4. **Configure & Test in FormMail Hub:**
-   - Navigate to **Settings > SMTP Config**.
-   - **Host:** `email-smtp.{region}.amazonaws.com` (e.g., `email-smtp.us-east-1.amazonaws.com`)
-   - **Port:** `587` (TLS)
-   - **Username / Password:** AWS SES IAM SMTP credentials.
-   - **Test Connection:** Test settings to unlock locked UI feature tabs.
+### Providers that use an API key
 
-### Provider C: SendGrid / Mailgun / Custom Corporate Relays
-- **SendGrid:** Host `smtp.sendgrid.net`, Port `587`, Username `apikey`, Password = Your API Key.
-- **Mailgun:** Host `smtp.mailgun.org`, Port `587`, Username = Postmaster address, Password = SMTP password.
-- **Custom Relay:** Input corporate host (`smtp.yourdomain.com`), port (`587` or `465`), and authorized user credentials under **Settings > SMTP Config**.
-- **Test Connection:** Test credentials to verify transport and unlock UI feature tabs.
+With SendGrid, Amazon SES and similar services, the sender address must be one you have verified with that provider. Enter it in the **Sender Email** field of each rule.
 
----
+## Sending limits
 
-## 3. Domain Authentication (SPF, DKIM & DMARC)
+Your provider decides how many emails you can send per day. Gmail and Google Workspace accounts have daily limits that are fine for most forms. For large events or campaigns, use a sending service such as Amazon SES, SendGrid or Mailgun. Check your provider's current limits on its website.
 
-To ensure high inbox placement when sending via Custom SMTP, configure DNS records at your domain host:
+FormMail Hub's own plan limits are on [Plans & pricing](/guides/plans-and-pricing/).
 
-- **SPF (Sender Policy Framework):**
-  ```txt
-  v=spf1 include:amazonses.com include:_spf.google.com ~all
-  ```
-- **DKIM (DomainKeys Identified Mail):** Publish the CNAME/TXT keys generated by Amazon SES, SendGrid, or Google Workspace.
-- **DMARC:**
-  ```txt
-  v=DMARC1; p=none; rua=mailto:dmarc-reports@yourdomain.com
-  ```
+## If the test fails
 
----
+| What you see | Likely cause | What to do |
+| --- | --- | --- |
+| Authentication error (often code 535) | Wrong username or password, or a normal Gmail password | Check the username; for Gmail, create a new App Password |
+| Connection timed out | Wrong host or port | Use port 587, or 465 if your provider requires SSL |
+| Test sent but never arrives | Spam folder, or unverified sender address | Check spam; verify the sender address with your provider |
 
-## 4. Diagnostics & Connection Troubleshooting
-
-| Error Code | Primary Cause | Resolution |
-| :--- | :--- | :--- |
-| `FAILED_SMTP_AUTH` / `535 5.7.8` | Invalid username or account password used instead of App Password. | Re-enter credentials under **Settings > SMTP Config**. For Gmail accounts, generate a dedicated 16-character App Password and test connection. |
-| `FAILED_SMTP_CONNECT` | Host port blocked by network firewall or wrong hostname. | Switch connection port from 25 to **587** (TLS) or **465** (SSL). |
-| `Feature Access Locked` | Custom SMTP not configured or tested. | Admins MUST configure and test custom SMTP settings under **Settings > SMTP Config** before unlocking Templates, Rules, Campaigns, or Analytics. |
-
----
-
-## 5. Official Resources & Compliance
-
-Need assistance with connection diagnostics? Access our official support channels:
-- **Technical Assistance:** [Support & Contact](https://formmail.vietutd.com/contact)
-- **Legal & Privacy Policies:** Review our [Privacy Policy](https://formmail.vietutd.com/privacy-policy) and [Terms of Service](https://formmail.vietutd.com/terms-of-service).
-
----
-
-*Google Forms™ and Gmail™ are trademarks of Google LLC.*
+Still stuck? [Contact support](https://formmail.vietutd.com/contact).

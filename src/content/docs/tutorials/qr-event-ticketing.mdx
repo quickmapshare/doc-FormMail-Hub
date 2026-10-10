@@ -1,206 +1,65 @@
 ---
-title: Complete Guide to Event Check-in, QR Ticketing & Staff Scanning
-description: Step-by-step tutorial on embedding QR Code tickets, authorizing staff scanners with zero-login links, processing camera-based or camera-free check-ins, tracking live attendance, and issuing dual real-time receipts in FormMail Hub.
+title: QR event tickets and check-in
+description: Email a QR ticket to everyone who registers through Google Forms, then let your staff check guests in and out from their phones, without accounts or a scanner app.
 ---
 
-This step-by-step tutorial guides you through configuring an end-to-end event ticketing, door check-in, and attendance management workflow using **FormMail Hub**. 
+In this tutorial, each person who registers through your Google Form receives a QR ticket by email. At the door, your staff scan the ticket with their phone camera, or open the ticket link, to check guests in and out.
 
-You will learn how to automatically issue digital QR code tickets to attendees, distribute personalized zero-login scanner links to event staff, view real-time attendance status badges during check-in, process check-ins and check-outs via camera scan or camera-free manual verification links, and send dual real-time email receipts for every scan.
+You need: a registration form with an email question, a [connected SMTP](/guides/smtp-setup/), and the staff added as [team members](/guides/team-management/). All of this works on the Free plan.
 
-To test this workflow live before setting up your own event, try our interactive [Live Demo Form](https://docs.google.com/forms/d/e/1FAIpQLSc2lkYREd5ePz521uYfBDeumOOoPKeBP87i1aSpwokHdFMIHw/viewform) or install the add-on via the [Google Workspace Marketplace Listing](https://workspace.google.com/marketplace/app/formmail_hub/409227874327).
+## 1. Prepare the form
 
----
+- Add a question that collects the guest's email address.
+- Optional: in Google Forms **Settings**, turn on **Limit to 1 response** so each person gets only one ticket.
 
-## 1. Prerequisites: Custom SMTP Unlock Requirement
+## 2. Send the ticket to guests
 
-Before designing email templates or configuring staff scanner routing, custom SMTP must be configured and tested.
+1. [Create a template](/guides/template-customization/) for the confirmation email. Include `{QR Code}`, and `{Verify Link}` for guests who cannot display images. For example:
 
-> **Warning: Custom SMTP Prerequisite & UI Lock State**  
-> Admins **MUST** configure and test custom SMTP settings under **Settings > SMTP Config** before unlocking Templates, Rules, Campaigns, or Analytics. Until custom SMTP is active, these feature tabs remain strictly locked in the FormMail Hub user interface. Built-in System SMTP cannot be used for custom templates or respondent ticket auto-responders.
+   ```text
+   Hi {Full name},
 
-### Quick Setup Steps for Custom SMTP:
-1. Open **FormMail Hub** from Google Forms™ or Google Sheets™.
-2. Navigate to **Settings > SMTP Config**.
-3. Input your custom SMTP credentials (e.g., Gmail™ App Password, Amazon SES, SendGrid, Mailgun, or corporate SMTP server).
-4. Click **Test Connection**. Once verified with a success response, all locked UI tabs will unlock immediately.
+   You are registered for {Form title}. Show this QR code at the entrance:
 
----
+   {QR Code}
 
-## 2. Step 1: Issue Digital QR Code Tickets to Attendees
+   Can't see the code? Use this link: {Verify Link}
 
-When an attendee fills out your event registration Google Form™, FormMail Hub can automatically dispatch a personalized confirmation email containing an embedded digital QR code ticket pass.
-
-### Single-Ticket Restriction (Optional)
-If your event requires restricting each respondent to a single ticket, enable **"Limit to 1 response"** in your Google Forms™ Settings. The FormMail Hub cloud engine ensures each ticket is uniquely tracked.
-
-### Dynamic Tag to Use:
-```text
-{QR Code}
-```
-
-### How Digital QR Tickets Work:
-- **Visual QR Code & Manual Verification Link:** The `{QR Code}` dynamic tag renders a visual QR code image along with a direct manual verification link.
-- **Real-Time Verification:** When scanned or clicked, the ticket opens the verification screen to verify ticket authenticity in real-time.
-
-### Sample Attendee Confirmation Template:
-1. Go to **Email Templates** > **+ Create New Template**.
-2. Title: `Attendee Event Pass`.
-3. Subject: `Your Entry Ticket for {Form title} - {First Name}`.
-4. Body (HTML or Rich Text):
-   ```html
-   <h2>Hello {First Name},</h2>
-   <p>Thank you for registering for <strong>{Form title}</strong>.</p>
-   <p>Please present the QR code ticket below at the entrance for entry verification:</p>
-   
-   <div style="text-align: center; margin: 20px 0;">
-     {QR Code}
-   </div>
-   
-   <p><strong>Reference Code:</strong> {Form title} Ticket</p>
-   <hr />
-   <p><small>If you need to update your registration, contact the organizer. <a href="{Unsubscribe Link}">Unsubscribe</a></small></p>
+   {Unsubscribe link}
    ```
-5. Save the template and attach it to an active **Email Rule** targeting respondents.
 
----
+2. [Create a rule](/guides/conditional-logic/) of type **Always Notify** that sends this template to the guest's email field.
 
-## 3. Step 2: Add Team Members & Generate Staff Scanner Links
+Each submission gets its own ticket with a reference code.
 
-Event staff do not need administrative access or passwords to verify tickets. FormMail Hub uses personalized, zero-login authorization links that convert staff mobile devices into authorized ticket scanners.
+## 3. Give your staff a scanner link
 
-### A. Add Staff as Team Members
-1. In the FormMail Hub sidebar, navigate to **Team Members**.
-2. Enter the email address of each staff member (e.g., `staff@yourcompany.com`).
-3. Click **Add Team Member**.
+1. Create a second template for staff containing `{Check-in Scanner}`, `{Check-out Scanner}` or `{Full Scanner}` (both directions).
+2. Send it to your staff by adding them under *Internal Recipients (CC)* in a rule.
+3. Each staff member opens the link **once, in the browser they will use at the door**. That browser is then authorized for this form for 7 days. No account or password is needed.
 
-> **Note on Permissions:** Only the **first user among the form's editors who connects that form to FormMail Hub (Primary Connector / Admin)** is granted exclusive rights to configure settings, templates, rules, and triggers. Team members are added strictly so the Admin can select who receives email notifications and who is authorized to act as event staff scanners. Team members **DO NOT** have edit or configuration permissions.
+:::caution[Use the same browser]
+The authorization is stored in the browser that opened the link. If a staff member opens it inside their email app and later scans with Chrome, Chrome is not authorized. Copy the link into the browser they will scan with.
+:::
 
-### B. Dynamic Scanner Tags for Staff Emails
-When sending notification emails to staff, include one of the following dynamic scanner tags in the staff notification template:
+## 4. Check guests in
 
-| Dynamic Scanner Tag | Authorized Action Mode | Description |
-| :--- | :--- | :--- |
-| `{Check-in Scanner}` | `checkin` | Authorizes the staff device exclusively for check-in scans (7-day validity). |
-| `{Check-out Scanner}` | `checkout` | Authorizes the staff device exclusively for check-out scans (7-day validity). |
-| `{Full Scanner}` | `both` | Authorizes the staff device for both check-in and check-out scanning (7-day validity). |
+Staff can either:
 
-> **Security Isolation Rule:** Scanner authorization links (`{Check-in Scanner}`, `{Check-out Scanner}`, `{Full Scanner}`) are populated **strictly in staff/team emails** and are automatically stripped from respondent emails to guarantee security isolation.
+- **Scan** the guest's QR code with the phone camera. It opens the ticket page in the browser.
+- **Open** the guest's ticket link, for example if the guest forwards the email.
 
-### C. How Zero-Login Links Work
-Each staff link encodes the authorized action mode (`checkin`, `checkout`, or `both`) with a **7-day expiration token**. Clicking the link instantly authorizes the staff member's mobile browser for **7 days** for seamless scanning without requiring password logins.
+The ticket page shows whether the ticket is valid, the guest's name, the reference code and the current status. An authorized staff browser also shows **Check In** and **Check Out** buttons.
 
-> **Important: Browser Session Isolation Note**  
-> Because authorization relies on a secure browser session set during link activation, opening the link in one browser (e.g., an in-app email viewer inside Gmail or Outlook) will **NOT** authorize a different browser (e.g., your phone's default Safari/Chrome browser or a standalone QR camera scanner app). Staff **MUST** copy and paste the authorization link directly into the exact browser application used for scanning QR codes.
+- A guest who is already checked in cannot be checked in twice.
+- Check-out is only possible after check-in.
+- Each change is kept for 30 days after the last scan.
 
----
+People without an authorized browser can still open a ticket to see whether it is valid, but cannot change its status.
 
-## 4. Step 3: Execute Check-in & Check-out Scans (Camera & Camera-Free)
+## 5. Automatic receipts
 
-Authorized staff members have two flexible operational methods to check in attendees at the event:
+After every check-in or check-out, two emails are sent:
 
-```
-                  +-------------------------------------------------------------+
-                  |               STAFF DEVICE AUTHORIZATION                    |
-                  | Staff clicks {Full Scanner} link -> Authorizes browser (7d) |
-                  +-------------------------------------------------------------+
-                                                 |
-         +---------------------------------------+---------------------------------------+
-         |                                                                               |
-         v (Method 1: Camera Scan)                                                       v (Method 2: Camera-Free Direct Link)
-+------------------------------------+                          +------------------------------------+
-| Attendee presents QR Ticket pass   |                          | Staff opens notification email     |
-| Staff scans QR with mobile camera  |                          | Staff clicks manual Verify link    |
-+------------------------------------+                          +------------------------------------+
-         |                                                                               |
-         +---------------------------------------+---------------------------------------+
-                                                 |
-                                                 v
-                               +------------------------------------+
-                               | Live Status Interface              |
-                               | Displays Status Badge & Timestamps |
-                               |   - 🟢 Status: Checked-In          |
-                               |   - 🚪 Status: Checked-Out         |
-                               |   - ⚪ Status: Not Checked-In Yet   |
-                               +------------------------------------+
-                                                 |
-                                                 v Staff taps 'Check-In' or 'Check-Out'
-                               +------------------------------------+
-                               | Backend State Processing Engine    |
-                               | Updates status (IN / OUT)          |
-                               | 30-Day Rolling Data Retention      |
-                               +------------------------------------+
-                                                 |
-                                                 v
-                               +------------------------------------+
-                               | Automated Dual Real-Time Receipts  |
-                               | 1. Attendee Confirmation Receipt   |
-                               | 2. Staff Activity Log (CC Admin)   |
-                               +------------------------------------+
-```
-
-### Method 1: Mobile Camera Scanning
-1. Open the authorized mobile browser.
-2. Point the device camera at the attendee's physical or digital `{QR Code}` pass.
-3. Tap the link to open the live verification screen.
-
-### Method 2: Camera-Free Staff Check-in (Direct Manual Verification Link)
-1. Staff members who receive submission notification emails containing `{QR Code}` or `{Verify Link}` also receive the direct verification link.
-2. Staff can click this verification link directly inside their notification email on an authorized device to open the attendee verification screen without requiring a camera scanner.
-
-### Live Scanner Interface & Attendance Status Badge
-Upon opening the scanner verification screen, staff members are presented with a clear visual **Current Attendance Status Badge** and localized event timestamp:
-
-- **🟢 Status: Checked-In:** Displayed in green when the ticket is currently in `IN` state, showing the exact check-in time rendered in the staff member's local device timezone.
-- **🚪 Status: Checked-Out:** Displayed in slate grey when the attendee has checked out (`OUT` state), alongside the checkout timestamp.
-- **⚪ Status: Not Checked-In Yet:** Displayed in light grey for valid tickets that have not yet been scanned.
-
-When staff click the **Check-In** or **Check-Out** action button, the status badge and timestamp update instantly on screen without requiring a manual page refresh.
-
-### Attendance Engine & 30-Day Rolling Retention
-When a scan or manual verification occurs, the platform verifies staff permissions and updates the ticket's explicit state (`IN` or `OUT`). Every state change maintains the record for **30 days** of rolling retention without deleting data:
-
-- **Check-in Execution:** Prevents duplicate check-ins if the ticket is already marked as checked in (`IN`). Sets status to `IN`, logs the check-in operator email and timestamp, and refreshes the 30-day retention period.
-- **Check-out Execution:** Validates that the ticket is currently in `IN` state before updating status to `OUT`. Logs check-out operator email and timestamp, and refreshes the 30-day retention period instead of deleting the record.
-
----
-
-## 5. Step 4: Automated Dual Real-Time Attendance Receipts
-
-Every successful check-in or check-out trigger automatically dispatches **two independent real-time email notifications**:
-
-### Receipt 1: Attendee Attendance Email
-Dispatched immediately to the ticket holder confirming their updated attendance status:
-- **Recipient:** The attendee (`{Email Address}`).
-- **Content:** Updated status (`Checked In` or `Checked Out`), Event Name (`{Form title}`), Reference ID, and exact UTC timestamp.
-
-### Receipt 2: Staff Activity Log Email
-Dispatched immediately to the scanning staff member (and automatically CC'd to the Form Owner):
-- **Recipient:** Scanning Staff Member (CC: Form Owner Admin).
-- **Content:** Complete audit trail recording attendee identity, ticket reference code, staff email identity, action mode, and scan timestamp.
-
----
-
-## 6. Troubleshooting & Operational FAQ
-
-| Problem / Error | Possible Cause | Corrective Action |
-| :--- | :--- | :--- |
-| **Templates or Rules tabs are locked in UI** | Custom SMTP has not been configured or tested. | Go to **Settings > SMTP Config**, enter custom SMTP credentials, and click **Test Connection** to unlock the UI. |
-| **Scanner links missing from respondent emails** | Intended security behavior. | Scanner links (`{Check-in Scanner}`, `{Full Scanner}`) are populated strictly in staff emails and automatically stripped from respondent emails. |
-| **Staff device shows "Unauthorized" when scanning** | Browser session isolation mismatch. | Opening the authorization link in an in-app email viewer does not set cookies in Safari/Chrome. Copy the authorization link and paste it into the exact browser used for scanning. |
-| **Staff link expired error** | Expiration of 7-day token. | Re-send the staff notification email or re-generate the authorization link for the team member. |
-| **Duplicate check-in blocked** | Attendee already checked in. | The attendee is already marked as `IN` (as indicated by the `🟢 Status: Checked-In` badge). To re-admit, check out the attendee first or review the activity log. |
-| **Can staff verify tickets without a camera?** | Yes, via direct manual verification link. | Staff can click the manual verification link (`{Verify Link}`) rendered in notification emails. |
-
----
-
-## 7. Official Resources & Contact
-
-For additional assistance or domain-wide setup, access our official resources:
-- **Google Workspace Marketplace:** [FormMail Hub Listing](https://workspace.google.com/marketplace/app/formmail_hub/409227874327)
-- **Interactive Sandbox:** [Live Demo Form](https://docs.google.com/forms/d/e/1FAIpQLSc2lkYREd5ePz521uYfBDeumOOoPKeBP87i1aSpwokHdFMIHw/viewform)
-- **Technical Support:** [Support & Contact](https://formmail.vietutd.com/contact)
-- **Compliance Policies:** [Privacy Policy](https://formmail.vietutd.com/privacy-policy) | [Terms of Service](https://formmail.vietutd.com/terms-of-service)
-
----
-
-*Google Forms™ and Google Sheets™ are trademarks of Google LLC.*
+- The **guest** receives a confirmation with the new status, the time and the location of the scan when available.
+- The **staff member** who scanned receives a record of the scan, with a copy to the form admin.
