@@ -1,4 +1,4 @@
-# Trang đã gộp hoặc bỏ ngày 2026-10-10 (dọn nội dung trùng lặp cho SEO)
+# Chuyển hướng cho Cloudflare Pages (nếu dùng). Trên Vercel, chuyển hướng nằm ở vercel.json.
 /guides/webhooks-and-integrations/ /reference/faq/ 301
 /guides/webhooks-and-integrations /reference/faq/ 301
 /reference/quota-limits-provider-matrix/ /guides/plans-and-pricing/ 301

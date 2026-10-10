@@ -1,0 +1,34 @@
+{
+  "redirects": [
+    {
+      "source": "/guides/webhooks-and-integrations",
+      "destination": "/reference/faq/",
+      "permanent": true
+    },
+    {
+      "source": "/guides/webhooks-and-integrations/",
+      "destination": "/reference/faq/",
+      "permanent": true
+    },
+    {
+      "source": "/reference/quota-limits-provider-matrix",
+      "destination": "/guides/plans-and-pricing/",
+      "permanent": true
+    },
+    {
+      "source": "/reference/quota-limits-provider-matrix/",
+      "destination": "/guides/plans-and-pricing/",
+      "permanent": true
+    },
+    {
+      "source": "/tutorials/employee-self-service-attendance",
+      "destination": "/tutorials/office-pc-kiosk-attendance/",
+      "permanent": true
+    },
+    {
+      "source": "/tutorials/employee-self-service-attendance/",
+      "destination": "/tutorials/office-pc-kiosk-attendance/",
+      "permanent": true
+    }
+  ]
+}
