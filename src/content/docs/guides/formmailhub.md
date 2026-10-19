@@ -9,7 +9,9 @@ This guide takes you from installing the add-on to receiving your first submissi
 
 1. Install FormMail Hub from the [Google Workspace Marketplace](https://workspace.google.com/marketplace/app/formmail_hub/409227874327).
 2. Open your form in Google Forms™ (or its responses spreadsheet in Google Sheets™) and start the add-on: the puzzle-piece **Add-ons** icon in Google Forms, or **Extensions** in Google Sheets.
-3. Open the FormMail Hub dashboard from the sidebar.
+3. In the sidebar, click **Open Dashboard ↗**.
+
+If the sidebar says the sheet is not connected to a form, make the responses tab of your form the active tab, then click **Re-check Active Sheet**.
 
 The first editor of a form who connects it becomes the form's **admin**. Only the admin can change its settings. See [Team members](/guides/team-management/).
 

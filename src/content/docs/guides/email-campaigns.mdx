@@ -17,9 +17,18 @@ A campaign sends one template to the respondents in your responses spreadsheet w
 
 ## Send it
 
-1. Open the responses spreadsheet and start the FormMail Hub add-on (**Extensions → FormMail Hub**).
-2. Switch to the **Campaign** view.
-3. Choose your campaign and click **Dispatch**.
+1. Open the responses spreadsheet, make the responses tab of your form the active tab, and start the FormMail Hub add-on (**Extensions → FormMail Hub**).
+2. In the sidebar, click **Campaigns**.
+3. Choose your campaign in the list and click **Dispatch Campaign**.
+
+The add-on sends up to 100 rows at a time. It uses the **FormMail Hub** column to decide which rows to send:
+
+- Rows where that column is empty, or shows an error, are sent.
+- Rows where that column already has a value are skipped. This includes rows that the add-on marked `done` when the response arrived, and rows already sent by an earlier dispatch, which show the campaign's name.
+- After a row is sent, the add-on writes the campaign's name in that column. Clicking Dispatch again therefore does not send the row a second time.
+- If a batch fails, the rows already sent keep their value, and the rest stay as they were.
+
+So a campaign reaches only the rows that were still empty or in error when you dispatch it.
 
 FormMail Hub sends the emails in the background through your SMTP. Respondents who have unsubscribed from this form are skipped.
 
