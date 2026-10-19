@@ -39,7 +39,7 @@ jobs:
       - name: Open or update pull request
         uses: peter-evans/create-pull-request@v7
         with:
-          # PAT để PR do bot tạo vẫn kích hoạt build preview của Cloudflare Pages
+          # PAT để PR do bot tạo vẫn kích hoạt các workflow khác (GITHUB_TOKEN không làm được việc này)
           token: ${{ secrets.DOCS_PAT }}
           branch: bot/docs-update
           delete-branch: true
