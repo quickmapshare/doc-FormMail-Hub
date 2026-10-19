@@ -76,8 +76,8 @@ Analytics track sent, failed, and opened email metrics in three modes: `system`,
 
 ## Free tier limits
 
-- **Templates limit:** Free tier users can create up to 6 templates per form.
-- **Rules limit:** Free tier users can create up to 5 rules per form.
+- **Templates limit:** Free tier users can create up to 5 templates per form.
+- **Rules limit:** Free tier users can create up to 6 rules per form.
 - **Plan upgrades:** Upgrading to a paid plan removes or increases these template and rule caps.
 
 ## Support & Documentation updates

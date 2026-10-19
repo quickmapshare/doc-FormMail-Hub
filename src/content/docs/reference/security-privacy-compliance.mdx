@@ -12,6 +12,7 @@ This page explains in plain terms what FormMail Hub stores and how it protects i
 - **Your SMTP password or API key** is encrypted (AES-256) before it is saved, and is only used to send your emails.
 - **Statistics**: daily counts of emails sent, opened and failed for each form.
 - **Check-in records**: ticket status, time and the staff member who scanned. Each record is kept for 30 days after its last change.
+- **Scan location**: each check-in or check-out records a location. When the scanning browser allows it, this is the GPS position (shown as an address when available). Otherwise it is an approximate location derived from the IP address. The location is included in the receipt emails.
 - **Unsubscribe requests**, so that people who opted out are not emailed again.
 
 ## Access control
